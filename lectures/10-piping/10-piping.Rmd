@@ -1,0 +1,643 @@
+---
+title: "Unleashing the Power of the Tidyverse"
+subtitle: "with the _pipe operator_"
+author: "Understanding Political Numbers"
+date: "Feb 25, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+# knitr::purl(here::here("lectures", "10-piping", "10-piping.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+# library("boxr"); box_auth()
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = TRUE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "10_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/10-piping/img"
+
+# library("viridis")
+options(scipen = 99999)
+```
+
+# Agenda
+
+.pull-left[
+**The pipe operator**: `%>%`
+
+- a revolution in the world of `R`
+- Download `lecture_pipes.R` from Canvas ("Lecture Scripts" folder)
+
+Also: 
+
+- Research question
+- Data sources
+]
+
+
+---
+
+class: inverse, middle, center
+
+# Data Sources
+
+
+---
+
+# Major U.S. Public Opinion Surveys
+
+[American National Election Study](http://www.electionstudies.org/)
+
+- Since 1948(?); standard questions; some panel studies
+
+[Current Population Survey ("Voting and Registration Supplement")](https://www.census.gov/topics/public-sector/voting.html)
+
+- BIG sample; normally economic/family questions
+- November supplement: self-reported voter turnout (but no other politics)
+
+[Cooperative Congressional Election Study](https://cces.gov.harvard.edu/)
+
+- since 2006; samples in every district; *validated* turnout
+
+[General Social Survey](http://gss.norc.org/)
+
+- More than political
+
+### CODEBOOKS ARE SO IMPORTANT
+
+
+---
+
+# Major International Opinion Sources
+
+[Comparative study of electoral systems](http://cses.org/)
+
+- international elections/opinion survey
+
+[Eurobarometer](http://ec.europa.eu/commfrontoffice/publicopinion/index.cfm)
+
+- EU backed regular surveys; thematic, flash, and qualitative surveys
+
+[Afrobarometer](http://www.afrobarometer.org/)
+
+- since 1999; attitudes on democracy, governance, economics
+
+[LAPOP/AmericasBarometer](https://www.vanderbilt.edu/lapop/about-americasbarometer.php)
+
+- Focus on Latin America, sophisticated survey delivery tech
+
+[World Values Survey](http://www.worldvaluessurvey.org/wvs.jsp)
+
+
+---
+
+# IR data dump
+
+Paul Hensel [Data Site](https://www.paulhensel.org/data.html)
+
+- Alliances, treaties, organizations
+- Conflict, MIDs, political violence
+- Trade, aid, development
+- Agriculture, food, environment
+- Regime type, political systems, demography
+
+
+
+
+
+---
+
+class: inverse, middle, center
+
+# The Pipe
+
+
+---
+
+class: middle
+
+```{r, echo = FALSE, out.width = "80%"}
+include_graphics(here(img, "pipeline.png"))
+```
+
+
+???
+
+Data analysis is a series of steps
+
+- think of these steps as being *actions*
+- they are *verbs*, things you do, to the data
+- You "import" or "read" the data into R
+- You "tidy" it, make it so that it has a nice row-column format
+  - we will learn about this stuff later on
+- Then you sort of have a dialog with the data
+  - You transform it, modify variables, calculate summary states
+  - you create graphics to visualize your data (for you or for production)
+  - This says "model" but it means statistical analysis
+  - Models are next week
+
+**Problem is** these steps are cumbersome to type in code, and this process of understanding your data means pushing a lot of data around, modifying it, filtering it, summarizing, and it's all just tedious
+
+---
+
+```{r data}
+library("tidyverse")
+
+# COUNTY-level data from Midwest states
+midwest
+```
+
+
+```{r, eval = FALSE, include = FALSE}
+midwest %>%
+  select(popadults, poptotal) %>%
+  mutate(popchildren = poptotal - popadults,
+         pr_children = popchildren / poptotal) %>%
+  pull(pr_children) %>%
+  hist()
+
+
+mw <- midwest
+# as_tibble(EuStockMarkets)
+# AirPassengers tidying example
+```
+
+???
+
+- Variables for total pop, adult population
+- Nothing for children
+- Calculate the proportion of the population that is *children* (for every county)
+- Then, calculate the mean proportion of children in every state
+
+---
+
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county)
+- Then, calculate the mean proportion of children in every state
+]
+
+???
+
+How do we write this code?
+
+- what functions do we use for each step?
+
+
+
+
+---
+
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county): **mutate()**
+- Then, calculate the mean proportion of children in every state: **group_by()** and **summarize()**
+]
+
+
+--
+
+.right-plot[
+Overwrite original data at each step?
+
+```{r overwrite}
+# all tidyverse functions: first argument is the DATASET
+
+# MUTATE
+# first, find the number of children (total minus adults)
+# then, find the proportion (children / total)
+midwest <- mutate(midwest, 
+                  popchildren = poptotal - popadults, 
+                  pr_children = popchildren / poptotal)
+
+# group by state
+midwest <- group_by(midwest, state)
+
+# mean pr_children by state
+summarize(midwest, mean_pr_children = mean(pr_children))
+```
+
+]
+
+???
+
+problem is we don't keep the raw data
+
+
+---
+
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county): **mutate()**
+- Then, calculate the mean proportion of children in every state: **group_by()** and **summarize()**
+]
+
+
+.right-plot[
+Create intermediate objects at each step?
+
+```{r intermediates}
+# create a new object, 
+#   which gets results from mutate()
+midwest_mut <- mutate(midwest, 
+                      popchildren = poptotal - popadults, 
+                      pr_children = popchildren / poptotal)
+
+# group the NEW OBJECT by state
+midwest_grp <- group_by(midwest_mut, state)
+
+# Summarize the GROUPED OBJECT
+summarize(midwest_grp, mean_pr_children = mean(pr_children))
+```
+]
+
+???
+
+tedious and inefficient
+
+
+
+---
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county): **mutate()**
+- Then, calculate the mean proportion of children in every state: **group_by()** and **summarize()**
+]
+
+
+.right-plot[
+Use the order of operations?
+
+```{r operations}
+# every f() creates a new data frame
+# so pass results to next function: f(g(h(x)))
+
+# FROM THE INSIDE OUT: mutate() the midwest data
+# Then, mutate() result is the data for group_by()
+# Then, group_by() result is the data for summarize()
+
+summarize(
+  group_by(
+    mutate(midwest, 
+           popchildren = poptotal - popadults, 
+           pr_children = popchildren / poptotal), 
+    state), 
+  mean_pr_children = mean(pr_children)
+)
+```
+]
+
+
+???
+
+absolute nightmare
+
+---
+
+## There's a better way
+
+.left-code[
+Linear data processing plan:
+
+- Start with the data, *then*...
+- Create new variables, *then*...
+- Group the data by state, *then*...
+- Calculate the mean in each state
+]
+
+--
+
+.right-plot[
+Linear code:
+
+```{r pipe-drop}
+# enter... the pipe operator %>%
+# read it as "and then..."
+midwest %>%
+  mutate(popchildren = poptotal - popadults,
+         pr_children = popchildren / poptotal) %>%
+  group_by(state) %>%
+  summarize(mean_pr_children = mean(pr_children))
+```
+]
+
+
+
+
+---
+
+## How it works
+
+.pull-left[
+```{r}
+# Typical R code: f(data)
+dim(midwest)
+```
+]
+
+
+--
+
+.pull-right[
+```{r}
+# with the pipe: data %>% f()
+#   data serves as first arg in f()
+#   (implicitly)
+midwest %>% dim()
+```
+]
+
+
+???
+
+**They do the same thing**
+
+- But the pipe lets us write lots of code
+- that would be really complicated to write
+- in a way that actually is very easy
+
+
+--
+
+.center[
+<br>
+<br>
+<br>
+**Summon the pipe**
+
+Macs: `Cmd + Shift + m`
+
+Windows: `Ctrl + Shift + m`
+]
+
+
+
+
+
+
+---
+
+## Do lots of things easily
+
+.pull-left[
+```{r}
+# Typical R code: f(g(x))
+#   g() is first, then f()
+length(names(midwest))
+```
+]
+
+--
+
+.pull-right[
+```{r}
+# with the pipe: data %>% g() %>% f()
+# just as it should be
+midwest %>% names() %>% length()
+```
+
+```{r}
+# or, break across lines for readability
+midwest %>% 
+  names() %>% 
+  length()
+```
+]
+
+???
+
+This lets you see:
+
+- I start with the data
+- then I get the variable names
+- then I see how many names there are
+
+This works like the + in ggplot
+
+- You put it at the end of a line to tell R that you aren't done yet
+
+
+---
+
+## Why we like the pipe operator
+
+.pull-left[
+.center[
+
+**Series of operations, without piping**
+
+$f(g(h(x)))$
+
+Works inside-out
+
+Counter-intuitive
+
+Difficult to write
+
+Difficult to read
+
+]
+]
+
+.pull-right[
+.center[
+**With piping**
+
+$x \rightarrow h() \rightarrow g() \rightarrow f()$
+
+Works linearly
+
+Intuitive
+
+Easy to write
+
+Easy to read
+
+*Tidyverse flow*
+
+]
+]
+
+
+
+---
+
+## Let's write our own chain
+
+1. Start with `midwest`
+2. For each state, count metro/non-metro area counties (`inmetro`)
+
+```{r, eval = FALSE, echo = FALSE}
+# 1. Start with `midwest`
+# 2. For each state, count metro/non-metro area counties (`inmetro`)
+midwest %>%
+  group_by(state) %>%
+  count(inmetro)
+```
+
+
+---
+
+## Let's do another
+
+1. Start with `gapminder`
+2. For each year, keep the country with the highest GDP per capita
+3. sort by year
+
+```{r, eval = FALSE, echo = FALSE}
+# 1. Start with `gapminder`
+# 2. For each year, keep the country with the highest GDP per capita
+# 3. sort by year
+library("gapminder")
+
+gapminder %>%
+  group_by(year) %>%
+  filter(gdpPercap == max(gdpPercap)) %>%
+  arrange(year)
+```
+
+
+
+---
+
+## Printing the results of a chain
+
+```{r}
+# results don't print when you make new object
+just_WI <- midwest %>%
+  filter(state == "WI")
+
+# But they do with print()
+just_WI <- midwest %>%
+  filter(state == "WI") %>%
+  print()
+```
+
+
+
+---
+
+### When data aren't the first argument?
+
+```{r}
+# linear relationship between poverty (y) and education (x)
+lm(percelderlypoverty ~ percollege, data = midwest)
+```
+
+--
+
+```{r }
+# use a period to stand in for the piped data
+midwest %>%
+  lm(percelderlypoverty ~ percollege, data = .)
+```
+
+
+
+---
+
+## Tips for pipes
+
+.pull-left[
+
+- Not necessary if just one function
+
+- Break multiple functions across lines
+
+- Indent functions (two spaces)
+
+- Write full chain *before* creating new object
+
+- Test chain line-by-line while writing
+
+- Tidyverse [flipbook](https://evamaerey.github.io/tidyverse_in_action/tidyverse_in_action.html) by Gina Reynolds
+
+- Need variables out of a data frame? Check out `pull()` or `%$%` from the `magrittr` package
+
+]
+
+.pull-right[
+```{r, out.width = "70%", echo = FALSE}
+include_graphics(here(img, "not-a-pipe.jpg"))
+```
+]
+
+
+---
+
+class: inverse, middle, center
+
+## Enjoy your new powers
+
+Practice on your first exercise! 
+
+Exercises due *before class* Wednesday. Late work NOT ACCEPTED!
+
+
+<!-- Get on Twitter
+
+<center>
+  <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/StableMarkets?ref_src=twsrc%5Etfw">@StableMarkets</a> will know</p>&mdash; Savage Jim (@jim_savage_) <a href="https://twitter.com/jim_savage_/status/1099666900685127680?ref_src=twsrc%5Etfw">February 24, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
+<center>
+  <blockquote class="twitter-tweet" data-conversation="none"><p lang="en" dir="ltr">1/n Yeah this is my jam. Thanks for the tag <a href="https://twitter.com/jim_savage_?ref_src=twsrc%5Etfw">@jim_savage_</a> . Here&#39;s some tips for learning BNP. 1) imo FNBI by Ghosal (linked by <a href="https://twitter.com/lauretig?ref_src=twsrc%5Etfw">@lauretig</a> below) is only good once you have implementation-level knowledge of BNP already and want to fill in theoretical gaps in knowledge.</p>&mdash; Arman Oganisian (@StableMarkets) <a href="https://twitter.com/StableMarkets/status/1099673836243611648?ref_src=twsrc%5Etfw">February 24, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
+
+- Hadley
+- Jenny Bryan
+- Mara Averick
+- Gina Reynolds
+- Dave Robinson
+- Kareem Carr
+- Emi Tanaka
+- Rladies
+
+
+
+
+ -->

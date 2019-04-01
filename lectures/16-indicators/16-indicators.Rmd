@@ -1,0 +1,907 @@
+---
+title: "Indicators and Interactions"
+subtitle: '(Categorical Variables in Regression)'
+author: "Understanding Political Numbers"
+date: "March 25, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "16-indicators", "16-indicators.Rmd"))
+# knitr::purl(here::here("lectures", "16-indicators", "16-indicators.Rmd"), output = here::here("R", "lecture_indicators.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "16_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/16-indicators/img"
+```
+
+class: inverse, middle, center
+
+
+# While you were gone...
+
+
+---
+
+background-image: url(img/matt.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/all-three.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/roman-tfw.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/roman-big-boy.jpg)
+background-color: #000000
+background-size: contain
+
+---
+
+background-image: url(img/roman-burp-down.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/erin-spencer.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/sams.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/trio-close.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+
+---
+
+background-image: url(img/murphy.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/johanna.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+
+---
+
+class: inverse, middle, center
+
+# Research Questions
+
+---
+
+class: middle, center
+
+## Only *one* $y$ variable, multiple $x$ variables
+
+
+---
+
+
+## Selecting on the Dependent Variable
+
+
+.left-code[
+
+Selecting cases that meet some criteria, and using *only* those cases as evidence for the criteria
+
+**Instead,** we need variation in both $x$ and $y$ (or we can't study the relationship)
+]
+
+--
+
+.pull-right[
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "nyt.png"))
+```
+
+]
+
+
+
+
+
+
+---
+
+class: middle
+
+.left-column[
+**Ecological Inference Fallacy**
+
+Assuming that group-level patterns apply to individuals within the group
+]
+
+
+.right-column[
+```{r, echo = FALSE, out.width = "65%"}
+include_graphics(here(img, "ecological.png"))
+```
+]
+
+
+
+---
+
+
+
+## Confounders
+
+.left-code[
+
+```{r, include = FALSE}
+confound_data <- 
+  tibble(U = rnorm(200, 0, 1),
+         error_x = rnorm(200, 0, 1),
+         error_y = rnorm(200, 0, 1))
+```
+
+
+```{r, echo = TRUE}
+# X = f(U) and Y = f(U)
+# but Y ≠ f(X)
+confound_data <- confound_data %>%
+  mutate(
+    X = 2 + (3*U) + error_x, 
+    Y = 1 + (2*U) + error_y
+  ) %>%
+  select(-starts_with("error")) %>%
+  print()
+```
+]
+
+--
+
+.right-plot[
+```{r plot-confound, out.width = "90%", fig.width = 5, fig.height = 4}
+ggplot(data = confound_data, aes(x = X, y = Y)) +
+  geom_point() +
+  labs(title = "X and Y are not actually related",
+       subtitle = "But both are affected by U") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank())
+  
+```
+]
+
+
+
+---
+
+class: middle, center
+
+## Proof-read better
+
+
+---
+
+class: inverse, middle, center
+
+# Indicators
+
+
+
+
+
+---
+
+class: center, middle
+
+### Multiple regression
+
+\begin{align}
+  y = \alpha + \beta_{1} x_{1} + \beta_{2} x_{2} + \beta_{3} x_{3} + \ldots + \epsilon
+\end{align}
+
+
+
+
+---
+
+## DW-Nominate
+
+.left-code[
+Ideological scaling method from *roll call votes*
+
+-1 (left/"liberal") to +1 (right/conservative)
+]
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "nominate-senate.png"))
+```
+]
+
+
+
+
+---
+
+class: middle
+
+```{r read-data, echo = FALSE, include = FALSE}
+library("tidyverse")
+library("here")
+library("broom")
+
+# read House elections/ideology data
+house <- read_csv(here("data", "house-ideology.csv")) %>%
+  print()
+```
+
+
+```{r, fig.width = 6, fig.height = 5, out.width = "60%"}
+blank_labelled <- 
+  ggplot(data = house, aes(x = rep_pvote, y = nominate_dim1)) +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_vline(xintercept = 0.5, color = "gray") +
+  labs(x = "District GOP Presidential Vote",
+       y = "NOMINATE Score") +
+  coord_cartesian(xlim = c(0, 1),
+                  ylim = c(-1, 1)) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  annotate(geom = "text", x = 0.25, y = -1, vjust = 0,
+           label = "Democratic Districts", family = "Source Sans Pro",
+           color = dblue) +
+  annotate(geom = "text", x = 0.75, y = -1, vjust = 0,
+           label = "Republican Districts", family = "Source Sans Pro",
+           color = rred) +
+  annotate(geom = "text", x = 0, y = -0.5, angle = 90,
+           label = "Liberal\nMembers", family = "Source Sans Pro",
+           color = dblue) +
+  annotate(geom = "text", x = 0, y = 0.5, angle = 90,
+           label = "Conservative\nMembers", family = "Source Sans Pro",
+           color = rred)
+
+blank_labelled
+```
+
+
+---
+
+## Elections data
+
+```{r read-data, echo = TRUE}
+```
+
+
+
+---
+
+## Nominate as $f(\text{presidential vote})$
+
+.pull-left[
+```{r dumb-reg, echo = TRUE}
+# estimate the linear model 
+# lm(y ~ x, data = dataset)
+house_reg <- lm(nominate_dim1 ~ rep_pvote, 
+                data = house)
+
+# intercept and slope estimates
+tidy(house_reg)
+```
+
+
+<br> 
+
+\begin{align}
+  \hat{\mathtt{Nom}} &= 
+    `r round(coef(house_reg)[1], 2)` + 
+    `r round(coef(house_reg)[2], 2)` \left( \mathtt{Pres.Vote} \right)  
+\end{align}
+
+
+]
+
+--
+
+.pull-right[
+
+```{r dumb-plot-empty, echo = FALSE, fig.show = 'asis', fig.height = 4, fig.width = 5, out.width = "100%"}
+blank_line <- blank_labelled + 
+  geom_smooth(method = "lm", color = "black", size = 0.5) 
+
+blank_line
+```
+
+]
+
+
+
+
+
+---
+
+## Nominate as $f(\text{presidential vote})$
+
+
+.pull-left[
+```{r dumb-reg, echo = TRUE}
+```
+
+
+<br> 
+
+\begin{align}
+  \hat{\mathtt{Nom}} &= 
+    `r round(coef(house_reg)[1], 2)` + 
+    `r round(coef(house_reg)[2], 2)` \left( \mathtt{Pres.Vote} \right)  
+\end{align}
+
+
+]
+
+
+.pull-right[
+
+```{r dumb-plot-pts, echo = FALSE, fig.show = 'asis', fig.height = 4, fig.width = 5, out.width = "100%"}
+blank_line +
+  geom_point(color = "white", shape = 21,
+             aes(fill = party),
+             show.legend = FALSE) +
+  scale_fill_manual(values = c("Democrat" = dblue,
+                               "Republican" = rred))
+```
+
+]
+
+
+---
+
+## Control for party (using indicator/dummy variable)
+
+--
+
+```{r make-dummy, echo = TRUE, results = 'hide'}
+# new_variable = case_when(if condition ~ result if TRUE,
+#                          if condition2 ~ result if TRUE)
+house <- house %>%
+  mutate(republican = case_when(party == "Republican" ~ 1,
+                                party == "Democrat" ~ 0)) %>%
+  print()
+```
+
+--
+
+```{r make-dummy, echo = FALSE}
+```
+
+---
+
+## Estimate new regression
+
+```{r, echo = TRUE}
+# use `+` to add additional predictors
+reg_party <- lm(nominate_dim1 ~ rep_pvote + republican,
+                data = house)
+
+tidy(reg_party)
+```
+
+--
+
+**Remember... coefficients are "rise over run"**
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+```{r}
+party_const <- coef(reg_party)[1] %>% round(3)
+party_vote <- coef(reg_party)[2] %>% round(3)
+party_rep <- coef(reg_party)[3] %>% round(3)
+rep_int <- party_const + party_rep
+```
+
+
+
+
+--
+
+\begin{align}
+  \hat{y} &= a + b_{1}\left(\mathrm{Pres.Vote}\right) + b_{2}\left(\mathrm{Republican}\right)
+\end{align}
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v + `r party_rep`R
+\end{align}
+
+
+
+--
+
+
+
+If the member is a **Democrat**?
+
+--
+
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v + `r party_rep`\left(\mathbf{R = 0}\right)
+\end{align}
+
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v
+\end{align}
+
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+\begin{align}
+  \hat{y} &= a + b_{1}\left(\mathrm{Pres.Vote}\right) + b_{2}\left(\mathrm{Republican}\right)
+\end{align}
+
+
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v + `r party_rep`R
+\end{align}
+
+
+
+If the member is a **Republican**?
+
+--
+
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v + `r party_rep`\left(\mathbf{R = 1 }\right)
+\end{align}
+
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v + `r party_rep`
+\end{align}
+
+
+
+--
+
+\begin{align}
+  \hat{y} &= \left(`r party_const` + `r party_rep`\right) +  `r party_vote`v 
+\end{align}
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r rep_int` +  `r party_vote`v 
+\end{align}
+
+
+
+
+---
+
+## Dummy variables *shift the intercept*
+
+--
+
+.pull-left[
+
+Democratic line:
+\begin{align}
+  \hat{y} &= `r party_const` + `r party_vote`v
+\end{align}
+
+Republican line:
+\begin{align}
+  \hat{y} &= (`r party_const` + `r party_rep`) +  `r party_vote`v 
+\end{align}
+
+Controlling for the voting behavior in the district, Republicans are ** $`r party_rep`$ points** more conservative than Democrats (on average)
+
+**Always leave one category "omitted"**
+
+]
+
+
+.pull-right[
+
+```{r dummy-plot, echo = FALSE, fig.show = 'asis', fig.height = 4, fig.width = 5, out.width = "100%"}
+
+ggplot(data = house, aes(x = rep_pvote, y = nominate_dim1)) +
+  geom_point(color = "white", shape = 21,
+             aes(fill = party),
+             show.legend = FALSE) +
+  # manually set fill colors
+  scale_fill_manual(values = c("Democrat" = dblue, "Republican" = rred)) +
+  # draw dashed gray lines (that go on forever)
+  geom_abline(color = "gray", linetype = "dashed",
+              intercept = rep_int, slope = party_vote) +
+  geom_abline(color = "gray", linetype = "dashed",
+              intercept = party_const, slope = party_vote) +
+  # draw dark lines
+  geom_line(data = filter(house, republican == 1),
+            aes(y = rep_int + party_vote*rep_pvote)) +
+  geom_line(data = filter(house, republican == 0),
+            aes(y = party_const + party_vote*rep_pvote)) +
+  # cleaning things up
+  labs(x = "District GOP Presidential Vote",
+       y = "NOMINATE Score") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(-1, 1)) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1))
+```
+
+]
+
+
+---
+
+## The "omitted category"
+
+Dummy variables are intercept shifts *relative to baseline*, where baseline = omitted category
+
+--
+
+.pull-left[
+```{r, echo = TRUE}
+# car data contain 4, 6, and 8 cylinder engines
+mtcars <- mtcars %>%
+  mutate(four_cyl = case_when(cyl == 4 ~ 1,
+                              cyl != 4 ~ 0),
+         six_cyl = case_when(cyl == 6 ~ 1, 
+                             cyl != 6 ~ 0),
+         eight_cyl = case_when(cyl == 8 ~ 1, 
+                               cyl != 8 ~ 0))
+
+lm(mpg ~ six_cyl + eight_cyl, data = mtcars)
+```
+]
+
+--
+
+.pull-right[
+```{r, fig.width = 5, fig.height = 4, out.width = "100%"}
+coefs <- lm(mpg ~ -1 + as.factor(cyl), data = mtcars) %>%
+  tidy(conf.int = TRUE)
+
+ggplot(data = coefs, aes(x = term, y = estimate)) +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  labs(x = NULL, y = "Mpg") +
+  scale_x_discrete(labels = c("Four Cyl", "Six Cyl", "Eight Cyl"))
+```
+]
+
+
+---
+
+## When to use indicators?
+
+Categorical data: What's the average effect of *group membership*? (regime type, gender, race/ethnicity, UNSC member)
+
+Ordinal data: not sure if linear (education/income brackets)
+
+Policy change: is policy enacted (`strict_photo_id == 1` or `strict_photo_id == 0`)
+
+Small number of time periods: before and after (`year_2016 == 1` or `year_2016 == 0`)
+
+
+
+
+
+
+
+---
+
+## Dummies for *varying slopes*
+
+Maybe one party is *more responsive* to district voting?
+
+How? Use an **Interaction term**
+
+--
+
+\begin{align}
+  \mathrm{Nom} &= \alpha + \beta_{1}(\mathrm{PresVote}) + \beta_{2}(\mathrm{Republican}) + \beta_{3}(\mathrm{PresVote \times Republican}) + \varepsilon
+\end{align}
+
+--
+
+```{r, echo = TRUE}
+house <- house %>%
+  mutate(interact_vote_rep = rep_pvote * republican) 
+
+interact_reg <- lm(nominate_dim1 ~ rep_pvote + republican + interact_vote_rep,
+                   data = house)
+```
+
+
+---
+
+\begin{align}
+  \hat{\mathrm{Nom}} &= a + b_{1}(\mathrm{PresVote}) + b_{2}(\mathrm{Republican}) + b_{3}(\mathrm{PresVote \times Republican})
+\end{align}
+
+```{r, echo = TRUE}
+tidy(interact_reg)
+```
+
+
+```{r}
+idem_int <- coef(interact_reg)[1] %>% round(2)
+idem_vote <- coef(interact_reg)[2] %>% round(2)
+irep_int <- coef(interact_reg)[3] %>% round(2)
+irep_vote <- coef(interact_reg)[4] %>% round(2)
+```
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int`R + `r irep_vote`(v \times R)
+\end{align}
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+\begin{align}
+  \hat{\mathrm{Nom}} &= a + b_{1}(\mathrm{PresVote}) + b_{2}(\mathrm{Republican}) + b_{3}(\mathrm{PresVote \times Republican})
+\end{align}
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int`R + `r irep_vote`(v \times R)
+\end{align}
+
+
+
+If the member is a **Democrat**?
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int`(0) + `r irep_vote`(v \times 0)
+\end{align}
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int`(0) + `r irep_vote`(0)
+\end{align}
+
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v
+\end{align}
+
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+\begin{align}
+  \hat{\mathrm{Nom}} &= a + b_{1}(\mathrm{PresVote}) + b_{2}(\mathrm{Republican}) + b_{3}(\mathrm{PresVote \times Republican})
+\end{align}
+
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int`R + `r irep_vote`(v \times R)
+\end{align}
+
+
+
+If the member is a **Republican**?
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int`(1) + `r irep_vote`(v \times 1)
+\end{align}
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v + `r irep_int` + `r irep_vote`v
+\end{align}
+
+--
+
+Simplify again!
+
+
+--
+
+\begin{align}
+  \hat{y} &= (`r idem_int` + `r irep_int`) + (`r idem_vote` + `r irep_vote`)v
+\end{align}
+
+
+
+--
+
+\begin{align}
+  \hat{y} &= `r idem_int + irep_int` + `r idem_vote + irep_vote`v
+\end{align}
+
+
+---
+
+## Dummy variables *shift the intercept*, and interactions *shift the slope*
+
+.pull-left[
+Democratic line:
+\begin{align}
+  \hat{y} &= `r idem_int` + `r idem_vote`v
+\end{align}
+
+
+Republican line:
+\begin{align}
+  \hat{y} &= `r idem_int + irep_int` + `r idem_vote + irep_vote`v
+\end{align}
+
+Republicans are *slightly* more responsive, but not statistically significant $p = `r interact_reg %>% tidy() %>% filter(term == "interact_vote_rep") %>% pull(p.value) %>% round(2)`$ 
+]
+
+.pull-right[
+```{r, echo = FALSE, fig.show = 'asis', fig.height = 4, fig.width = 5, out.width = "100%"}
+ggplot(data = house, aes(x = rep_pvote, y = nominate_dim1)) +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_vline(xintercept = 0.5, color = "gray") +
+  labs(x = "District GOP Presidential Vote",
+       y = "NOMINATE Score") +
+  coord_cartesian(xlim = c(0, 1),
+                  ylim = c(-1, 1)) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  geom_point(color = "white", shape = 21,
+             aes(fill = party),
+             show.legend = FALSE) +
+  scale_fill_manual(values = c("Democrat" = dblue,
+                               "Republican" = rred)) +
+  # draw dashed gray lines (that go on forever)
+  geom_abline(color = "gray", linetype = "dashed",
+              intercept = idem_int, slope = idem_vote) +
+  geom_abline(color = "gray", linetype = "dashed",
+              intercept = idem_int + irep_int, slope = idem_vote + irep_vote) +
+  # draw dark lines
+  geom_line(data = filter(house, republican == 1),
+            aes(y = (idem_int + irep_int) + ((irep_vote + idem_vote)*rep_pvote))) +
+  geom_line(data = filter(house, republican == 0),
+            aes(y = idem_int + idem_vote*rep_pvote))
+```
+]
+
+
+
+
+---
+
+# Looking ahead
+
+For today: 
+
+- Assigned reading (GOTV)
+- Download lecture, code, and data (later today)
+
+For Wednesday:
+
+- Assigned videos on LOGARITHMS
+- Essay 2 is **incoming**
+
+Next week:
+
+- Data due Monday
+- **Ask us for help**

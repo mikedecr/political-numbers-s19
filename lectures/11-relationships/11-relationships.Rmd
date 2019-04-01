@@ -1,0 +1,430 @@
+---
+title: "Understanding Relationships"
+subtitle: 'as "Conditional Expectations"'
+author: "Understanding Political Numbers"
+date: "Feb 27, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+# knitr::purl(here::here("lectures", "10-piping", "10-piping.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+# library("boxr"); box_auth()
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "11_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/11-relationships/img"
+
+# library("viridis")
+options(scipen = 99999)
+library(png)
+library(grid)
+library(gridExtra)
+```
+
+
+# Agenda
+
+Exercise 1
+
+Relationship therapy
+
+Exercise...2!
+
+
+
+
+---
+
+# Data sources
+
+[DIME](https://data.stanford.edu/dime): campaign contributors and recipients
+
+[US Census](https://factfinder.census.gov/faces/nav/jsf/pages/index.xhtml), [BLS](https://www.bls.gov/data/)
+
+[Polity](http://www.systemicpeace.org/polity/polity4.htm): Political regimes
+
+[Correlates of War](http://www.correlatesofwar.org/): conflict, MIDs, alliances, trade flows, diplomacy
+
+[IMF](https://www.imf.org/en/Research/commodity-prices), [World Bank](https://data.worldbank.org/), [OECD](https://stats.oecd.org/qwids/): World economic and development data
+
+
+???
+
+- individuals, candidates, party organizations, PACs, 
+  - president, Congress, governors, judges, state legislators
+
+
+
+---
+
+class: inverse, middle, center
+
+# Exercise 1
+
+---
+
+class: center
+
+.pull-left[
+```{r, out.width = "80%"}
+include_graphics(here(img, "googling.png"))
+```
+]
+
+.pull-right[
+```{r, out.width = "80%"}
+include_graphics(here(img, "changing.png"))
+```
+]
+
+**Practice (and modify) old material. Write fresh code. Use notes and internet.**
+
+
+???
+
+- The pain is the learning
+  - If you feel confused, it is only because you are trying to understand
+- it should have been a grind but made sense at the end
+  - you should notice it coming together somewhat
+- 
+
+
+
+- The expectation is that this is a bit of a grind at first, but it makes sense by the end
+- if you feel like it isn't making sense, keep practicing the material we've given you so far
+  - don't just run code, type it out yourself
+  - try to modify code to see what it does
+  - try to re-create things using different data
+- Or, check out the materials that are in the syllabus
+  - I picked those out because they are companions to the things we're learning about in class
+  - Maybe they explain something in some way that you find more helpful
+
+
+---
+
+class: inverse, middle, center
+
+# Relationships
+
+
+---
+
+# $X$ and $Y$
+
+.left-code[
+As $x$ increases, $y$ does what?
+
+Does $y$ change when $x$ changes?
+]
+
+.right-plot[
+```{r midwest-1, out.width = "80%", fig.height = 4, fig.width = 5}
+mwplot_1 <- 
+  ggplot(midwest, aes(x = percollege, y = percbelowpoverty)) +
+  geom_point(color = "steelblue") +
+  labs(title = "College Education and Poverty",
+       subtitle = "Data from Midwestern Counties",
+       x = "Percent College Educated",
+       y = "Percent Below Poverty Line")
+
+mwplot_1
+```
+]
+
+
+---
+
+# $X$ and $Y$
+
+.left-code[
+As $x$ increases, $y$ does what?
+
+Does $y$ change when $x$ changes?
+]
+
+.right-plot[
+```{r midwest-2, out.width = "80%", fig.height = 4, fig.width = 5}
+mwplot_1 + geom_smooth(color = "black") 
+```
+]
+
+
+
+
+
+---
+
+## Positive and Negative Relationships
+
+```{r, fig.width = 6, fig.height = 4, out.width = "60%"}
+tibble(X = rnorm(100, 0, 1),
+       Positive = X + rnorm(100, 0, 1),
+       Negative = -X + rnorm(100, 0, 1)) %>%
+  gather(key = direction, value = Y, Positive, Negative) %>%
+  mutate(direction = fct_rev(direction)) %>%
+  ggplot(aes(x = X, y = Y)) +
+    geom_point(color = "steelblue") +
+    geom_smooth(color = "black", method = "lm") +
+    facet_wrap(~ direction)
+```
+
+
+
+---
+
+### Relationships among Categorical Variables
+
+.left-code[
+```{r profs, fig.show = 'hide', echo = TRUE}
+prof_degrees <- midwest %>%
+  group_by(state, inmetro) %>%
+  summarize(prof = mean(percprof)) %>%
+  mutate(
+    metro = ifelse(inmetro == 1, 
+                   "Metro Area", 
+                   "Non-Metro Area")
+  )
+
+ggplot(prof_degrees, 
+       aes(x = state, y = prof)) +
+  geom_point(aes(shape = metro), 
+             size = 2.5, 
+             fill = "white") +
+  scale_shape_manual(
+    values = c(16, 21)
+  ) + 
+  coord_cartesian(ylim = c(0, 8)) +
+  labs(x = "State", 
+       y = "Pct w/ Prof. Degree",
+       shape = NULL)
+```
+]
+
+.right-plot[
+```{r profs, out.width = "80%", fig.height = 5, fig.width = 6}
+```
+]
+
+
+
+
+---
+
+class: inverse, middle, center
+
+## A Mathematical Language for Relationships
+
+---
+
+class: center, middle
+
+## $\mathrm{E}\left[ Y \right]$
+
+
+
+???
+
+Review intuition of expectation
+
+
+
+---
+
+class: center, middle
+
+## $\mathrm{E}\left[ Y \mid X \right]$
+
+
+"Expected $Y$, given $X$"
+
+
+
+---
+
+## $\mathrm{E}\left[ Y \mid X \right]$
+
+
+.left-code[
+Relationship means the expectation is changing
+
+- Within sample: almost always some non-zero relationship
+- Inference to the population: an we infer that our expectation should change in the real world?
+]
+
+.right-plot[
+```{r, out.width = "90%", fig.height = 4, fig.width = 5}
+tibble(x = rnorm(100, 0, 1),
+       y = 0.5*x + rnorm(100, 0, 1)) %>%
+  ggplot(aes(x, y)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+```
+]
+
+
+
+
+
+---
+
+class: center, middle
+
+## Independence (no relationship)
+
+### $\mathrm{E}\left[Y\right] = \mathrm{E}\left[ Y \mid X \right]$
+
+#### "Knowing $X$ doesn't affect my expectation of $Y$"
+
+
+???
+
+Every $y$ value corresponds to an $x$
+
+- $y$ has some expected value
+- does knowing $x$ change what we expect out of $y$?
+
+
+
+
+---
+
+class: center, middle
+
+## Dependence
+
+### $\mathrm{E}\left[Y\right] \neq \mathrm{E}\left[ Y \mid X \right]$
+
+#### "Knowing $X$ would change my expectation of $Y$"
+
+
+
+
+---
+
+## Correlation
+
+```{r out.width = "60%"}
+include_graphics(here(img, "rvals.png"))
+```
+
+
+
+---
+
+## Common relationships
+
+```{r, out.width = "100%", fig.width = 10, fig.height = 2.5}
+rels <- tibble(
+  x = seq(-4, 4, .01),
+  linear = 0.6 * x,
+  polynomial = -2 + x - x^2,
+  logarithmic = log(x),
+  exponential = exp(x),
+  logistic = plogis(x)
+) %>%
+  gather(key = form, value = y, -x) %>%
+  mutate(form = fct_relevel(form, "linear", "polynomial", "exponential", "logarithmic", "logistic"))
+
+ggplot(rels, aes(x, y)) +
+  facet_wrap(~ form, scales = "free",
+             nrow = 1) +
+  geom_line(color = "steelblue")
+```
+
+
+<!-- Use math:
+  linear, 
+  logarithmic, 
+  exponential, 
+  polynomial, 
+  logistic -->
+
+
+
+---
+
+# Finding $y_{i}$
+
+.pull-left[
+$y_{i} = a + bx_{i} + e_{i}$
+
+- Every observation $i$ has an $x_{i}$ and $y_{i}$
+
+- The line ( $a + bx_{i}$ ) is our *prediction* for $y_{i}$
+
+- The "residual" $e_{i}$ is the error between actual and predicted $y_{i}$
+]
+
+.pull-right[
+```{r, fig.height = 3.5, fig.width = 4, out.width = "100%"}
+set.seed(123)
+
+lmdata <- tibble(x = rnorm(100, 2, 1),
+       y = x + rnorm(100, 0, 1)) %>%
+  lm(y ~ x, data = .) %>%
+  broom::augment()
+
+ggplot(lmdata, aes(x, y)) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_line(aes(y = .fitted), color = "maroon") +
+  geom_linerange(aes(ymin = .fitted, ymax = .fitted + .resid),
+                 linetype = "dotted") +
+  geom_point(shape = 21, fill = "gray") 
+```
+]
+
+
+---
+
+#  Next week
+
+on Monday: *linear regression*
+
+- How do we estimate a "line of best fit"
+
+on Wednesday: *statistical significance*
+
+- How do we conclude that relationships are "real" or just noise?
+
+
+
+<!-- parse_number -->
+<!-- geom_abline -->
+<!-- logicals -->

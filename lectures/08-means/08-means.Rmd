@@ -1,0 +1,894 @@
+---
+title: "Averages, Expectation, Aggregation"
+# subtitle: '(the "signal")'
+author: "Understanding Political Numbers"
+date: "Feb 18, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+# knitr::purl(here::here("lectures", "08-means", "08-means.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+# library("boxr"); box_auth()
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = TRUE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "08_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/08-means/img"
+
+library("viridis")
+```
+
+
+### Learning ggplot
+
+```{r, out.width = "60%", echo = FALSE}
+include_graphics(here(img, "owl.jpg"))
+```
+
+
+---
+
+# (Spooky voice) *Statistiiiiiiiics*
+
+This week: "the signal and the noise"
+
+- Today: Means
+- Wednesday: Variance
+
+In section: major tidyverse functions
+
+Questions about exercise 1?
+
+
+???
+
+- elements of statistical reasoning
+- data are noisy, how do we think about breaking through the noise to learn something?
+
+
+
+---
+
+## Major functions in the tidyverse
+
+a.k.a. "verbs." They modify and return *data frames*
+
+```{r verbs, echo = FALSE, results = "asis"}
+verbs <- 
+  tribble(~Function, ~Operation,
+          "arrange()", "Sort data frame along variable(s)",
+          "select()", "Choose variables (columns) from a data frame",
+          "filter()", "Choose cases (rows) from a data frame",
+          "mutate()", "Create or modify variables",
+          "count()", "Tabulate variable(s) in a data frame",
+          "summarize()", "Calculate summary statistics from a data frame",
+          "group_by()", "Implicitly partition a data frame along variable(s)"
+          )
+
+kable(verbs, format = 'html')
+```
+
+???
+
+
+- Start with a data frame 
+- Manipulate the data frame with function
+- Result is a new data frame
+- output of any verb can be the input to another verb
+- string verbs together to make a data processing pipeline
+
+Nice because the function names are easy to interpret
+
+
+
+---
+
+## Arrange
+
+```{r, echo = TRUE}
+# load tidyverse and gapminder data
+library("tidyverse")
+library("gapminder")
+
+# With tidyverse verbs, the first argument is the data frame
+# Sort by year and then by continent.
+arrange(gapminder, year, continent)
+```
+
+
+---
+
+# Select variables
+
+```{r}
+# Which variables do I want to keep?
+# Again, first arg is the data frame name
+# (notice lack of $)
+select(gapminder, country, year, gdpPercap)
+```
+
+
+---
+
+# Filter observations
+
+```{r filtering, results = 'hide'}
+# Which cases (rows) do I want to keep?
+# filter(dataset, logical test)
+# keep rows where test result is TRUE
+filter(gapminder, country == "United States")
+```
+
+.left-code[
+Logical operators:
+
+- `==` means "is equal to"
+- `!=` means "not equal to"
+- `>` and `<` mean "greater/less than"
+- `>=` and `<=` are "greater than/less than or equal to"
+
+Combine logical tests with `&`  (and) or `|` (or)
+
+- `filter(gapminder, country == "United States" & year > 2000)`
+]
+
+.right-plot[
+```{r filtering, echo = FALSE}
+```
+]
+
+---
+
+# Create variables with "mutate"
+
+```{r}
+# mutate(dataframe, new_variable = (whatever you want))
+mutate(gapminder, 
+       gdp = gdpPercap * pop)
+```
+
+
+---
+
+# Count (or tabulate)
+
+```{r}
+# tabulate variable(s) with count().
+# Again... result is a DATA FRAME
+count(gapminder, continent, year)
+```
+
+???
+
+I could save this result and use it to make a ggplot
+
+- of counties per continent per year
+
+
+---
+
+# Summarize variables
+
+```{r}
+# New data frame of summary calculations
+# Use na.rm = TRUE to skip missing values when calculating summary stats
+summarize(gapminder, 
+          mean_lifeexp = mean(lifeExp),
+          min_lifeexp = min(lifeExp),
+          max_lifeexp = max(lifeExp, na.rm = TRUE))
+```
+
+---
+
+# Group data by variables
+
+```{r}
+# partition data into groups. Pretty benign when used alone
+group_by(gapminder, continent) 
+```
+
+
+---
+
+# Group and summarize
+
+.pull-left[
+```{r}
+# the `<-` scans the next line
+gap_by_continent <- 
+  group_by(gapminder, continent) 
+
+summarize(gap_by_continent, 
+          mean_life = mean(lifeExp))
+```
+]
+
+
+.pull-right[
+```{r}
+# Because result of group_by() is a data frame,
+#  you could pass result directly to summarize
+summarize(group_by(gapminder, continent),
+          mean_life = mean(lifeExp))
+```
+]
+
+
+
+---
+
+class: inverse, middle, center
+
+# Averages
+
+
+---
+
+### Question: do women vote for Democrats more than men do?
+
+.left-code[
+Break the question down: 
+
+1. What's the *average* rate of Democratic voting among women?
+2. Among men?
+3. How different are they?
+]
+
+
+???
+
+Not just asking one man and one woman
+
+- not just asking my friends
+
+Statistics is important to assess the strength of the difference
+
+- data are noisy, as you can see by all the wobbling around
+- maybe these differences are actually random?
+
+--
+
+.right-plot[
+```{r anes, echo = FALSE}
+anes <- readRDS(here("data", "cleaned-anes-cdf.RDS"))
+```
+
+```{r calc-gender-gap, echo = FALSE}
+gap_tab <- anes %>%
+  filter(vote_choice %in% c("Dem Cand", "Rep Cand")) %>%
+  count(cycle, gender, vote_choice, wt = wt) %>%
+  group_by(cycle, gender) %>%
+  mutate(p = n / sum(n)) %>%
+  ungroup() %>%
+  mutate(gender = ifelse(gender == "M", "Men", "Women")) %>%
+  filter(vote_choice == "Dem Cand")
+```
+
+
+```{r plot-gender-gap, echo = FALSE, fig.width = 5, fig.height = 3.5, out.width = "100%"}
+ggplot(gap_tab, aes(x = cycle, y = p, color = gender)) +
+    geom_line(show.legend = FALSE) +
+    geom_point(aes(shape = gender), show.legend = FALSE, 
+               fill = "white", size = 3) +
+    labs(x = NULL, 
+         y = "Percent Vote for\nDemocratic Ticket",
+         color = NULL,
+         title = "The Gender Gap in Voting",
+         subtitle = "Presidential Elections 1952–2016",
+         caption = "Data: American National Election Study") +
+    scale_color_viridis(discrete = TRUE, begin = 0.2, end = 0.65) +
+    scale_shape_manual(values = c("Men" = 22, "Women" = 19)) +
+    scale_x_continuous(breaks = seq(1952, 2016, 12)) +
+    scale_y_continuous(labels = percent_format(accuracy = 1)) +
+    annotate("text", size = 3.5, x = 2010, y = 0.63, label = "Women") + 
+    annotate("text", size = 3.5, x = 2002, y = 0.43, label = "Men")
+```
+]
+
+
+
+---
+
+### Question: is voter turnout higher among older voters?
+
+```{r read-cces, echo = FALSE}
+cces_raw <- haven::read_dta(here("data", "cces_common_cumulative_4.dta"))
+```
+
+
+```{r age-tab, echo = FALSE}
+# voted: gen_validated
+# age: age
+cces <- cces_raw %>%
+  mutate(voted = case_when(gen_validated == 1 ~ 1,
+                           gen_validated %in% c(3, 7, 6, 8) ~ as.numeric(NA),
+                           TRUE ~ 0))
+```
+
+.left-code[
+As a comparison of averages: 
+
+- Average turnout among older voters
+- Among younger voters
+- with a twist: age is continuous(ish)
+]
+
+
+
+???
+
+Can't just compare young to old
+
+- there is a smooth transition from young to old
+
+Does the average level of turnout *increase* as age increases
+
+Stability of the pattern
+
+- Signal and noise: if noise is *random* then it cancels out when averaging 
+- Think about it: if $(n)$-year olds are just a little different from $(n+1)$-year-olds, then you shouldn't be surprised to find only slight differences from one year to the next
+- over time these differences accumulate, but comparing 29 year olds to 30  year olds, not that different
+
+
+
+--
+
+
+
+.right-plot[
+```{r plot-age, echo = FALSE, out.width = "100%", fig.width = 5, fig.height = 4}
+cces %>%
+  filter(year == 2010) %>%
+  group_by(age) %>%
+  count(voted, wt = weight) %>%
+  filter(is.na(voted) == FALSE) %>%
+  mutate(p = n / sum(n)) %>%
+  filter(voted == 1) %>%
+  filter(age <= 90) %>%
+  ggplot(aes(age, p)) +
+    geom_point(aes(size = n), color = "black", fill = "steelblue", shape = 21, show.legend = FALSE) +
+    # geom_smooth(method = "lm", formula = y ~ poly(x, 2), 
+    #             fill = "steelblue", color = "maroon") +
+    labs(title = "Age and Turnout in 2010",
+         subtitle = "Points are average turnout per age group",
+         x = "Age (years)",
+         y = "Percent Turnout (Validated)",
+         caption = "Data: Cooperative Congressional Election Study") +
+    scale_y_continuous(labels = percent_format(accuracy = 1))
+```
+]
+
+
+
+
+---
+
+class: middle, center
+
+# Averages are useful because they tell us about the *typical* behavior in the data
+
+Practically & Ethically: individuals ≠ averages
+
+
+???
+
+statistics, very interested in the average
+
+- there's variation around the average, but we want to know the *tendency*
+
+Ethically this isn't always super simple
+
+- people aren't average
+- putting too much emphasis on somebody's group characteristics will erase their individuality
+- a lot of the time, the grouping that you're looking at doesn't explain most of why somebody does something
+
+
+
+
+---
+
+### Averaging (the math)
+
+```{r, echo = FALSE}
+set.seed(123)
+x <- sample(1:20, 5)
+```
+
+$x = \begin{bmatrix} `r str_glue("{x}") %>% str_c(collapse = "\\quad") `\end{bmatrix}$.
+
+The average of $x$, we call $\bar{x}$.
+
+--
+
+\begin{align}
+  \bar{x} &= 
+    \frac{\sum\limits_{i = 1}^{n} x_{i}}{n} \\[18pt]
+  \bar{x} &= 
+    \frac{1}{n}\sum\limits_{i}^{n} x_{i}
+\end{align}
+
+
+
+???
+
+Factor out the 1/N
+
+
+
+--
+
+.pull-left[
+```{r}
+mean(x)
+```
+]
+.pull-right[
+```{r}
+sum(x) / length(x)
+```
+]
+
+
+???
+
+Just to reassure you that this is doing what you think it's doing
+
+
+---
+
+## Strategies for averaging different data types
+
+???
+
+Some data types are numeric and some are not
+
+- how do we calculate averages of non-numeric data types
+
+--
+
+.pull-left[
+Quantitative (interval and ratio) data
+
+```{r quant-avg}
+summarize(gapminder, 
+          avg_lifeexp = mean(lifeExp), 
+          avg_gdpPercap = mean(gdpPercap))
+```
+]
+
+--
+
+.pull-right[
+Categorical (nominal and ordinal) data
+
+```{r category-avg}
+# Proportion of data in continents.
+summarize(gapminder,
+          pr_afr = mean(continent == "Africa"),
+          pr_euro = mean(continent == "Europe"))
+```
+
+**If we have a vector of 1s and 0s ("successes" and "failures"), the mean is equal to the proportion of 1s (successes)**
+
+]
+
+
+???
+
+- proportions are analogous to averages
+- If we designate one category as a "1" and another category as a "0", the proportion is the mean
+
+
+
+---
+
+### Why we like averages: noise canceling out
+
+.pull-left[
+We flip a coin. 
+
+```{r}
+# make a coin vector
+coin <- c("Heads", "Tails")
+
+# "flip" the coin
+sample(coin, 1)
+```
+]
+
+--
+
+.pull-right[
+We flip it 5 times.
+
+```{r}
+# 'replace' means we put the coin back each time
+flips <- sample(coin, 5, replace = TRUE)
+
+# what's the proportion of heads?
+mean(flips == "Heads")
+```
+]
+
+
+---
+
+### Why we like averages: noise canceling out
+
+
+.left-code[
+Flip 100 times. After each flip, find proportion of heads *up to that point*
+
+Eventually this "running average" should approach what number?
+
+```{r, echo = FALSE}
+set.seed(123)
+
+trials <- 100
+
+coins <- tibble(trial = 1:100) %>%
+  mutate(flip = sample(coin, n(), replace = TRUE),
+         running_mean = cumsum(flip == "Heads") / trial) %>%
+  print()
+```
+
+]
+
+--
+
+.right-plot[
+```{r, echo = FALSE, fig.width = 6, fig.height = 4, out.width = "100%"}
+ggplot(coins, aes(x = trial, y = running_mean)) +
+  geom_hline(yintercept = 0.5, color = "black") +
+  geom_line(color = "maroon", size = 1) +
+  coord_cartesian(ylim = c(0, 1)) +
+  labs(y = "Proportion of Heads", 
+       x = "Trial",
+       title = "Long-run average of coin flips",
+       subtitle = TeX("...after $n$ trials")) +
+  annotate("text", x = 75, y = .25, 
+           label = "This is why MORE data\nis better") +
+  annotate("text", x = 60, y = .75, 
+           label = "If trials are independent,\nnoise cancels out with more data")
+```
+]
+
+
+
+---
+
+class: inverse, middle, center
+
+
+# Expectation
+
+
+---
+
+## Expectation
+
+
+The true / theoretical / long-run average
+
+
+???
+
+Suppose I had a random process that produced data
+
+- maybe a random process that determines how tall a person is
+- If I played that process out forever and created an infinite number of people
+- what's the long-run average height?
+
+
+--
+
+### Example: more coins
+
+Suppose that the variable $\mathbf{X}$ contains an *arbitrary number* of coin flips (1 = "Heads", 0 = "Tails").
+
+As the number of trials approaches $+\infty$, the mean of $\mathbf{X}$ approaches what value?
+
+--
+
+\begin{align}
+  \mathrm{E}[\mathbf{X}] = 0.5
+\end{align}
+
+Probabilities are one type of *expectation*, but not the only kind
+
+???
+
+You have a 50% change of a 1, 50% change of a 0, so average those things out, you get 0.5
+
+---
+
+## Another toy example: rolling a die
+
+Roll a six-sided die. What's the expected value?
+--
+
+It's **3.5**, why?
+
+--
+
+It's the "theoretical average."
+
+???
+
+Buckle up folks
+
+- not for memorizing
+- just to get an intuition
+
+--
+
+\begin{align}
+  \mathrm{E}[X] &= \sum\limits_{k = 1}^{K} x_{k}p_{k} \\
+  &= x_{1}p_{1} + x_{2}p_{2} + \ldots + x_{K}p_{K}
+\end{align}
+
+- $x_{k}$ represents a possible outcome
+- $p_{k}$ is the probability of outcome $k$
+- $K$ is the total number of possibilities
+
+--
+
+\begin{align}
+  \mathrm{E}[\mathrm{Die}] = \left(1 \times \frac{1}{6} \right) + \left(2 \times \frac{1}{6} \right)  + \ldots + \left(6 \times \frac{1}{6} \right) = 3.5
+\end{align}
+
+Expectation is a **weighted average of all possible outcomes** (each outcome weighted by its probability of occurrence)
+
+---
+
+## Why does this matter?
+
+The *theoretical average* influences the data we collect, but our data don't *perfectly reflect* the true expectation
+
+--
+
+.left-code[
+- Candidate A and B are running for Senate
+- TRUE support for Candidate A is 54%
+- "the population parameter" ( $\mu = 0.54$ )
+]
+
+--
+
+.right-plot[
+We take a survey of 500 voters
+
+```{r, echo = FALSE}
+set.seed(123)
+```
+
+```{r}
+# Voters support A or B randomly with given probabilities.
+# repeat 500x with replacement
+voters <- sample(c("A", "B"), prob = c(0.54, 1 - 0.54),
+                 size = 500, replace = TRUE)
+
+# what proportion of the sample is voting for A?
+mean(voters == "A")
+```
+]
+
+--
+
+**Expected value** (a.k.a. "population mean") is $\mu = 0.54$
+
+**Estimated value** (a.k.a. "sample mean") is $\bar{x} = `r mean(voters == "A")`$
+
+
+???
+
+You can never count on your data to be a 100% perfect reflection of the *real universal truth*
+
+- Process that create data are *noisy*, they are affected by random chance
+- The reason why we do statistics is to deal with the uncertainty in estimating the real world
+
+
+
+---
+
+## Taking a sample
+
+.left-code[
+We will never know the *true mean* ( $\mu$ ) with certainty.
+
+But we can take samples of data and calculate the *sample mean* ( $\bar{x}$ ) within the sample.
+]
+
+--
+
+.right-plot[
+```{r replicates, echo = FALSE, fig.width = 6, fig.height = 4, out.width = "100%"}
+set.seed(123)
+
+polls <- tibble(replicate = 1:100) %>%
+  group_by(replicate) %>%
+  mutate(sample_average = sample(c(1, 0), prob = c(.54, 1 - 0.54),
+                                 size = 500, replace = TRUE) %>%
+                          mean()) %>%
+  ungroup() 
+
+ggplot(polls, aes(x = replicate, y = sample_average)) +
+  geom_hline(yintercept = 0.54, color = "maroon") +
+  geom_point() +
+  labs(title = "Estimates from 100 independent polls",
+       subtitle = "Each with sample size of 500",
+       y = "Poll Estimate (Support for Candidate A)",
+       x = "Poll Number") +
+  coord_cartesian(ylim = c(0.45, 0.6)) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  geom_point(data = sample_n(polls, 1), shape = 21, fill = "red", size = 3)
+```
+]
+
+
+???
+
+- Each of these polls has the same "theoretical" accuracy
+- The only reason any of them is different is random chance
+- Some people answered the phone, other people didn't
+- Sometimes we're really close to the truth, sometimes we are really far
+- In the real world, we don't have the truth to compare to, nor do we have lots of datasets to compare side by side. We only have one data set. And we are unsure how accurate the data are.
+
+
+---
+
+class: center, middle
+
+# The whole point of statistics 
+
+## is to figure out how confident we can be about the *real truth*
+
+###  given that we only can observe our imperfect sample of data
+
+
+???
+
+- Statistics gives us rules of probability
+- that we use to determine how *wrong* we can expect to be, given that I have a sample of 500
+- As we get more data, our expected amount of error goes down
+- And this all obeys nice mathematical rules
+
+
+---
+
+class: inverse, middle, center
+
+# Aggregation
+
+
+
+
+---
+
+## Aggregation
+
+We have data at some level of analysis, and we want to summarize it at a higher level of analysis
+
+--
+
+.pull-left[
+Life expectancy *aggregated* by year
+
+```{r, aggregate-year, echo = FALSE}
+gapminder %>%
+  group_by(year) %>%
+  summarize_all(.funs = funs("mean" = mean(.))) %>%
+  select(year, contains("lifeExp"))
+```
+]
+
+--
+
+.pull-right[
+Life expectancy *aggregated* by continent-year
+
+```{r aggregate-continent, echo = FALSE}
+gapminder %>%
+  group_by(continent, year) %>% 
+  summarize_all(.funs = funs("mean" = mean(.))) %>%
+  select(continent, year, contains("lifeExp"))
+```
+]
+
+
+???
+
+With averaging, we take all our data and create one summary measure
+
+- We often refer to "aggregation" as summarizing but within groups of data
+  - group is year
+  - group is continent-year
+- Aggregating is taking all the observations in the group and summarize them with *one value*
+  - in this case it's the mean
+  - I could have also calculated min, max, median, and so on
+  - but the point is there is only *one* mean per group, *one* median per group
+
+
+
+---
+
+### "Conditional" averages and "conditional" probabilities
+
+```{r, echo = FALSE, out.width = "55%"}
+include_graphics(here(img, "conditional_risk.png"))
+```
+
+???
+
+Averages / probabilities within a group
+
+Jargon: "conditional on" group membership
+
+
+---
+
+class: middle
+
+.left-column[
+**Ecological Fallacy:** Assuming that group-level patterns apply to individuals within the group
+]
+
+.right-column[
+```{r, echo = FALSE, out.width = "65%"}
+include_graphics(here(img, "ecological.png"))
+```
+]
+
+
+
+
+---
+
+class: inverse, middle, center
+
+
+# See ya
+
+
+### Wednesday is (spooky voice) randomnessssssss
+
+
+

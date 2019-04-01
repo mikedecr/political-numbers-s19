@@ -1,0 +1,727 @@
+---
+title: "Linear Regression"
+subtitle: '(Estimating Linear Relationships)'
+author: "Understanding Political Numbers"
+date: "March 4, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+# knitr::purl(here::here("lectures", "12-regression", "12-regression.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "12_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/12-regression/img"
+```
+
+
+### Agenda
+
+
+.left-code[
+Admin stuff
+
+- Research Question due Monday March 11
+- Exercise 2 due Wednesday March 13
+
+Exercise 2 tips
+
+Linear regression
+]
+
+
+.right-plot[
+```{r ed-scatter, fig.width = 6, fig.height = 4.5, out.width = "100%"}
+
+ggplot(midwest, aes(percollege, percprof)) +
+  geom_point(color = "gray") +
+  geom_smooth(color = "black", method = "lm", se = FALSE) +
+  labs(x = "Percent w/ College Degree",
+       y = "Percent w/ Prof. Degree",
+       title = "College and Professional Education",
+       subtitle = "Data from Midwestern Counties")
+
+```
+]
+
+???
+
+- added extra time
+
+---
+
+class: inverse, middle, center
+
+# Exercise 2
+
+
+
+---
+
+## Follow link to data
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "js-tab.png"))
+```
+
+
+
+---
+
+## Paste in Excel/Numbers and CLEAN
+
+.left-code[
+Beware:
+
+- merged rows
+- Unneeded rows
+- special characters in variable names (use `_`)
+- save as **CSV**
+]
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "xl.png"))
+```
+]
+
+
+
+---
+
+## Take cues from Ex 1 data
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "tidy.png"))
+```
+
+
+
+---
+
+## Helpful code tricks:
+
+.pull-left[
+
+Specify data in `geom_*` function
+
+```{r new-data, echo = TRUE, fig.show = 'hide'}
+library("tidyverse")
+
+ggplot(data = midwest, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(color = "gray") +
+  geom_point(
+    data = filter(midwest, state == "IN"), #<<
+    color = "black", 
+    size = 2 
+  ) 
+```
+
+Geoms inherit data and aesthetics from `ggplot()` by default
+]
+
+.pull-right[
+```{r new-data, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+---
+
+## Helpful code tricks:
+
+
+.pull-left[
+
+Add specific annotations
+
+```{r annotate, echo = TRUE, fig.show = 'hide'}
+ggplot(data = midwest, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(color = "gray") +
+  geom_point(
+    data = filter(midwest, state == "IN"), 
+    color = "black", 
+    size = 2 
+  )  +
+  annotate(geom = "text", #<<
+           x = 15, y = 7, label = "Indiana") #<<
+```
+]
+
+.pull-right[
+```{r annotate, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+
+
+---
+
+## Helpful code tricks:
+
+
+.pull-left[
+
+Create an "identifying" variable
+
+```{r mapping, echo = TRUE, fig.show = 'hide', results = 'hide'}
+# logical statements are TRUE or FALSE
+midwest$state == "IN"
+
+# new logical variable
+midwest2 <- midwest %>%
+  mutate(is_indiana = (state == "IN"))
+
+# map color to is_indiana
+ggplot(data = midwest2, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(aes(color = is_indiana)) #<<
+```
+]
+
+.pull-right[
+```{r mapping, results = 'hide', fig.show = 'asis', fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+
+
+---
+
+## Helpful code tricks:
+
+
+.pull-left[
+
+Hide legend
+
+```{r legend, echo = TRUE, fig.show = 'hide'}
+# also: create identifier within aes() ?
+ggplot(data = midwest, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(
+    aes(color = (state == "IN")), #<<
+    show.legend = FALSE, #<<
+  ) + 
+  annotate(geom = "text",
+           x = 15, y = 7, label = "Indiana") +
+  # customize colors, scale_aes_*()
+  scale_color_manual( #<<
+    values = c("TRUE" = "maroon", #<<
+               "FALSE" = "gray") #<<
+  ) #<<
+```
+]
+
+.pull-right[
+```{r legend, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+
+]
+
+
+---
+
+## One last thing: 45° line at $y = x$
+
+```{r abline, out.width = "60%", fig.width = 6, fig.height = 4}
+tibble(x = rnorm(100),
+       y = 0.5*x + rnorm(100)) %>%
+  ggplot(aes(x, y)) +
+    geom_point() +
+    geom_abline() +
+    geom_smooth(method = "lm") +
+    annotate("text", x = 2.5, y = 4.5,
+             label = "geom_abline()") +
+    annotate("text", x = 4, y = 1,
+             label = 'geom_smooth()') +
+    coord_cartesian(xlim = c(-5, 5),
+                    ylim = c(-5, 5))
+```
+
+
+---
+
+class: inverse, middle, center
+
+# Linear Regression
+
+
+
+
+---
+
+## Lines
+
+.left-code[
+A line is $y = a + bx$
+
+
+- $x$ and $y$: data
+
+- $a$ and $b$: parameters / coefficients
+  
+  - $a$ is constant/y-intercept
+  
+  - $b$ is slope
+]
+
+
+.right-plot[
+
+```{r line, fig.width = 5, fig.height = 4, out.width = "80%"}
+
+tibble(x = -5:5,
+       y = -2 + 1.5*x) %>%
+  ggplot(aes(x = x, y = y)) +
+    geom_vline(xintercept = 0, color = "gray") +
+    geom_hline(yintercept = 0, color = "gray") +
+    geom_line() +
+    coord_cartesian(ylim = c(-5, 5),
+                    xlim = c(-5, 5)) +
+    geom_segment(aes(x = 2, xend = 2, 
+                     y = -2 + (1.5 * 2), yend = -2 + (1.5 * (2 + 1))), 
+                 color = "red") +
+    geom_segment(aes(x = 2, xend = 2 + 1, 
+                     y = -2 + (1.5 * (2 + 1)), yend = -2 + (1.5 * (2 + 1))), 
+                 color = "red") +
+    geom_point(aes(x = 0, y = -2), color = "red") +
+    annotate("text", x = -0.5, y = -2, label = "a") +
+    annotate("text", x = 1.5, y = 2.5, label = "b") +
+    scale_x_continuous(breaks = -5:5) +
+    scale_y_continuous(breaks = -5:5) +
+    labs(title = TeX("$y = -2 + 1.5x$"))
+
+```
+
+]
+
+
+
+
+
+---
+
+## The Linear "Model"
+
+.left-code[
+
+**Model**: mathematical/statistical assumptions about your data
+
+- "I think a line is a good way to summarize the relationship between $X$ and $Y$"
+
+- $\mathrm{E}[Y \mid X] \neq \mathrm{E}[Y]$ 
+
+- The *conditional mean* of $Y$
+
+
+
+**Estimating** (or "fitting") a model
+
+- Intercept or slope are unknown
+
+- Estimated (imperfectly) from data
+
+]
+
+.right-plot[
+```{r ed-scatter, fig.width = 5, fig.height = 4, out.width = "80%"}
+```
+]
+
+
+???
+
+- The line is my expectation of $Y$
+- If I only knew an $x$ value, my best prediction for $y$ is on the line
+- Regression uses data to estimate parameters (slope and intercept) 
+- Why? If $X$ affects $Y$, 
+  - then they will be related
+  - I want to describe that relationship
+  - I want to know how much change in Y I should expect if I change X
+  - I'm on the federal reserve: if we set interest rates to some value, what do we think will happen to inflation and unemployment? 
+  - I'm on a campaign: if we spend this much money on a TV ads, how much attitude change do we expect to get
+  - I'm a policymaker, if we set taxes to this amount, how much will consumption patterns change
+- these are all regression questions
+
+
+
+---
+
+class: middle, center
+
+## "All models are wrong; some are useful"
+
+— George Box (?)
+
+
+
+---
+
+## "Line of Best Fit"
+
+.left-code[
+
+Line is prediction for $y$, using knowledge of $x$
+
+- actual $y$: points (data)
+
+- prediction line: $\hat{y} = a + bx$
+
+- residual error (in red): $e = y - \hat{y}$
+
+
+"Give me the line (that is, $a$ and $b$ values) that result in lowest error"
+
+]
+
+
+.right-plot[
+
+```{r wi-only, results = 'hide', fig.show = 'asis', fig.width = 6, fig.height = 4, out.width = "90%"}
+regdata <- midwest %>%
+  filter(state == "WI") %>%
+  lm(percprof ~ percollege, data = .) %>%
+  broom::augment() %>%
+  print()
+
+ggplot(regdata, aes(percollege, percprof)) +
+  geom_linerange(aes(ymin = .fitted, ymax = .fitted + .resid),
+                 color = "red") +
+  geom_point(shape = 21, fill = "gray") +
+  geom_line(aes(y = .fitted)) +
+  labs(x = "Percent w/ College Degree",
+       y = "Percent w/ Prof. Degree",
+       title = "Wisconsin Counties Only")
+```
+
+]
+
+
+???
+
+I actually hate this phrase because there are lots of ways to define "best fit"
+
+what is error?
+
+- It's all these little things that affect $y$, aside from $x$ 
+- Doesn't mean that *only* $x$ matters
+- error just represents a black box of all the other things that affect $y$
+
+
+Imagine an infinite number of potential lines
+
+- we want the SINGLE LINE that has the smallest error
+
+
+
+
+---
+
+## An Equation for $y_{i}$
+
+
+The $y$ value for observation $i$
+
+
+???
+
+Only write the full equation once we're done building it
+
+--
+
+- $x_{i}$ (we know their $x$ value)
+
+--
+
+- $\hat{y}_{i} = a + bx_{i}$ (predicted $y$ is on the line)
+
+--
+
+- $y_{i} = \hat{y}_{i} + e_{i}$ (actual $y$ is predicted + error)
+
+--
+
+- $y_{i} = a + bx_{i} + e_{i}$
+
+
+
+
+---
+
+## An Equation for $y_{i}$
+
+.pull-left[
+
+The $y$ value for observation $i$
+
+
+- $x_{i}$ (we know their $x$ value)
+
+
+- $\hat{y}_{i} = a + bx_{i}$ (predicted $y$ is on the line)
+
+
+- $y_{i} = \hat{y}_{i} + e_{i}$ (actual $y$ is predicted + error)
+
+
+- $y_{i} = a + bx_{i} + e_{i}$
+
+Systematic and random components
+
+]
+
+.pull-right[
+
+```{r wi-only, results = 'hide', fig.show = 'asis', fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+
+
+???
+
+Why all the subscript i's? Because the error is different for every point. Every point has its set of little things that affect it aside from $x$
+
+
+
+---
+
+### The "Ordinary Least Squares" (OLS) algorithm
+
+.pull-left[
+
+Find $a$ and $b$ that minimize the total amount of error
+
+Starting point: $y_{i} = a + bx_{i} + e_{i}$
+
+Total error: $\displaystyle\sum_{i = 1}^{N} e_{i}$
+
+Problem?
+
+]
+
+.pull-right[
+
+```{r wi-only, results = 'hide', fig.show = 'asis', fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+
+
+
+
+
+---
+
+### The "Ordinary Least Squares" (OLS) algorithm
+
+.pull-left[
+
+Find $a$ and $b$ that minimize the total amount of **squared** error
+
+Starting point: $y_{i} = a + bx_{i} + e_{i}$
+
+Total **squared** error: ** $\displaystyle\sum_{i = 1}^{N} e_{i}^{2}$ **
+
+\begin{align}
+  y_{i} &= a + bx_{i} + e_{i} \\
+  e_{i} &= y_{i} - (a + bx_{i}) \\
+  e_{i}^{2} &= \left(y_{i} - (a + bx_{i})\right)^{2} \\
+  \displaystyle \sum_{i} e_{i}^{2} &= \sum_{i} \left(y_{i} - (a + bx_{i})\right)^{2}
+\end{align}
+
+Then minimize along $a$ and $b$ (calculus!)
+
+]
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "RSS-3D.png"))
+```
+]
+
+
+
+
+
+???
+
+Find $a$ and $b$ that minimize the total amount of error
+
+
+Isolate error: $e_{i} = y_{i} - (a + bx_{i})$
+
+Square both sides: $\displaystyle e_{i}^{2} =  \left( y_{i} - (a + bx_{i}) \right)^{2}$
+
+What's the total (squared) error? <br>
+$\displaystyle \sum_{i = 1}^{N} e_{i}^{2} = \sum_{i = 1}^{N} \left( y_{i} - (a + bx_{i}) \right)^{2}$
+
+Minimize with respect to $a$ and $b$ (calculus)
+
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "RSS-3D.png"))
+```
+]
+
+
+
+---
+
+## In R
+
+.pull-left[
+```{r add-line, fig.width = 6, fig.height = 4, out.width = "100%", echo = TRUE, fig.show = 'hide'}
+# y ~ x
+linreg <- lm(percprof ~ percollege, 
+             data = midwest)
+linreg
+
+ggplot(midwest, 
+       aes(percollege, y = percprof)) +
+  geom_point(color = "gray") +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_abline(intercept = coef(linreg)[1],
+              slope = coef(linreg)[2],
+              color = "red")
+```
+]
+
+.pull-right[
+Estimated equation is $\hat{y}_{i} = `r coef(linreg)[1] %>% round(2)`$ + $`r coef(linreg)[2] %>% round(2)` x_{i}$
+
+```{r add-line, fig.width = 5, fig.height = 4, out.width = "100%", echo = FALSE, results = 'hide', fig.show = 'asis'}
+```
+]
+
+---
+
+## Interpretation
+
+```{r}
+linreg
+```
+
+I predict `percprof` is `r coef(linreg)[1] %>% round(2)` when `percollege` is 0
+
+I predict `percprof` increases by `r coef(linreg)[2] %>% round(2)` when `percollege` increases by 1
+
+Not necessary *cause and effect*, just a predicted change
+
+--
+
+**Limitations**
+
+- These are just predictions (average vs. individual, population vs. sample!)
+- Extrapolating beyond data = danger
+- Nonsense predictions?
+- Understand your assumptions ("linear enough?")
+- Are there other methods out there?
+
+
+???
+
+More complex models are more complicated ways to predict the conditional mean of $y$
+
+
+---
+
+## Check your model
+
+.pull-left[
+Linear models assume that errors are independent and uncorrelated
+
+- Plot residuals vs predicted values
+- Should see no pattern
+- Patterns indicate something systematically wrong w/ model
+
+```{r resids, fig.show = 'hide', echo = TRUE}
+# contains handy modeling tools
+# install.packages("broom") 
+
+# use augment() from broom package
+preds <- broom::augment(linreg)
+
+ggplot(preds, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) 
+```
+]
+
+.pull-right[
+```{r resids, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+---
+
+# Looking forward
+
+On Wednesday: 
+
+- Statistical significance: How confident are we that this relationship is *real* or *just random*?
+
+In section:
+
+- Practicing `lm` and interpreting linear models
+
+Through the week:
+
+- research question meetings
+
+Next week: 
+
+- Monday: Multiple regression (**Research questions due**)
+- Wednesday: Gathering and cleaning data (**Ex 2 due**)
+
+
+

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Science, Evidence, Empiricism</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Science, Evidence, Empiricism
+### Understanding Political Numbers
+### Jan 28, 2019
+
+---
+
+
+
+
+background-image: url(img/me-and-michael.png)
+background-color: #000000
+background-size: contain
+
+
+
+
+???
+
+BUT FIRST:
+
+- Get to know us
+- Also get to know our specialties (for projects)
+- where we're from
+- What we're into
+
+
+---
+
+class: center, middle
+
+# Logistics
+
+
+`R` ya ready, kids?
+
+
+Lecture slides
+
+
+[Online Schedule](https://mikedecr.github.io/ps-270)
+
+Office Hours
+
+
+???
+
+- R: after class or OH today (or Michael's...)
+- Slide disclaimer
+- online schedule: visual learners, bookmark it
+
+
+---
+
+class: center, middle, inverse
+
+# Lecture goals
+
+How do we know stuff?
+
+*Empiricism*: why it is great
+
+*Empiricism*: why it isn't everything
+
+
+???
+
+- "empiricism" (will define) and other modes of knowledge
+
+---
+
+
+## But first...
+
+
+
+Let `\(\mathbf{x} = \begin{bmatrix} 5\quad4\quad9\quad1\quad7\end{bmatrix}\)`. 
+
+`\(x_{4} =\)` ?
+
+???
+
+- we're familiar with variables, but used to them having only one value
+- The # in the subscript represents which number you're talking about
+
+--
+
+New vocabulary: 
+
+- `\(\mathbf{x}\)` is a *vector*
+&lt;!-- - (a variable containing an arbitrary number of *elements*) --&gt;
+- The *length* of `\(\mathbf{x}\)` is **5**
+
+???
+
+- vector is a sequence of values. How many values? However many you want, an arbitrary number (5, a million, 1)
+- values in the sequence are called "elements"
+- Not "vector" in the geometric arrow sense (no need for that)
+- length = "how many elements"
+
+
+--
+
+Say that `\(n\)` "indexes the elements" of `\(\mathbf{x}\)` (so we can refer to `\(x_{n}\)`), and `\(N\)` is the length of `\(\mathbf{x}\)`. What is `\(\sum\limits_{n = 1}^{N} x_{n}\)`?
+
+???
+
+- Summation means you take the corresponding expression
+- Evaluate the expression for every index
+- And then sum
+- Order of operations: what's the expression for every `\(n\)`, and then add those expressions together
+
+--
+
+`\(x_{1} + x_{2} + x_{3} + x_{4} + x_{5} =\)`
+--
+
+** `\(26\)` **
+
+
+???
+
+- does this *need* to be bigger?
+
+--
+
+`\(\sum\limits_{n = 2}^{4} x_{n} =\)` 
+--
+
+** `\(14\)` **
+
+
+
+---
+
+class: inverse, middle, center
+
+# Ways of knowing
+
+
+---
+
+# Logic?
+
+???
+
+- Supposed to be useful
+- You use reason and argument
+- State some premises, manipulate the premises, derive conclusions
+
+--
+
+Example: Modus Ponens ("affirming the antecedent")
+
+.pull-left[
+- Premise: All humans are mortal
+- Premise: Michael is human
+- Conclusion: Michael is mortal
+]
+
+.pull-right[
+`\begin{align}
+\forall x &amp; \quad H(x) \rightarrow M(x) \\
+\exists x &amp; \quad H(x) \\
+\therefore &amp; \quad M(x)
+\end{align}`
+]
+
+???
+
+- And there are a ton of rules for inferring true conclusions
+
+--
+
+Pitfalls of logical "validity"
+
+.pull-left[
+- Premise: All Michaels are wizards
+- Premise: Your TA is a Michael
+- Conclusion: Your TA is a wizard
+]
+
+
+???
+
+- Validity isn't the same as truth
+- Defined: if the premises are true, the conclusion *must* be true
+- Logic only helps us get from true premises to a true conclusion
+- Does *not* help us determine if the premises are true
+- Law, significant other, ordinary talk
+- Great for math, which derives conclusions from agreed-upon equations and assumptions
+- It's a set of tools but it's not "**ultimately powerful**"
+
+
+
+
+---
+
+background-image: url(img/homestar-science.jpg)
+background-color: black
+background-size: contain
+
+
+
+
+---
+
+# Empiricism?
+
+Knowledge from "sensory experience"
+
+???
+
+- Data and science fit in here, but the important thing is that you only obtain scientific data through your senses (not thoughts)
+
+
+--
+
+*A priori* and *a posteriori*
+
+???
+
+- a priori: what can you know just from thinking? What can you "derive" to be true?
+- a posteriori: what can you only say after you've seen the data? 
+- Do strict gun regulations reduce violence and murder?
+- "That's an empirical question"
+- You can use theory to guide your hypotheses, but you don't *know* until you collect data
+
+--
+
+*Skepticism*
+
+???
+
+- We take a lot of statements for granted as *true*
+- Let's doubt the things we take for granted
+- Can we build our knowledge back up by being more critical and rigorous
+
+--
+
+"Show me the data"
+
+???
+
+- Someone asserts something about politics (how policy will work)
+- Doubt their claims until they provide evidence
+
+--
+
+Beware of motivated reasoning
+
+???
+
+- Psychological bias, from self-preservation
+- You seek out/trust information that reinforces your beliefs, avoid/distrust information that does not
+- Studies that are ideologically inconvenient to you, you try harder to argue with their methods
+- I have been working on some research with a professor on voter ID and there was some news buzz about it at some point that scrambled the brains of people on *both sides* 
+- *scientists may do this too*: highlight evidence that supports their ideas, or interpret that evidence favorably, and find some way to dismiss evidence that does not support their ideas
+  - the problem is *not* that scientists are ideologues, it's that they work in an ego-driven environment and they need to have good ideas in order to succeed in their careers and make tenure
+
+
+
+
+
+---
+
+## Power of science: "observable implications"
+
+???
+
+How science works: 
+
+- Ideas have "observable implications"
+- if (idea) is true, it *implies* that I should observe (data)
+- Do I observe those patterns in the data, yes or no?
+- readings have examples
+
+--
+
+.pull-left[
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/belgioioso-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+"Is Radical Islam the Main Terrorist Threat to the EU?" (Belgioioso reading)
+
+- Perpetrators?
+- Lethality?
+
+"Ban the box" (Ajilore reading)
+
+- What is it?
+- Does it work?
+- Why or why not?
+
+]
+
+
+
+
+
+---
+
+background-color: black
+class: middle
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/ind-5.png" width="866" style="display: block; margin: auto;" /&gt;&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/ind-4.png" width="660" style="display: block; margin: auto;" /&gt;&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/ind-3.png" width="718" style="display: block; margin: auto;" /&gt;&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/ind-1.png" width="667" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: center, middle
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/leaners.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+Kaufmann, Petrocik, and Shaw (2008): *Unconventional Wisdom*
+
+
+---
+
+class: center, middle
+background-color: #243447
+
+&lt;center&gt;
+&lt;blockquote class="twitter-tweet"&gt;&lt;p lang="en" dir="ltr"&gt;Do your country a favor. Today, go to Starbucks and tell them your name is, &amp;quot;True Independents are only 10% of the electorate and they don&amp;#39;t vote.&amp;quot;&lt;/p&gt;&amp;mdash; Michael G. Miller (@michaelgmiller) &lt;a href="https://twitter.com/michaelgmiller/status/1089904889558458368?ref_src=twsrc%5Etfw"&gt;January 28, 2019&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
+&lt;/center&gt;
+
+---
+
+class: inverse, middle, center
+
+## Shortcomings of Science
+
+
+
+---
+
+# Science is a philosophical problem
+
+.pull-left[
+"Positivism" and the principal of verification
+
+The problem of induction
+
+Principal of *falsification*
+
+]
+
+???
+
+- positivists in an era of math and science
+- morality, ethics, religion, were "nonsense"
+- Statements only only had "truth value" or "sense" if you could understand the conditions under which it *could be true*
+- I don't know how I would know if ethical statements are "true" so they are nonsense
+
+- How does science work? 
+- You have ideas about how the world works, and you put them to the test
+- If some theory is true, I should be able to test it using some experiment and get a predictable result
+- You devise a controlled setting, collect data, and observe the outcome
+- You repeat this over and over again to establish the regularity of the phenomenon
+- "Just because something happened in the past doesn't imply that it will happen again"
+
+- Examples this trivial *have happened*: swans
+- Verification doesn't make sense as a rule of determining truth
+- Induction through scientific experimentation doesn't either
+- Science is based on a logical fallacy?
+
+
+- Scientific learning happens by proving old ideas wrong
+- Consistency between theory and data are only weakly informative
+
+--
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/02-science/img/apples.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+class: center, middle
+
+## Other "bad science"
+
+Spurious correlation
+
+*Random* correlation
+
+Selection bias / Non-representative data
+
+Observational equivalence
+
+
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Lessons from the shortcomings of science
+
+## (1) Scientific "truth" may be impossible?
+
+## (2) Scientific "learning" when ideas are proven *wrong*
+
+???
+
+- Don't leave here thinking that science is bullshit and that scientists are stupid
+- Scientists know this stuff, they're familiar with positivism, falsification, and all that stuff
+- Nonetheless we do learn things about the world by conducting science, we just need to think hard about what exactly we've learned, the assumptions we need to make in order to generalize
+
+---
+
+## Looking ahead
+
+On Wednesday: Theories and Hypotheses
+
+In Section: Basics of `R` code
+
+Note about dropping...
+
+???
+
+- What is a good theory? Read Healy article
+- Getting first R exercise assigned on Wednesday
+
+
+---
+
+class: center, middle, inverse
+
+## Until Wednesday...
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

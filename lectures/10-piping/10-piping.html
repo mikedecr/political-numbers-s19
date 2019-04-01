@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Unleashing the Power of the Tidyverse</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Unleashing the Power of the Tidyverse
+## with the <em>pipe operator</em>
+### Understanding Political Numbers
+### Feb 25, 2019
+
+---
+
+
+
+
+# Agenda
+
+.pull-left[
+**The pipe operator**: `%&gt;%`
+
+- a revolution in the world of `R`
+- Download `lecture_pipes.R` from Canvas ("Lecture Scripts" folder)
+
+Also: 
+
+- Research question
+- Data sources
+]
+
+
+---
+
+class: inverse, middle, center
+
+# Data Sources
+
+
+---
+
+# Major U.S. Public Opinion Surveys
+
+[American National Election Study](http://www.electionstudies.org/)
+
+- Since 1948(?); standard questions; some panel studies
+
+[Current Population Survey ("Voting and Registration Supplement")](https://www.census.gov/topics/public-sector/voting.html)
+
+- BIG sample; normally economic/family questions
+- November supplement: self-reported voter turnout (but no other politics)
+
+[Cooperative Congressional Election Study](https://cces.gov.harvard.edu/)
+
+- since 2006; samples in every district; *validated* turnout
+
+[General Social Survey](http://gss.norc.org/)
+
+- More than political
+
+### CODEBOOKS ARE SO IMPORTANT
+
+
+---
+
+# Major International Opinion Sources
+
+[Comparative study of electoral systems](http://cses.org/)
+
+- international elections/opinion survey
+
+[Eurobarometer](http://ec.europa.eu/commfrontoffice/publicopinion/index.cfm)
+
+- EU backed regular surveys; thematic, flash, and qualitative surveys
+
+[Afrobarometer](http://www.afrobarometer.org/)
+
+- since 1999; attitudes on democracy, governance, economics
+
+[LAPOP/AmericasBarometer](https://www.vanderbilt.edu/lapop/about-americasbarometer.php)
+
+- Focus on Latin America, sophisticated survey delivery tech
+
+[World Values Survey](http://www.worldvaluessurvey.org/wvs.jsp)
+
+
+---
+
+# IR data dump
+
+Paul Hensel [Data Site](https://www.paulhensel.org/data.html)
+
+- Alliances, treaties, organizations
+- Conflict, MIDs, political violence
+- Trade, aid, development
+- Agriculture, food, environment
+- Regime type, political systems, demography
+
+
+
+
+
+---
+
+class: inverse, middle, center
+
+# The Pipe
+
+
+---
+
+class: middle
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/10-piping/img/pipeline.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+Data analysis is a series of steps
+
+- think of these steps as being *actions*
+- they are *verbs*, things you do, to the data
+- You "import" or "read" the data into R
+- You "tidy" it, make it so that it has a nice row-column format
+  - we will learn about this stuff later on
+- Then you sort of have a dialog with the data
+  - You transform it, modify variables, calculate summary states
+  - you create graphics to visualize your data (for you or for production)
+  - This says "model" but it means statistical analysis
+  - Models are next week
+
+**Problem is** these steps are cumbersome to type in code, and this process of understanding your data means pushing a lot of data around, modifying it, filtering it, summarizing, and it's all just tedious
+
+---
+
+
+```r
+library("tidyverse")
+
+# COUNTY-level data from Midwest states
+midwest
+```
+
+```
+## # A tibble: 437 x 28
+##      PID county state  area poptotal popdensity popwhite popblack
+##    &lt;int&gt; &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;    &lt;int&gt;      &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;
+##  1   561 ADAMS  IL    0.052    66090      1271.    63917     1702
+##  2   562 ALEXA… IL    0.014    10626       759      7054     3496
+##  3   563 BOND   IL    0.022    14991       681.    14477      429
+##  4   564 BOONE  IL    0.017    30806      1812.    29344      127
+##  5   565 BROWN  IL    0.018     5836       324.     5264      547
+##  6   566 BUREAU IL    0.05     35688       714.    35157       50
+##  7   567 CALHO… IL    0.017     5322       313.     5298        1
+##  8   568 CARRO… IL    0.027    16805       622.    16519      111
+##  9   569 CASS   IL    0.024    13437       560.    13384       16
+## 10   570 CHAMP… IL    0.058   173025      2983.   146506    16559
+## # … with 427 more rows, and 20 more variables: popamerindian &lt;int&gt;,
+## #   popasian &lt;int&gt;, popother &lt;int&gt;, percwhite &lt;dbl&gt;, percblack &lt;dbl&gt;,
+## #   percamerindan &lt;dbl&gt;, percasian &lt;dbl&gt;, percother &lt;dbl&gt;,
+## #   popadults &lt;int&gt;, perchsd &lt;dbl&gt;, percollege &lt;dbl&gt;, percprof &lt;dbl&gt;,
+## #   poppovertyknown &lt;int&gt;, percpovertyknown &lt;dbl&gt;, percbelowpoverty &lt;dbl&gt;,
+## #   percchildbelowpovert &lt;dbl&gt;, percadultpoverty &lt;dbl&gt;,
+## #   percelderlypoverty &lt;dbl&gt;, inmetro &lt;int&gt;, category &lt;chr&gt;
+```
+
+
+
+
+???
+
+- Variables for total pop, adult population
+- Nothing for children
+- Calculate the proportion of the population that is *children* (for every county)
+- Then, calculate the mean proportion of children in every state
+
+---
+
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county)
+- Then, calculate the mean proportion of children in every state
+]
+
+???
+
+How do we write this code?
+
+- what functions do we use for each step?
+
+
+
+
+---
+
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county): **mutate()**
+- Then, calculate the mean proportion of children in every state: **group_by()** and **summarize()**
+]
+
+
+--
+
+.right-plot[
+Overwrite original data at each step?
+
+
+```r
+# all tidyverse functions: first argument is the DATASET
+
+# MUTATE
+# first, find the number of children (total minus adults)
+# then, find the proportion (children / total)
+midwest &lt;- mutate(midwest, 
+                  popchildren = poptotal - popadults, 
+                  pr_children = popchildren / poptotal)
+
+# group by state
+midwest &lt;- group_by(midwest, state)
+
+# mean pr_children by state
+summarize(midwest, mean_pr_children = mean(pr_children))
+```
+
+```
+## # A tibble: 5 x 2
+##   state mean_pr_children
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 IL               0.350
+## 2 IN               0.366
+## 3 MI               0.359
+## 4 OH               0.368
+## 5 WI               0.359
+```
+
+]
+
+???
+
+problem is we don't keep the raw data
+
+
+---
+
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county): **mutate()**
+- Then, calculate the mean proportion of children in every state: **group_by()** and **summarize()**
+]
+
+
+.right-plot[
+Create intermediate objects at each step?
+
+
+```r
+# create a new object, 
+#   which gets results from mutate()
+midwest_mut &lt;- mutate(midwest, 
+                      popchildren = poptotal - popadults, 
+                      pr_children = popchildren / poptotal)
+
+# group the NEW OBJECT by state
+midwest_grp &lt;- group_by(midwest_mut, state)
+
+# Summarize the GROUPED OBJECT
+summarize(midwest_grp, mean_pr_children = mean(pr_children))
+```
+
+```
+## # A tibble: 5 x 2
+##   state mean_pr_children
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 IL               0.350
+## 2 IN               0.366
+## 3 MI               0.359
+## 4 OH               0.368
+## 5 WI               0.359
+```
+]
+
+???
+
+tedious and inefficient
+
+
+
+---
+
+.left-code[
+We want to:
+
+- Calculate the proportion of the population that is *children* (for every county): **mutate()**
+- Then, calculate the mean proportion of children in every state: **group_by()** and **summarize()**
+]
+
+
+.right-plot[
+Use the order of operations?
+
+
+```r
+# every f() creates a new data frame
+# so pass results to next function: f(g(h(x)))
+
+# FROM THE INSIDE OUT: mutate() the midwest data
+# Then, mutate() result is the data for group_by()
+# Then, group_by() result is the data for summarize()
+
+summarize(
+  group_by(
+    mutate(midwest, 
+           popchildren = poptotal - popadults, 
+           pr_children = popchildren / poptotal), 
+    state), 
+  mean_pr_children = mean(pr_children)
+)
+```
+
+```
+## # A tibble: 5 x 2
+##   state mean_pr_children
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 IL               0.350
+## 2 IN               0.366
+## 3 MI               0.359
+## 4 OH               0.368
+## 5 WI               0.359
+```
+]
+
+
+???
+
+absolute nightmare
+
+---
+
+## There's a better way
+
+.left-code[
+Linear data processing plan:
+
+- Start with the data, *then*...
+- Create new variables, *then*...
+- Group the data by state, *then*...
+- Calculate the mean in each state
+]
+
+--
+
+.right-plot[
+Linear code:
+
+
+```r
+# enter... the pipe operator %&gt;%
+# read it as "and then..."
+midwest %&gt;%
+  mutate(popchildren = poptotal - popadults,
+         pr_children = popchildren / poptotal) %&gt;%
+  group_by(state) %&gt;%
+  summarize(mean_pr_children = mean(pr_children))
+```
+
+```
+## # A tibble: 5 x 2
+##   state mean_pr_children
+##   &lt;chr&gt;            &lt;dbl&gt;
+## 1 IL               0.350
+## 2 IN               0.366
+## 3 MI               0.359
+## 4 OH               0.368
+## 5 WI               0.359
+```
+]
+
+
+
+
+---
+
+## How it works
+
+.pull-left[
+
+```r
+# Typical R code: f(data)
+dim(midwest)
+```
+
+```
+## [1] 437  30
+```
+]
+
+
+--
+
+.pull-right[
+
+```r
+# with the pipe: data %&gt;% f()
+#   data serves as first arg in f()
+#   (implicitly)
+midwest %&gt;% dim()
+```
+
+```
+## [1] 437  30
+```
+]
+
+
+???
+
+**They do the same thing**
+
+- But the pipe lets us write lots of code
+- that would be really complicated to write
+- in a way that actually is very easy
+
+
+--
+
+.center[
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+**Summon the pipe**
+
+Macs: `Cmd + Shift + m`
+
+Windows: `Ctrl + Shift + m`
+]
+
+
+
+
+
+
+---
+
+## Do lots of things easily
+
+.pull-left[
+
+```r
+# Typical R code: f(g(x))
+#   g() is first, then f()
+length(names(midwest))
+```
+
+```
+## [1] 30
+```
+]
+
+--
+
+.pull-right[
+
+```r
+# with the pipe: data %&gt;% g() %&gt;% f()
+# just as it should be
+midwest %&gt;% names() %&gt;% length()
+```
+
+```
+## [1] 30
+```
+
+
+```r
+# or, break across lines for readability
+midwest %&gt;% 
+  names() %&gt;% 
+  length()
+```
+
+```
+## [1] 30
+```
+]
+
+???
+
+This lets you see:
+
+- I start with the data
+- then I get the variable names
+- then I see how many names there are
+
+This works like the + in ggplot
+
+- You put it at the end of a line to tell R that you aren't done yet
+
+
+---
+
+## Why we like the pipe operator
+
+.pull-left[
+.center[
+
+**Series of operations, without piping**
+
+`\(f(g(h(x)))\)`
+
+Works inside-out
+
+Counter-intuitive
+
+Difficult to write
+
+Difficult to read
+
+]
+]
+
+.pull-right[
+.center[
+**With piping**
+
+`\(x \rightarrow h() \rightarrow g() \rightarrow f()\)`
+
+Works linearly
+
+Intuitive
+
+Easy to write
+
+Easy to read
+
+*Tidyverse flow*
+
+]
+]
+
+
+
+---
+
+## Let's write our own chain
+
+1. Start with `midwest`
+2. For each state, count metro/non-metro area counties (`inmetro`)
+
+
+
+
+---
+
+## Let's do another
+
+1. Start with `gapminder`
+2. For each year, keep the country with the highest GDP per capita
+3. sort by year
+
+
+
+
+
+---
+
+## Printing the results of a chain
+
+
+```r
+# results don't print when you make new object
+just_WI &lt;- midwest %&gt;%
+  filter(state == "WI")
+
+# But they do with print()
+just_WI &lt;- midwest %&gt;%
+  filter(state == "WI") %&gt;%
+  print()
+```
+
+```
+## # A tibble: 72 x 30
+## # Groups:   state [1]
+##      PID county state  area poptotal popdensity popwhite popblack
+##    &lt;int&gt; &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;    &lt;int&gt;      &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;
+##  1  2981 ADAMS  WI    0.041    15682       382.    15001      375
+##  2  2982 ASHLA… WI    0.054    16307       302.    14749       17
+##  3  2983 BARRON WI    0.053    40750       769.    40346       40
+##  4  2984 BAYFI… WI    0.089    14008       157.    12707       29
+##  5  2985 BROWN  WI    0.032   194594      6081.   186621     1012
+##  6  2986 BUFFA… WI    0.04     13584       340.    13521        5
+##  7  2987 BURNE… WI    0.053    13084       247.    12497       22
+##  8  2988 CALUM… WI    0.023    34291      1491.    33910       29
+##  9  2989 CHIPP… WI    0.063    52360       831.    51854       31
+## 10  2990 CLARK  WI    0.072    31647       440.    31437       29
+## # … with 62 more rows, and 22 more variables: popamerindian &lt;int&gt;,
+## #   popasian &lt;int&gt;, popother &lt;int&gt;, percwhite &lt;dbl&gt;, percblack &lt;dbl&gt;,
+## #   percamerindan &lt;dbl&gt;, percasian &lt;dbl&gt;, percother &lt;dbl&gt;,
+## #   popadults &lt;int&gt;, perchsd &lt;dbl&gt;, percollege &lt;dbl&gt;, percprof &lt;dbl&gt;,
+## #   poppovertyknown &lt;int&gt;, percpovertyknown &lt;dbl&gt;, percbelowpoverty &lt;dbl&gt;,
+## #   percchildbelowpovert &lt;dbl&gt;, percadultpoverty &lt;dbl&gt;,
+## #   percelderlypoverty &lt;dbl&gt;, inmetro &lt;int&gt;, category &lt;chr&gt;,
+## #   popchildren &lt;int&gt;, pr_children &lt;dbl&gt;
+```
+
+
+
+---
+
+### When data aren't the first argument?
+
+
+```r
+# linear relationship between poverty (y) and education (x)
+lm(percelderlypoverty ~ percollege, data = midwest)
+```
+
+```
+## 
+## Call:
+## lm(formula = percelderlypoverty ~ percollege, data = midwest)
+## 
+## Coefficients:
+## (Intercept)   percollege  
+##     17.0055      -0.3074
+```
+
+--
+
+
+```r
+# use a period to stand in for the piped data
+midwest %&gt;%
+  lm(percelderlypoverty ~ percollege, data = .)
+```
+
+```
+## 
+## Call:
+## lm(formula = percelderlypoverty ~ percollege, data = .)
+## 
+## Coefficients:
+## (Intercept)   percollege  
+##     17.0055      -0.3074
+```
+
+
+
+---
+
+## Tips for pipes
+
+.pull-left[
+
+- Not necessary if just one function
+
+- Break multiple functions across lines
+
+- Indent functions (two spaces)
+
+- Write full chain *before* creating new object
+
+- Test chain line-by-line while writing
+
+- Tidyverse [flipbook](https://evamaerey.github.io/tidyverse_in_action/tidyverse_in_action.html) by Gina Reynolds
+
+- Need variables out of a data frame? Check out `pull()` or `%$%` from the `magrittr` package
+
+]
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/10-piping/img/not-a-pipe.jpg" width="70%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+class: inverse, middle, center
+
+## Enjoy your new powers
+
+Practice on your first exercise! 
+
+Exercises due *before class* Wednesday. Late work NOT ACCEPTED!
+
+
+&lt;!-- Get on Twitter
+
+&lt;center&gt;
+  &lt;blockquote class="twitter-tweet"&gt;&lt;p lang="en" dir="ltr"&gt;&lt;a href="https://twitter.com/StableMarkets?ref_src=twsrc%5Etfw"&gt;@StableMarkets&lt;/a&gt; will know&lt;/p&gt;&amp;mdash; Savage Jim (@jim_savage_) &lt;a href="https://twitter.com/jim_savage_/status/1099666900685127680?ref_src=twsrc%5Etfw"&gt;February 24, 2019&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
+&lt;/center&gt;
+
+&lt;center&gt;
+  &lt;blockquote class="twitter-tweet" data-conversation="none"&gt;&lt;p lang="en" dir="ltr"&gt;1/n Yeah this is my jam. Thanks for the tag &lt;a href="https://twitter.com/jim_savage_?ref_src=twsrc%5Etfw"&gt;@jim_savage_&lt;/a&gt; . Here&amp;#39;s some tips for learning BNP. 1) imo FNBI by Ghosal (linked by &lt;a href="https://twitter.com/lauretig?ref_src=twsrc%5Etfw"&gt;@lauretig&lt;/a&gt; below) is only good once you have implementation-level knowledge of BNP already and want to fill in theoretical gaps in knowledge.&lt;/p&gt;&amp;mdash; Arman Oganisian (@StableMarkets) &lt;a href="https://twitter.com/StableMarkets/status/1099673836243611648?ref_src=twsrc%5Etfw"&gt;February 24, 2019&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
+&lt;/center&gt;
+
+
+- Hadley
+- Jenny Bryan
+- Mara Averick
+- Gina Reynolds
+- Dave Robinson
+- Kareem Carr
+- Emi Tanaka
+- Rladies
+
+
+
+
+ --&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

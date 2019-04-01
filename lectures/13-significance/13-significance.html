@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Statistical Significance</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-03-06" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Statistical Significance
+### Understanding Political Numbers
+### March 6, 2019
+
+---
+
+
+class: inverse, middle, center
+
+# Review
+
+
+
+
+
+???
+
+Why regression?
+
+- we are trying to understand the social world
+- how do social things happen
+- this means cause and effect
+- in math: cause and effect means x causes y
+- If x causes y, they should be related
+- if I change x, y would change as a result
+- so that's why we care about relationships
+- we care about regression because we want to understand relationships
+- so we need a way to estimate the relationship
+
+
+**RESIST TEMPTATION TO WRITE EVERYTHING**
+
+
+---
+
+.pull-left[
+
+### Regression Review
+
+1. **Assume: `\(\mathrm{E}[Y \mid X]\)` is a line**
+
+   Expected average `\(y\)`, conditional on its `\(x\)` value
+
+3. ** `\(\hat{y}_{i}\)` is predicted `\(y\)`  for observation `\(i\)`. **
+   
+   `\(\hat{y}_{i} = a + bx_{i}\)`
+
+2. ** `\(y_i\)` is the observed `\(y\)` (prediction + residual error)**
+
+   `\(y_{i} = a + bx_{i} + e_{i}\)`
+
+4. **Residual error: actual minus predicted &lt;br&gt;**
+   
+   `\(e_{i} = y_{i} - \hat{y}_{i}\)`
+
+5. **"Ordinary least Squares" (OLS) estimation: pick `\(a\)` and `\(b\)` that minimize error**
+
+   Technically, minimizing the "sum of squared error"
+
+]
+
+
+.pull-right[
+
+```r
+library("tidyverse") # contains 'midwest' data
+
+lm(percprof ~ percollege, data = midwest)
+```
+
+```
+## 
+## Call:
+## lm(formula = percprof ~ percollege, data = midwest)
+## 
+## Coefficients:
+## (Intercept)   percollege  
+##     -1.7899       0.3413
+```
+
+
+&lt;img src="13-significance_files/figure-html/review-plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+
+.pull-left[
+### Warnings
+
+1. Beware: Does a linear relationship make sense
+
+2. Beware: extrapolation beyond data (top figure)
+
+3. Beware: patterns in residuals (bottom figure)
+
+4. Beware: influential outliers
+
+]
+
+
+.pull-right[
+&lt;img src="13-significance_files/figure-html/unnamed-chunk-1-1.png" width="90%" style="display: block; margin: auto;" /&gt;&lt;img src="13-significance_files/figure-html/unnamed-chunk-1-2.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+
+### Assumptions about leftover error
+
+.pull-left[
+
+We assume that error `\(e_{i}\)` is random noise
+
+- \*\**After* accounting for `\(x\)`
+
+- Only `\(x\)` affects `\(y\)`? No.
+
+- `\(e_{i}\)` is the sum of "everything else"
+
+- Accumulation of random noise `\(\rightarrow\)` normal distribution
+
+- Expected value of error is 0
+
+]
+
+
+.pull-right[
+
+&lt;img src="13-significance_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+
+
+
+---
+
+class: inverse, middle, center
+
+# Statistical Significance
+
+
+
+
+---
+
+class: center, middle
+
+### A result is *statistically significant* if is was unlikely to have occurred by chance
+
+???
+
+- We look at the relationship of `\(x\)` and `\(y\)`, we will find some slope.
+- Is this just caused by noise in our data
+- We compare the average test score between two groups. We find some difference.
+- Is this difference real, or just caused by noise in our data?
+
+
+
+---
+
+# The "True" Model
+
+We estimate `\(a\)` and `\(b\)`, but estimates are noisy. What can we learn about the *true* equation?
+
+--
+
+.pull-left[
+#### The true equation
+
+`\begin{align}
+  y_{i} &amp;= \alpha + \beta x_{i} + \epsilon_{i}
+\end{align}`
+
+Problem: We don't know `\(\alpha\)` and `\(\beta\)` and never will
+
+]
+
+--
+
+.pull-right[
+
+#### The estimated equation
+
+`\begin{align}
+  y_{i} &amp;= a + bx_{i} + e_{i}
+\end{align}`
+
+`\(a\)` and `\(b\)` are imperfect estimates of `\(\alpha\)` and `\(\beta\)`
+
+]
+
+--
+
+
+&lt;br&gt;&lt;br&gt;
+
+#### **Statistical inference** is "what conclusions can I draw about `\(\beta\)` even though I can't see it?"
+
+
+
+???
+
+Even if `\(\beta = 0\)` , we will find `\(b \neq 0\)`
+
+
+
+---
+
+class: center, middle
+
+### A result is *statistically significant* if is was unlikely to have occurred by chance
+
+
+**We want to make inferences about the "true" parameters, but we only observe a sample of data.**
+
+
+---
+
+
+.pull-left[
+
+
+
+
+&lt;img src="13-significance_files/figure-html/null-scatter-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+### The "null hypothesis"
+
+Assume that `\(\beta = 0\)`
+
+Estimate the model on data
+
+
+```r
+ex_reg &lt;- lm(y ~ x, data = test_data) %&gt;%
+  print()
+```
+
+```
+## 
+## Call:
+## lm(formula = y ~ x, data = test_data)
+## 
+## Coefficients:
+## (Intercept)            x  
+##     0.05423     -0.32082
+```
+
+**Assuming that `\(\beta = 0\)`, what's the probability `\((p)\)` of observing a `\(b\)` this big *by random chance*?**
+]
+
+???
+
+if `\(p\)` is low enough: statistically significant
+
+
+
+
+
+---
+
+class: center, middle
+
+### A result is *statistically significant* if is was unlikely to have occurred by chance
+
+**We want to make inferences about the "true" parameters, but we only observe a sample of data.**
+
+**What's the *probability* of observing our slope, *if the null were true* ( `\(p\)` value )**
+
+
+???
+
+Calculate the `\(p\)`-value, but where do they come from?
+
+
+
+---
+
+### Find the `\(p\)`-value
+
+** `\(p\)` value: ** The probability of observing a slope *at least this big* if the null hypothesis is true
+
+--
+
+.left-code[
+
+Output from `tidy()` (from the `broom` package)
+
+- a data frame!
+- `estimate`: coefficients ( `\(a\)` and `\(b\)` values )
+- `std.error`: uncertainty of estimates
+- `statistic`: standardized slope (estimate / std.err)
+- `p-value`: self-explanatory
+
+]
+
+
+.right-plot[
+
+```r
+# 'broom' pkg for model output
+# install.packages("broom")
+
+# load it
+library("broom") 
+
+# info about model estimates
+tidy(ex_reg)
+```
+
+```
+## # A tibble: 2 x 5
+##   term        estimate std.error statistic p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 (Intercept)   0.0542     0.165     0.330  0.744 
+## 2 x            -0.321      0.175    -1.83   0.0777
+```
+]
+
+
+
+
+---
+
+## "Rejecting the null hypothesis"
+
+.pull-left[
+
+Null hypothesis significance testing:
+
+- "Assuming the null hypothesis is true, the probability of observing a slope at least this *extreme* is ( `\(p\)` )"
+
+- If `\(p\)` is really low, then it's unlikely that the data come from the null hypothesis
+
+- "Statistical significance" means `\(p\)` is lower than some threshold
+
+- Reject the null hypothesis at `\((1-p)\)`% confidence
+]
+
+--
+
+.pull-right[
+
+
+`\(p &lt; 0.1\)`: significant at the 10% level (reject the null with 90% confidence)
+
+`\(p &lt; 0.05\)`: significant at the 5% level (reject the null with 95% confidence)
+
+`\(p &lt; 0.01\)`: significant at the 1% level (reject the null with 99% confidence)
+
+
+**Lower `\(p\)` values, stronger signal, more confident that `\(\beta \neq 0\)`**
+
+]
+
+
+
+---
+
+class: center, middle
+
+### A result is *statistically significant* if is was unlikely to have occurred by chance
+
+**We want to make inferences about the "true" parameters, but we only observe a sample of data.**
+
+**What's the *probability* of observing our slope, *if the null were true***
+
+**An estimate is *significant* if the probability of getting it, under the null, is "sufficiently low"**
+
+
+
+
+---
+
+### Where do `\(p\)`-values come from? 
+
+.pull-left[
+Let's do a `S I M U L A T I O N`
+
+- Generate 10k datasets containing `\(x\)` and `\(y\)`
+
+- In every dataset, the **true slope** is zero
+
+- In every dataset, our **estimated slope** is not zero (thanks to random error `\(e_{i}\)`)
+
+]
+
+
+
+
+--
+
+.pull-right[
+
+&lt;img src="13-significance_files/figure-html/plot-nulls-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+**We know the theoretical distribution of "by-chance" slopes**
+
+]
+
+
+
+
+
+---
+
+### We know the distribution of "by-chance" slopes
+
+.left-code[
+Compare slopes by *standardizing* them: `\(t = \dfrac{b}{std.err(b)}\)`. 
+
+"Big" `\(t\)` values are unlikely
+
+`\(p\)` value is the probability of getting an even "bigger" `\(t\)` value
+]
+
+.right-plot[
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/13-significance/img/zscores.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+???
+
+We know what to expect, if the relationship is null
+
+
+
+---
+
+## Confidence levels and `\(p\)`-values
+
+.pull-left[
+
+95% Interval = `\(b \pm 1.96(se(b))\)`
+
+Naive interpretation: 95% chance that the true value is within the interval
+
+Better interpretation: The parameter is in the interval or it's not. The interval contains the true value in 95% of samples (if you could take an infinite number of samples, which, you can't)
+
+Practical interpretation: Interval contains all the values I can't reject. if it doesn't contain zero, you can reject zero
+]
+
+.pull-right[
+
+&lt;img src="13-significance_files/figure-html/confints-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+---
+
+## Inference issues with `\(p\)` values
+
+--
+
+Null hypothesis testing: Higher quality learning by rejecting inconsistent ideas (*falsifying* the null? Probabilistically?)
+
+--
+
+If we want to be 95% confident, 5% of the "null models" will appear significant
+
+--
+
+It takes *lots* of data to estimate small effects w/ statistical significance
+
+--
+
+Insignificance does *not* mean "no relationship," only that there wasn't enough data to reject the null hypothesis
+
+--
+
+Relationships are everywhere, we just need enough data to make confident inferences about what they are
+
+
+
+
+---
+
+class: center, middle
+
+### A result is *statistically significant* if is was unlikely to have occurred by chance
+
+**We want to make inferences about the "true" parameters, but we only observe a sample of data.**
+
+**What's the *probability* of observing our slope, *if the null were true***
+
+**An estimate is *significant* if the probability of getting it, under the null, is "sufficiently low"**
+
+**Null relationships can still "pop" as significant, and "non-null" relationships may fail to show insignificance**
+
+
+&lt;!-- MICHAEL's email 
+
+- Grades are really good, better than essay 1 maybe
+- Michael will have left feedback on your code. They will be skewed toward comments on what could be better, but this is just for transparency. Even though your comments may only highlight stuff that could have been better, doesn't mean you did a bad job. 
+
+Common areas:
+
+- new object after mutate()
+- names(), and for diagnosing issues with the above ^
+- mean in each group means group_by() %&gt;% summarize()
+- Y-axis of a histogram
+
+Style: 
+
+- Include comments 
+- break commands across multiple lines (ggplot)
+- Space out code (spaces between operators, and between lines)
+- Don't put View() in the script
+- Style guide links?
+
+--&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

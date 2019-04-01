@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Multiple Regression</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-03-11" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Multiple Regression
+### Understanding Political Numbers
+### March 11, 2019
+
+---
+
+
+class: inverse, middle, center
+
+# Review
+
+
+
+
+
+---
+
+## Review
+
+.left-code[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/14-multiple-regression/img/Normal.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.right-plot[
+
+#### A result is *statistically significant* if is was unlikely to have occurred by chance
+
+**We want to make inferences about the "true" parameters, but we only observe a sample of data.**
+
+***Assuming that the null hypothesis is true,* what would be the *probability* of observing our slope**
+
+**An estimate is *significant* if the probability of getting it, under the null, is "sufficiently low"**
+
+**Null relationships can still "pop" as significant, and "non-null" relationships may fail to show insignificance**
+]
+
+
+
+
+
+---
+
+
+.pull-left[
+## What is a confidence interval?
+
+All estimates are uncertain
+
+95% intervals contain "true parameter" 95% of the time
+
+`\(\hat{y} = \alpha + \beta x\)`
+
+Interval is `\(\mathrm{Estimate} \pm \mathrm{MOE}\)`
+
+`\(b \pm \left(1.96 \times se(b)\right)\)`
+
+Software calculates CIs for you 
+
+]
+
+.pull-right[
+&lt;img src="14-multiple-regression_files/figure-html/unnamed-chunk-1-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Inference issues with `\(p\)` values
+
+--
+
+Null hypothesis testing: Higher quality learning by rejecting inconsistent ideas (*falsifying* the null? Probabilistically?)
+
+--
+
+If we want to be 95% confident, 5% of the "null models" will appear significant
+
+--
+
+Insignificance does *not* mean "no relationship," only that there wasn't enough data to reject the null hypothesis
+
+--
+
+It takes *lots* of data to estimate small effects w/ statistical significance
+
+--
+
+Relationships are everywhere, we just need enough data to make confident inferences about what they are
+
+
+
+
+---
+
+class: middle, inverse, center
+
+# Multiple Regression
+
+
+
+---
+
+# "Controlling for" other factors
+
+--
+
+`\(y\)` affected by many potential `\(w, x, z\)` variables
+
+--
+
+**Partial effect:** what would happen to `\(y\)` if I *only* changed `\(w\)`
+
+Or, the effect of `\(w\)`, "controlling for" `\(x\)` and `\(z\)`
+
+--
+
+SES and voting: Income or education?
+
+--
+
+Experiments! 
+
+
+
+
+
+---
+
+## Multiple regression
+
+.pull-left[
+"Simple" or "bivariate" regression (two variables)
+
+`\begin{align}
+  y = \alpha + \beta x + \epsilon
+\end{align}`
+
+&lt;br&gt;
+
+"Multiple regression" (many independent variables)
+
+`\begin{align}
+  y = \alpha + \beta_{1} x_{1} + \beta_{2} x_{2} + \beta_{3} x_{3} + \ldots + \epsilon
+\end{align}`
+
+]
+
+--
+
+.pull-right[
+Predicted value `\(\hat{y}\)` a function of multiple `\(x\)` variables
+
+`\(\beta_{1}\)`: the effect of `\(x_{1}\)`, *all else constant*
+
+`\(\beta_{2}\)`: the effect of `\(x_{2}\)`, *all else constant*
+
+`\(\alpha\)`: value of `\(\hat{y}\)` when *all* `\(x\)` variables are `\(0\)`
+
+`\(\epsilon\)`: still leftover error
+]
+
+
+
+---
+
+## Interpreting Multiple Regression
+
+.pull-left[
+
+```r
+library("tidyverse")
+
+# show the car data, convert to 'tibble'
+mtcars %&gt;% 
+  as_tibble(rownames = "model") %&gt;%
+  select(model, mpg, wt, disp)
+```
+
+```
+## # A tibble: 32 x 4
+##    model               mpg    wt  disp
+##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazda RX4          21    2.62  160 
+##  2 Mazda RX4 Wag      21    2.88  160 
+##  3 Datsun 710         22.8  2.32  108 
+##  4 Hornet 4 Drive     21.4  3.22  258 
+##  5 Hornet Sportabout  18.7  3.44  360 
+##  6 Valiant            18.1  3.46  225 
+##  7 Duster 360         14.3  3.57  360 
+##  8 Merc 240D          24.4  3.19  147.
+##  9 Merc 230           22.8  3.15  141.
+## 10 Merc 280           19.2  3.44  168.
+## # … with 22 more rows
+```
+
+]
+
+--
+
+.pull-right[
+
+`\begin{align}
+  \text{Miles per gallon} &amp;= \alpha + \beta_{1} \mathrm{weight} + \beta_{2} \mathrm{displacement} + \epsilon
+\end{align}`
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/14-multiple-regression/img/reg3d.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+
+
+
+---
+
+## Multiple Regression in R
+
+
+```r
+library("broom") # for tidy() function
+
+# add independent variables with `+`
+car_model &lt;- lm(mpg ~ wt + disp, 
+                data = mtcars)
+
+tidy(car_model, conf.int = TRUE)
+```
+
+```
+## # A tibble: 3 x 7
+##   term        estimate std.error statistic  p.value conf.low conf.high
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)  35.0      2.16        16.2  4.91e-16  30.5     39.4    
+## 2 wt           -3.35     1.16        -2.88 7.43e- 3  -5.73    -0.970  
+## 3 disp         -0.0177   0.00919     -1.93 6.36e- 2  -0.0365   0.00107
+```
+
+
+---
+
+### Predictions from Multiple Regression
+
+
+.pull-left[
+Conventionally: plot partial effect of one variable, holding everything else at their mean
+
+
+```r
+# new data frame; disp held at mean
+vary_wt &lt;- mtcars %&gt;%
+  select(mpg, wt, disp) %&gt;%
+  mutate(disp = mean(disp)) 
+
+# predictions using augment()
+wt_predictions &lt;- 
+  augment(car_model, newdata = vary_wt) %&gt;%
+  mutate(MOE = 1.96 * .se.fit,
+         lower_bound = .fitted - MOE,
+         upper_bound = .fitted + MOE) %&gt;%
+  print()
+```
+
+```
+## # A tibble: 32 x 8
+##      mpg    wt  disp .fitted .se.fit   MOE lower_bound upper_bound
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+##  1  21    2.62  231.    22.1   0.866  1.70        20.4        23.8
+##  2  21    2.88  231.    21.2   0.652  1.28        20.0        22.5
+##  3  22.8  2.32  231.    23.1   1.16   2.28        20.8        25.4
+##  4  21.4  3.22  231.    20.1   0.516  1.01        19.1        21.1
+##  5  18.7  3.44  231.    19.3   0.577  1.13        18.2        20.5
+##  6  18.1  3.46  231.    19.3   0.588  1.15        18.1        20.4
+##  7  14.3  3.57  231.    18.9   0.659  1.29        17.6        20.2
+##  8  24.4  3.19  231.    20.2   0.517  1.01        19.2        21.2
+##  9  22.8  3.15  231.    20.3   0.521  1.02        19.3        21.3
+## 10  19.2  3.44  231.    19.3   0.577  1.13        18.2        20.5
+## # … with 22 more rows
+```
+]
+
+
+.pull-right[
+&lt;img src="14-multiple-regression_files/figure-html/unnamed-chunk-5-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+
+
+
+
+---
+
+## (Spooky voice) Omitted Variable Bias
+
+&lt;img src="14-multiple-regression_files/figure-html/spurious-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+
+---
+
+class: middle
+
+.pull-left[
+## Causality Advice
+
+Correlation ≠ causation
+
+
+
+Bad controls
+
+
+Better causality: control "upstream" variables
+
+- Back-door paths
+- Post-treatment bias
+
+
+For advanced advice: [[1]](https://www.youtube.com/watch?v=l_7yIUqWBmE) and [[2]](https://www.youtube.com/watch?v=0Jc6Kgw5qc0)
+
+]
+
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/14-multiple-regression/img/causality.jpg" width="60%" style="display: block; margin: auto;" /&gt;
+]
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

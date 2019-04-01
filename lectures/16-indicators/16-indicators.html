@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Indicators and Interactions</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-03-25" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Indicators and Interactions
+## (Categorical Variables in Regression)
+### Understanding Political Numbers
+### March 25, 2019
+
+---
+
+
+
+
+
+class: inverse, middle, center
+
+
+# While you were gone...
+
+
+---
+
+background-image: url(img/matt.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/all-three.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/roman-tfw.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/roman-big-boy.jpg)
+background-color: #000000
+background-size: contain
+
+---
+
+background-image: url(img/roman-burp-down.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/erin-spencer.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/sams.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/trio-close.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+
+---
+
+background-image: url(img/murphy.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/johanna.jpg)
+background-color: #000000
+background-size: contain
+
+
+
+
+---
+
+class: inverse, middle, center
+
+# Research Questions
+
+---
+
+class: middle, center
+
+## Only *one* `\(y\)` variable, multiple `\(x\)` variables
+
+
+---
+
+
+## Selecting on the Dependent Variable
+
+
+.left-code[
+
+Selecting cases that meet some criteria, and using *only* those cases as evidence for the criteria
+
+**Instead,** we need variation in both `\(x\)` and `\(y\)` (or we can't study the relationship)
+]
+
+--
+
+.pull-right[
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/16-indicators/img/nyt.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+
+
+
+
+---
+
+class: middle
+
+.left-column[
+**Ecological Inference Fallacy**
+
+Assuming that group-level patterns apply to individuals within the group
+]
+
+
+.right-column[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/16-indicators/img/ecological.png" width="65%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+
+
+## Confounders
+
+.left-code[
+
+
+
+
+
+```r
+# X = f(U) and Y = f(U)
+# but Y ≠ f(X)
+confound_data &lt;- confound_data %&gt;%
+  mutate(
+    X = 2 + (3*U) + error_x, 
+    Y = 1 + (2*U) + error_y
+  ) %&gt;%
+  select(-starts_with("error")) %&gt;%
+  print()
+```
+
+```
+## # A tibble: 200 x 3
+##          U       X       Y
+##      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1  0.624   5.13    3.51  
+##  2  0.998   3.50    3.24  
+##  3 -0.910  -0.391  -1.68  
+##  4  0.0374  1.74   -1.04  
+##  5  0.433   3.99    0.296 
+##  6 -1.32   -1.45   -1.27  
+##  7 -0.811   0.583  -2.68  
+##  8 -0.492   1.40   -0.802 
+##  9 -0.353  -0.0152 -0.0595
+## 10 -1.55   -1.70   -1.91  
+## # … with 190 more rows
+```
+]
+
+--
+
+.right-plot[
+&lt;img src="16-indicators_files/figure-html/plot-confound-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+class: middle, center
+
+## Proof-read better
+
+
+---
+
+class: inverse, middle, center
+
+# Indicators
+
+
+
+
+
+---
+
+class: center, middle
+
+### Multiple regression
+
+`\begin{align}
+  y = \alpha + \beta_{1} x_{1} + \beta_{2} x_{2} + \beta_{3} x_{3} + \ldots + \epsilon
+\end{align}`
+
+
+
+
+---
+
+## DW-Nominate
+
+.left-code[
+Ideological scaling method from *roll call votes*
+
+-1 (left/"liberal") to +1 (right/conservative)
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/16-indicators/img/nominate-senate.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+class: middle
+
+
+
+
+&lt;img src="16-indicators_files/figure-html/unnamed-chunk-6-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Elections data
+
+
+```r
+library("tidyverse")
+library("here")
+library("broom")
+
+# read House elections/ideology data
+house &lt;- read_csv(here("data", "house-ideology.csv")) %&gt;%
+  print()
+```
+
+```
+## # A tibble: 450 x 5
+##    state_abbrev district_code nominate_dim1 rep_pvote party     
+##    &lt;chr&gt;                &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;     
+##  1 AL                       3         0.338     0.669 Republican
+##  2 AL                       7        -0.39      0.291 Democrat  
+##  3 AL                       2         0.367     0.663 Republican
+##  4 AL                       5         0.607     0.674 Republican
+##  5 AL                       1         0.543     0.651 Republican
+##  6 AL                       6         0.773     0.731 Republican
+##  7 AL                       4         0.362     0.822 Republican
+##  8 AK                       1         0.28      0.584 Republican
+##  9 AZ                       8         0.749     0.611 Republican
+## 10 AZ                       3        -0.599     0.342 Democrat  
+## # … with 440 more rows
+```
+
+
+
+---
+
+## Nominate as `\(f(\text{presidential vote})\)`
+
+.pull-left[
+
+```r
+# estimate the linear model 
+# lm(y ~ x, data = dataset)
+house_reg &lt;- lm(nominate_dim1 ~ rep_pvote, 
+                data = house)
+
+# intercept and slope estimates
+tidy(house_reg)
+```
+
+```
+## # A tibble: 2 x 5
+##   term        estimate std.error statistic   p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)   -0.972    0.0338     -28.8 6.15e-104
+## 2 rep_pvote      2.20     0.0653      33.7 5.49e-125
+```
+
+
+&lt;br&gt; 
+
+`\begin{align}
+  \hat{\mathtt{Nom}} &amp;= 
+    -0.97 + 
+    2.2 \left( \mathtt{Pres.Vote} \right)  
+\end{align}`
+
+
+]
+
+--
+
+.pull-right[
+
+&lt;img src="16-indicators_files/figure-html/dumb-plot-empty-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+
+
+
+---
+
+## Nominate as `\(f(\text{presidential vote})\)`
+
+
+.pull-left[
+
+```r
+# estimate the linear model 
+# lm(y ~ x, data = dataset)
+house_reg &lt;- lm(nominate_dim1 ~ rep_pvote, 
+                data = house)
+
+# intercept and slope estimates
+tidy(house_reg)
+```
+
+```
+## # A tibble: 2 x 5
+##   term        estimate std.error statistic   p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)   -0.972    0.0338     -28.8 6.15e-104
+## 2 rep_pvote      2.20     0.0653      33.7 5.49e-125
+```
+
+
+&lt;br&gt; 
+
+`\begin{align}
+  \hat{\mathtt{Nom}} &amp;= 
+    -0.97 + 
+    2.2 \left( \mathtt{Pres.Vote} \right)  
+\end{align}`
+
+
+]
+
+
+.pull-right[
+
+&lt;img src="16-indicators_files/figure-html/dumb-plot-pts-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+---
+
+## Control for party (using indicator/dummy variable)
+
+--
+
+
+```r
+# new_variable = case_when(if condition ~ result if TRUE,
+#                          if condition2 ~ result if TRUE)
+house &lt;- house %&gt;%
+  mutate(republican = case_when(party == "Republican" ~ 1,
+                                party == "Democrat" ~ 0)) %&gt;%
+  print()
+```
+
+--
+
+
+```
+## # A tibble: 450 x 6
+##    state_abbrev district_code nominate_dim1 rep_pvote party      republican
+##    &lt;chr&gt;                &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;
+##  1 AL                       3         0.338     0.669 Republican          1
+##  2 AL                       7        -0.39      0.291 Democrat            0
+##  3 AL                       2         0.367     0.663 Republican          1
+##  4 AL                       5         0.607     0.674 Republican          1
+##  5 AL                       1         0.543     0.651 Republican          1
+##  6 AL                       6         0.773     0.731 Republican          1
+##  7 AL                       4         0.362     0.822 Republican          1
+##  8 AK                       1         0.28      0.584 Republican          1
+##  9 AZ                       8         0.749     0.611 Republican          1
+## 10 AZ                       3        -0.599     0.342 Democrat            0
+## # … with 440 more rows
+```
+
+---
+
+## Estimate new regression
+
+
+```r
+# use `+` to add additional predictors
+reg_party &lt;- lm(nominate_dim1 ~ rep_pvote + republican,
+                data = house)
+
+tidy(reg_party)
+```
+
+```
+## # A tibble: 3 x 5
+##   term        estimate std.error statistic   p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)   -0.575    0.0204    -28.2  2.97e-101
+## 2 rep_pvote      0.559    0.0564      9.92 4.45e- 21
+## 3 republican     0.721    0.0200     36.0  4.38e-134
+```
+
+--
+
+**Remember... coefficients are "rise over run"**
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+
+
+
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= a + b_{1}\left(\mathrm{Pres.Vote}\right) + b_{2}\left(\mathrm{Republican}\right)
+\end{align}`
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v + 0.721R
+\end{align}`
+
+
+
+--
+
+
+
+If the member is a **Democrat**?
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v + 0.721\left(\mathbf{R = 0}\right)
+\end{align}`
+
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v
+\end{align}`
+
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+`\begin{align}
+  \hat{y} &amp;= a + b_{1}\left(\mathrm{Pres.Vote}\right) + b_{2}\left(\mathrm{Republican}\right)
+\end{align}`
+
+
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v + 0.721R
+\end{align}`
+
+
+
+If the member is a **Republican**?
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v + 0.721\left(\mathbf{R = 1 }\right)
+\end{align}`
+
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v + 0.721
+\end{align}`
+
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= \left(-0.575 + 0.721\right) +  0.559v 
+\end{align}`
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= 0.146 +  0.559v 
+\end{align}`
+
+
+
+
+---
+
+## Dummy variables *shift the intercept*
+
+--
+
+.pull-left[
+
+Democratic line:
+`\begin{align}
+  \hat{y} &amp;= -0.575 + 0.559v
+\end{align}`
+
+Republican line:
+`\begin{align}
+  \hat{y} &amp;= (-0.575 + 0.721) +  0.559v 
+\end{align}`
+
+Controlling for the voting behavior in the district, Republicans are ** `\(0.721\)` points** more conservative than Democrats (on average)
+
+**Always leave one category "omitted"**
+
+]
+
+
+.pull-right[
+
+&lt;img src="16-indicators_files/figure-html/dummy-plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+---
+
+## The "omitted category"
+
+Dummy variables are intercept shifts *relative to baseline*, where baseline = omitted category
+
+--
+
+.pull-left[
+
+```r
+# car data contain 4, 6, and 8 cylinder engines
+mtcars &lt;- mtcars %&gt;%
+  mutate(four_cyl = case_when(cyl == 4 ~ 1,
+                              cyl != 4 ~ 0),
+         six_cyl = case_when(cyl == 6 ~ 1, 
+                             cyl != 6 ~ 0),
+         eight_cyl = case_when(cyl == 8 ~ 1, 
+                               cyl != 8 ~ 0))
+
+lm(mpg ~ six_cyl + eight_cyl, data = mtcars)
+```
+
+```
+## 
+## Call:
+## lm(formula = mpg ~ six_cyl + eight_cyl, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)      six_cyl    eight_cyl  
+##      26.664       -6.921      -11.564
+```
+]
+
+--
+
+.pull-right[
+&lt;img src="16-indicators_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+## When to use indicators?
+
+Categorical data: What's the average effect of *group membership*? (regime type, gender, race/ethnicity, UNSC member)
+
+Ordinal data: not sure if linear (education/income brackets)
+
+Policy change: is policy enacted (`strict_photo_id == 1` or `strict_photo_id == 0`)
+
+Small number of time periods: before and after (`year_2016 == 1` or `year_2016 == 0`)
+
+
+
+
+
+
+
+---
+
+## Dummies for *varying slopes*
+
+Maybe one party is *more responsive* to district voting?
+
+How? Use an **Interaction term**
+
+--
+
+`\begin{align}
+  \mathrm{Nom} &amp;= \alpha + \beta_{1}(\mathrm{PresVote}) + \beta_{2}(\mathrm{Republican}) + \beta_{3}(\mathrm{PresVote \times Republican}) + \varepsilon
+\end{align}`
+
+--
+
+
+```r
+house &lt;- house %&gt;%
+  mutate(interact_vote_rep = rep_pvote * republican) 
+
+interact_reg &lt;- lm(nominate_dim1 ~ rep_pvote + republican + interact_vote_rep,
+                   data = house)
+```
+
+
+---
+
+`\begin{align}
+  \hat{\mathrm{Nom}} &amp;= a + b_{1}(\mathrm{PresVote}) + b_{2}(\mathrm{Republican}) + b_{3}(\mathrm{PresVote \times Republican})
+\end{align}`
+
+
+```r
+tidy(interact_reg)
+```
+
+```
+## # A tibble: 4 x 5
+##   term              estimate std.error statistic  p.value
+##   &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)         -0.589    0.0249    -23.7  6.08e-81
+## 2 rep_pvote            0.604    0.0713      8.47 3.72e-16
+## 3 republican           0.782    0.0622     12.6  3.46e-31
+## 4 interact_vote_rep   -0.119    0.116      -1.02 3.06e- 1
+```
+
+
+
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78R + -0.12(v \times R)
+\end{align}`
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+`\begin{align}
+  \hat{\mathrm{Nom}} &amp;= a + b_{1}(\mathrm{PresVote}) + b_{2}(\mathrm{Republican}) + b_{3}(\mathrm{PresVote \times Republican})
+\end{align}`
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78R + -0.12(v \times R)
+\end{align}`
+
+
+
+If the member is a **Democrat**?
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78(0) + -0.12(v \times 0)
+\end{align}`
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78(0) + -0.12(0)
+\end{align}`
+
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v
+\end{align}`
+
+
+
+
+---
+
+class: center
+
+### What is the effect of "Republican"?
+
+`\begin{align}
+  \hat{\mathrm{Nom}} &amp;= a + b_{1}(\mathrm{PresVote}) + b_{2}(\mathrm{Republican}) + b_{3}(\mathrm{PresVote \times Republican})
+\end{align}`
+
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78R + -0.12(v \times R)
+\end{align}`
+
+
+
+If the member is a **Republican**?
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78(1) + -0.12(v \times 1)
+\end{align}`
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v + 0.78 + -0.12v
+\end{align}`
+
+--
+
+Simplify again!
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= (-0.59 + 0.78) + (0.6 + -0.12)v
+\end{align}`
+
+
+
+--
+
+`\begin{align}
+  \hat{y} &amp;= 0.19 + 0.48v
+\end{align}`
+
+
+---
+
+## Dummy variables *shift the intercept*, and interactions *shift the slope*
+
+.pull-left[
+Democratic line:
+`\begin{align}
+  \hat{y} &amp;= -0.59 + 0.6v
+\end{align}`
+
+
+Republican line:
+`\begin{align}
+  \hat{y} &amp;= 0.19 + 0.48v
+\end{align}`
+
+Republicans are *slightly* more responsive, but not statistically significant `\(p = 0.31\)` 
+]
+
+.pull-right[
+&lt;img src="16-indicators_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+# Looking ahead
+
+For today: 
+
+- Assigned reading (GOTV)
+- Download lecture, code, and data (later today)
+
+For Wednesday:
+
+- Assigned videos on LOGARITHMS
+- Essay 2 is **incoming**
+
+Next week:
+
+- Data due Monday
+- **Ask us for help**
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

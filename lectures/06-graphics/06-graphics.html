@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Graphics</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Graphics
+## (The Good, the Bad, and the Ugly)
+### Understanding Political Numbers
+### Feb 11, 2019
+
+---
+
+
+class: center
+
+
+
+
+# Agenda
+
+.left-code[
+.middle[
+Learning from bad graphics
+
+Principles for making good graphics
+
+Common graphics for common purposes
+]
+]
+
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/super-bowl.png" width="75%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+# Graphics. Why?
+
+--
+
+Is it about lots of info in a *small space*?
+
+--
+
+Lots of info presented in an *intuitive, easily interpreted way*
+
+???
+
+- graphics aren't "always better"; they work alongside text
+- focus in on the big idea
+- *patterns*
+- easy for consumers
+
+
+---
+
+# Graphics. Why?
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/why-tab.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+???
+
+Table:
+
+- variables describe measure of political interactions with other people
+- "social network" doesn't mean online, just in your life
+- how big is this political network, how often do you talk about politics, agree vs disagree
+- the details of the measures themselves aren't super important. What is important is just the presentation of information.
+  - mean, std dev, min and max, number of data points
+- How efficiently is it displayed?
+
+---
+
+# Graphics. Why?
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/why-fig.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+Source: [Kastellec and Leoni (2007)](https://www.princeton.edu/~jkastell/Tables2Graphs/graphs.pdf)
+
+???
+
+Compared to:
+
+- vertical axis we have each of those variables
+- Horizontal axis shows the data for each variable
+  - dot is mean, solid bar shows standard deviation, dashed lines go to the minimum and maximum
+  - N in parentheses
+
+This is a complex graphic, more complex than the canonical graphics that we will talk about today
+
+- but it's a clear demonstration of the value of graphics
+- **tables are still good for stuff**
+  - exact quantities are important
+
+
+---
+
+### Know thy data
+
+.pull-left[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/why-healy-anscombe.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+"Anscombe's Quartet"
+
+- Four "datasets": sets of `\(x\)` and `\(y\)` variables
+- means of `\(x\)` and `\(y\)` are almost identical in every panel
+- same correlation in every plot (0.81) and same "line of best fit"
+
+You can calculate these values, but they don't, on their own, mean that you understand your data
+
+
+&lt;!-- ---
+
+## Know thy data --&gt;
+
+
+- Anscombe's quartet is an extreme example, but let's look at something more realistic
+
+
+--
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/why-varying-slopes.png" width="70%" style="display: block; margin: auto;" /&gt;
+]
+
+Source: [Healy Ch 1](http://socviz.co/lookatdata.html#lookatdata)
+
+???
+
+What's the relationship between X and Y?
+
+- If you include S. Africa, there is a really strong relationship
+- but S. Africa is skewing the relationship.
+- Excluding S. Africa, the relationship is much weaker
+
+
+
+---
+
+# Axes
+
+Graphics are *spatial* (meaning "space") representations of data
+
+Space needs *dimensions* (axes)
+
+.left-code[
+One dimension: a line
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/one-d.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+# Axes
+
+.left-code[Two dimensions: a coordinate plane]
+
+.right-plot[
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+# Axes
+
+.left-code[
+Three dimensions: a surface? (usually overkill)
+
+(Easier to see more dimensions with use of color etc.)
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/RSS-3D.png" width="70%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+# Axes
+
+.left-code[
+Three dimensions: a surface? (usually overkill)
+
+(Easier to see more dimensions with use of color etc.)
+]
+
+.right-plot[
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-4-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+class: middle, center
+
+## Graphics are about *comparisons* and *variation*
+
+
+???
+
+highlighting differences, or similarities
+
+- the line is higher over here than it is over here
+- there are more points over here than over here
+
+
+
+---
+
+class: middle, inverse, center
+
+# Less than great examples
+
+---
+
+
+&lt;center&gt;&lt;blockquote class="twitter-tweet"&gt;&lt;p lang="en" dir="ltr"&gt;Five years on, it&amp;#39;s disappointing that the data visualization community never fully recognized the benefits of 3D stacked scatter pie columns: &lt;a href="https://t.co/egvMKQ7WbU"&gt;https://t.co/egvMKQ7WbU&lt;/a&gt; &lt;a href="https://t.co/ay9Zngedrl"&gt;pic.twitter.com/ay9Zngedrl&lt;/a&gt;&lt;/p&gt;&amp;mdash; Daniel MacArthur (@dgmacarthur) &lt;a href="https://twitter.com/dgmacarthur/status/1001109915795116033?ref_src=twsrc%5Etfw"&gt;May 28, 2018&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;&lt;/center&gt;
+
+---
+
+# Let's talk about color
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/color-us.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+- color is an accessibility issues
+- Color can make a graphic look beautiful, but there's a difference between color for *beauty* and color for *necessity*
+- Color for beauty, OK? 
+- Graphic shouldn't *need* color
+- OR use a colorblindness friendly color palette
+
+
+---
+
+# Let's talk about the `\(y\)`-axis
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/scale-bush.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+# Let's talk about the `\(y\)`-axis
+
+
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-8-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+???
+
+- going all the way to zero is often good, but not always
+- sometimes it makes it hard to see the important variation
+
+---
+
+# Let's talk about the `\(y\)`-axis
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-9-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+class: middle, center
+
+## Ed Tufte: "Plot the data, not the zero"
+
+
+---
+
+# Failed Comparisons
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/concept-venn.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+### *Conceptual* dishonesty
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/concept-EOs.jpg" width="80%" style="display: block; margin: auto;" /&gt;
+
+???
+
+EOs regarding immigration and other rules that controlled the implementation of the Affordable Care Act
+
+- but these actions weren't even technically executive orders, they were agency determinations or agency findings that technically aren't even the same thing
+- So this is some misdirection
+
+
+
+---
+
+class: middle, center, inverse
+
+# Common graphics
+
+---
+
+# Scatterplots 
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-12-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+# Bar charts
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-13-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+Levels of measurement
+
+- you can still plot important information about categorical variables
+
+
+
+---
+
+# Small multiples
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-14-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+# Technical lesson: *distributions*
+
+.left-code[
+
+Look at one variable. Where are the data?
+
+- on the `\(x\)`-axis: What are the possible values? 
+- on the `\(y\)`-axis: How many of those values are there?
+
+This graphic: a **histogram**
+]
+
+.right-plot[
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+# The Normal Distribution
+
+.left-code[
+The "standard bell curve"
+
+A.k.a. "Gaussian" distribution
+
+This example: average value of 0 and a "spread" of 1
+]
+
+.right-plot[
+&lt;img src="06-graphics_files/figure-html/normal-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Good ways to plot distributions
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-16-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Less good ways to plot distributions
+
+&lt;img src="06-graphics_files/figure-html/unnamed-chunk-17-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+???
+
+Box plots show "percentiles" of the data
+
+- box is the "inner 50%", from 25th percentile to 75th percentile
+
+Violin plots show a vagina
+
+
+
+---
+
+class: middle, center, inverse
+
+# Taste
+
+
+---
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/taste-healy.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+# The "Data-to-Ink Ratio"
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/taste-boxes-healy.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+# Guidelines
+
+.left-code[
+Use graphics to *focus* your point
+
+What to plot:
+
+- distributions
+- relationships
+- statistical results
+
+Labels go a long way
+
+What goes in the plot vs. in the text?
+
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/06-graphics/img/x-xkcd-relationship.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+- As a rule, include only what is necessary
+- Don't data dump
+
+---
+
+# Looking ahead
+
+On Wednesday: making graphics in R
+
+- the "grammar of graphics" and `ggplot()`
+- **Short Essay 1 DUE**
+- Assign R Exercise 1
+
+In Section: more `ggplot`
+
+
+&lt;!-- 
+Lessons
+
+- Lessons from bad graphics
+- Principles for good graphics
+  - comparisons / variation
+  - scale
+    - not just about the graphic, but also about the data
+    - inflation, dollar value
+  - labels
+  - concept
+  - How much to include
+    - part of a paper?
+    - standalone?
+    - Tufte problem (data-ink ratio)
+- types of graphics
+  - relationships
+    - x vs y (scatter)
+    - y vs time (line)
+    - categorical, discrete, and continuous data
+  - histograms/density plots -&gt; distributions
+    - relationship between a value (x) and how frequently it occurs (y)
+    - don't use pie charts
+  - small multiples
+ --&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

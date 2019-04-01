@@ -1,0 +1,600 @@
+---
+title: "Measurement and Causality in Social Science"
+subtitle: '(or, "Social Science: what is it, and why does it suck?")'
+author: "Understanding Political Numbers"
+date: "Feb 4, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+---
+
+# International Relations Diversity Initiative
+
+If you are...
+
+- A person of color
+- Junior or Senior
+- U.S. citizen
+- *Curious about* graduate school in international relations or comparative politics
+
+Friday, April 12, all-day event on graduate school, advice for applying, resources available for students of color, current research in our department...
+
+If interested
+
+- **By Friday** send me one paragraph explaining your scholarly interests, curiosities about graduate school, level of familiarity with graduate school
+- **By Friday** meet with me to discuss these things
+
+---
+
+class: center, middle
+
+# Agenda
+
+Short Essay 1
+
+Technical lesson: DAGs
+
+Thinking about social science
+
+Measurement
+
+Causality
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "01-intro", "01-intro.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+# box
+library("boxr"); box_auth()
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "04_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3
+                      # , dpi = 100
+                      )
+
+img <- "lectures/04-social-science/img"
+```
+
+
+---
+
+class: middle, center, inverse
+
+# Short Essay 1
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Technical Lesson
+
+
+
+---
+
+# Directed Acyclic Graphs (DAGs)
+
+
+
+```{r dag-1, fig.width = 5, fig.height = 3, out.width = "80%", cache= FALSE}
+set.seed(21223)
+dagify(y ~ x,
+       exposure = "x",
+       outcome = "y",
+       labels = c("x" = "Cause", "y" = "Effect")) %>%
+  tidy_dagitty(layout = "linear") %>%
+  node_children("x") %>%
+  ggplot(aes(x = x, y = y,
+             xend = xend, yend = yend)) +
+    geom_dag_edges() +
+    geom_dag_point(shape = 1, color = "black") +
+    geom_dag_text(color = "black") +
+    geom_dag_text_repel(aes(label = label), segment.color = "black") +
+    scale_color_manual(values = c(primary, secondary)) +
+    scale_x_continuous(expand = expand_scale(add = 0.5)) +
+    scale_y_continuous(expand = expand_scale(add = 0.5)) +
+    theme_dag_blank() + 
+    NULL
+```
+
+???
+
+Diagrams that show causal relationships
+
+- "causal" meaning "cause and effect"
+- we refer to "causality" or "causation"
+
+How it works:
+
+- **Graph** in the sense that it is a diagram containing nodes and edges
+  - "nodes" are variables in the causal system (X, Y)
+  - "edges" connect nodes (arrows)
+- **Directed** because the arrows show a direction of causality. X causes Y
+- **Acyclic** means not-cyclical. There is a path from cause to effect, and the path doesn't circle back. Y doesn't go back to cause X.
+  - in reality, it might circle back
+  - which goes to show that DAGs are simplifications of the world
+  - They are just mental tools that are designed subtract nuance out of the picture
+  - They are "models" like toy versions of the world
+- Imagine $X$ is how much time you spend practicing R code, and $Y$ how well you do in this class
+
+
+
+
+
+---
+
+## They're good DAGs, Brent
+
+```{r dag-example, fig.width = 5, fig.height = 3, out.width = "80%", cache = FALSE}
+set.seed(21223)
+dagify(y ~ z,
+       z ~ x,
+       exposure = c("x"),
+       outcome = c("z", "y"),
+       labels = c("z" = '"Mediator"')) %>%
+  tidy_dagitty(layout = "linear") %>%
+  node_ancestors("y") %>%
+  # node_parents("y") %>%
+  ggplot(aes(x = x, y = y,
+             xend = xend, yend = yend)) +
+    geom_dag_edges() +
+    geom_dag_point(shape = 1, color = "black") +
+    geom_dag_text(color = "black") +
+    geom_dag_text_repel(aes(label = label), segment.color = "black") +
+    scale_color_manual(values = c("descendant" = primary, "ancestor" = secondary)) +
+    scale_x_continuous(expand = expand_scale(add = 0.5)) +
+    scale_y_continuous(expand = expand_scale(add = 0.5)) +
+    theme_dag_blank() + 
+    NULL
+```
+
+
+???
+
+Useful for displaying complicated theories of how the world works
+
+- X causes Y, but "through" Z
+- Really Z affects Y, and Z is affected by X
+- X doesn't affect Y if it doesn't affect Z in between
+- X is time spent practicing R, Z is getting better at R, Y is doing well in this class
+  - You can spend a lot of time practicing, but you won't do well in the class, unless the practice makes you get better at R
+
+When it comes time design an analysis or do statistics, these are useful for figuring out what you need to measure, what your statistical analysis should be designed to do, and so on.
+
+
+---
+
+class: inverse, middle, center
+
+# Social Science
+
+
+---
+
+class: middle, center
+
+# How it works
+
+*Method, method, method*
+
+Complexity? "Art, not science?"
+
+
+
+
+<!-- people are complex, but so is nature -->
+
+<!-- averages -->
+
+
+
+???
+
+- Science is a *method*. It is a systematic approach to evidence-based study of the world. 
+  - build theory
+  - study to test observable implications of theory
+  - hypothesizing about the data you should observe (or not)
+  - analyze the data
+  - draw conclusions and improve
+  - philosophically, scientifically, it works the same
+- Social Science is different because it studies people
+  - that brings unique challenges
+  - but we should be clear-eyed about what those challenges are
+- "People are too complex" or "politics is an art, not a science"
+- Complexity:
+  - yeah people have complex thoughts; the reasons why they do things are not always obvious
+  - but nature is also complex. If you've ever been to organic chemistry class, you know that nature is complex
+  - So I don't think complexity is the thing; and I think people who say things like "People are too complex" or "politics is an art" just haven't taken the careful approach that we're going to take
+- You can learn a lot about people using the same kinds of tools you learn about other things
+- Plant
+  - You have a plant
+  - You think you're doing everything right, but it doesn't grow. You try all these different things
+  - Imagine you had like a thousand plants, and you can set them up in various combinations of conditions
+  - You would be better able to see what kinds of similarities and differences emerge.
+  - So let's do this with people
+  - Get a lot of data, and look for patterns when we have *lots* of people to compare all at once
+- People example
+  - if I surveyed this classroom, and asked you to think about which political issue is most important to you, there would be lots of individual variation
+  - but imagine that I asked every single person in the school
+  - some patterns would probably emerge. Answers might be correlated for people with the same political party, based on gender, race, sexual orientation, your economic/financial situation when you were growing up, whether you are a first-generation college student
+  - *yes* variation, but getting lots of data and averaging can be extremely powerful
+- *practically*, science can be different 
+    - we ask different questions, 
+    - rely on different measurements/data, 
+    - sometimes have to use different study designs to analyze how the world works
+    - we'll come back 
+
+
+---
+
+```{r, out.width = "85%"}
+include_graphics(here(img, "pew-voters.png"))
+```
+
+
+
+
+???
+
+- Pew data: they take surveys
+- Study interviewed >3k people before the election, and then looked up official records to find out if those people voted
+  - you can do this
+  - not *who* you voted for
+- Compare voters and nonvoters along age, race, etc.
+- patterns emerge
+- This tells you a lot?
+  - Why does public policy look the way it does? Who are elected officials really accountable to?
+  - There are lots of theoretical ideas you can draw out of this
+
+
+---
+
+class: center, middle
+
+## Challenges of social science
+
+Ethical problem of studying people
+
+Measurement
+
+Causality
+
+
+???
+
+When you're studying people, you can't be too invasive
+
+- Measurement
+  - I want to know what you're thinking, but I can't read your mind
+  - I can't crack you open and look at your thoughts
+  - I have to do other things to learn about your behavior and your thoughts and feelings
+  - These things have problems
+- Causality issues
+  - I study whether voters in primary elections are ideological
+  - do they use their amount of liberalism to pick which primary candidate
+  - I can't experiment on people and say, this person is going to be liberal...
+  - or this candidate is going to be more conservative...
+  - And because we don't have that much control, this creates problems
+
+
+<!-- Social science -->
+
+<!--  one criticism of some political science work is that the findings of x or y are just "common sense." Maybe. But common sense is often not all that common. Sometimes there is more than one thing that seems to be common sense but they are in conflict — how do those different views get adjudicated? Perhaps with some analysis. Sometimes the common sense is wrong. Also, the best work takes something that people have thought about, points out a new perspective, and makes people think "huh, why didn’t I think of that before, that makes so much sense," which then becomes common sense. -->
+
+
+---
+
+class: middle, center, inverse
+
+# Measurement
+
+---
+
+# "Levels of Measurement"
+
+.left-code[
+**Categorical** measures
+
+- Nominal measures: *unordered* classification 
+- Ordinal measures: *ordered* classification
+
+**Quantitative** measures
+
+- Interval measures: *fixed-interval* scales and indices
+- Ratio measures: *true-zero* counts, proportions, 
+]
+
+.right-plot[
+```{r, out.width = "80%"}
+include_graphics(here(img, "NOM.jpg"))
+```
+]
+
+---
+
+class: center, middle
+
+# Measurement Concerns
+
+Observability
+
+Issues with self-reporting
+
+Validity
+
+Reliability
+
+
+
+
+
+???
+
+Example: Political ideology (left-right, liberal conservative) or Math ability
+
+- Not the same as party ID
+- it *affects* the way you feel about issues like taxes, abortion, climate change, but it isn't the same thing as your opinions on those issues
+
+Observability: I can't see it
+
+Self-reporting: Can I trust your responses?
+
+- Recall/availability
+- Social desirability
+
+Validity: does the observable indicator reflect the underlying concept?
+
+- When I ask people about their ideology, does the measure get at what I want?
+
+Reliability: Does it behave similarly when you use it multiple times? Is it replicable from one instance to the next?
+
+- If I asked you tomorrow, would I get a similar answer?
+
+
+Things we can do:
+
+- some things about what you do creates a paper trail
+- You live somewhere
+- You make money, you register to vote
+- We can ask you survey questions
+- We can collect data that the government release
+
+
+
+--
+
+### A "heuristic model" for thinking about measurement:
+
+\begin{align}
+  Observed = Truth + Bias + Error
+\end{align}
+
+---
+
+class: middle, center, inverse
+
+# Causality (and its detractors)
+
+???
+
+As we've seen in discussions of hypotheses etc. we often are interested in the relationship between X and Y
+
+- if X causes Y, they should be related
+- High X, high Y (or low Y)
+
+Difficulty is that correlations appear for many reasons
+
+
+---
+
+class: middle, center
+
+## "Spurious" Correlation
+
+```{r}
+include_graphics(here(img, "spurious.png"))
+```
+
+<http://tylervigen.com/spurious-correlations>
+
+???
+
+Correlations that appear for non-causal reasons
+
+
+
+---
+
+## Spurious correlation between X and Y
+
+```{r spurious, fig.width = 5, fig.height = 3, out.width = "80%", cache= FALSE}
+set.seed(12)
+
+coords <- tibble(x = c( 1, 2, 3),
+                 y = c(1, 2, 1),
+                 name = c("x", "u", "y"))
+
+dagify(x ~ u,
+       y ~ u,
+       exposure = c("u"),
+       outcome = c("x", "y"),
+       labels = c("u" = "(Unobserved)"),
+       coords = coords) %>%
+  tidy_dagitty(layout = "linear") %>%
+  node_parents("y") %>%
+  ggplot(aes(x = x, y = y,
+             xend = xend, yend = yend)) +
+    geom_dag_edges() +
+    geom_dag_point(shape = 1, color = "black") +
+    geom_dag_text(color = "black") +
+    geom_dag_text_repel(aes(label = label), segment.color = "black") +
+    scale_color_manual(values = c(primary, secondary)) +
+    scale_x_continuous(expand = expand_scale(add = 0.5)) +
+    scale_y_continuous(expand = expand_scale(add = 0.5)) +
+    theme_dag_blank() + 
+    NULL
+```
+
+
+
+
+---
+
+class: middle, center
+
+```{r read-dime, include = FALSE}
+dime_raw <- box_read(379360058073) %>%
+  as_tibble() %>%
+  print()
+
+```
+
+```{r clean-dime, include = FALSE}
+dime <- dime_raw %>% 
+  # filter(cycle == 2012) %>%
+  filter(seat == "federal:house") %>% 
+  filter(ran.general == 1) %>%
+  mutate(ICO = case_when(Incum.Chall == "C" ~ "Challenger",
+                         Incum.Chall == "I" ~ "Incumbent",
+                         Incum.Chall == "O" ~ "Open Seat"),
+         ICO = fct_relevel(ICO, "Incumbent"),
+         vote_general = gen.elect.pct / 100) %>%
+  filter(is.na(ICO) == FALSE) %>%
+  # filter(total.disbursements > 1000) %>%
+  filter(vote_general %in% c(0, 1) == FALSE) 
+
+```
+
+
+```{r plot-dime, fig.width = 7, fig.height = 5, out.width = "70%"}
+ggplot(dime, aes(x = total.disbursements, y = vote_general)) +
+  facet_wrap(~ ICO) +
+  geom_point(color = "steelblue", alpha = 0.4) +
+  scale_x_log10(labels = dollar) +
+  scale_y_continuous(limits = c(0, 1), labels = percent) +
+  geom_smooth(color = "black", method = "lm", 
+              formula = y ~ log(x)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Campaign Spending and Vote Share",
+       subtitle = "General Election Candidates for US House",
+       x = "Campaign Expenditures (Log Scale)",
+       y = "General Election Vote Share")
+```
+
+
+
+---
+
+# Causality
+
+> *Data can tell you that the people who took a medicine recovered faster than those who did not take it, but they can’t tell you why. Maybe those who took the medicine did so because they could afford it and would have recovered just as fast without it.*
+― Judea Pearl, *The Book of Why*
+
+
+--
+
+*Counterfactuals*
+
+???
+
+Imagine a parallel universe, where everything about the world were the same
+
+- except I could change the independent variable, x
+
+The issue with confounding is that $x$ and $y$ may be related, but there are also lots of other things that $x$ is correlated with. So you never observe that true counterfactual. If you change $x$, you change lots of other things
+
+- To be assured that x causes y, you need one of two things
+- One is for *all other variables* to be held constant
+- This is what we mean by "controlling"
+
+
+--
+
+All-else constant (i.e. "controlling for" other variables)
+
+
+???
+
+- the other would be to find a situation where $x$ is affected for some reason that comes from outside of the feedback loop
+
+
+
+--
+
+Experiments
+
+???
+
+You *can* control the independent variable, but you don't observe the parallel universe
+
+- you instead just randomly place units into treatment and control groups, so that you can learn about things on average
+
+We will have a whole week where we talk more about experiments
+
+- and more weeks where we unpack more issues of causality
+
+
+---
+
+class: center, middle
+
+# Generalizing
+
+Do our findings *generalize* beyond the study?
+
+???
+
+- data source is convenient but not the exact population you want
+- We've studied an *instance* of a broader phenomenon
+  - does studying how things work in the U.S. tell us about the world?
+  - maybe sometimes, but we have to think about when it should and should not be applicable
+- The social world, our theories about it, and our data are all confined by social context
+  - why I don't like the idea that "the data are trying to tell you something"
+  - it assumes that the data conform to some interpretable view of things
+  - if the data are caused by something I don't understand, then I can't assume that the data are going to tell me something I can understand.
+
+
+
+
+---
+
+# Looking ahead
+
+Office hours: 2:30--4:30
+
+On Wednesday: Unpacking data
+
+In Section: R lessons!
+
+Next week: graphics!
+
+Check emails for: online schedule, syllabus, Datacamp
+
+
+
+

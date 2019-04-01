@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nonlinear Relationships</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-03-27" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Nonlinear Relationships
+## (Grab “Essay 2” Assignment Sheet)
+### Understanding Political Numbers
+### March 27, 2019
+
+---
+
+
+
+class: center, middle, inverse
+
+# Where do you find nonlinear relationships?
+
+
+
+
+
+---
+
+## Diminishing Effects
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-1-1.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+class: middle
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-2-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+## Natural Boundaries
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-3-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## "Multiplicative data"
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-4-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Long right tails (imperfect indicator)
+
+&lt;img src="17-nonlinear_files/figure-html/long-tails-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+
+
+---
+
+class: inverse, middle, center
+
+## Logarithmic transformations
+
+
+
+---
+
+class: middle
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-5-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: middle
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-6-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+class: middle
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-7-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+## What is log? (Baby don't hurt me)
+
+.pull-left[
+- Steep increase that diminishes
+
+- *Never* fully "levels off"
+
+- Defined over *positive* values only
+
+- Commonly appears with count data, money, population
+]
+
+.pull-right[
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Logarithms "undo" exponentials
+
+If `\(b^{x} = y\)`, then `\(\log_b(y) = x\)`
+
+--
+
+We usually only care about "base `\(e\)`" ( `\(e = 2.7182818\ldots\)` )
+
+--
+.pull-left[
+`\begin{align}
+  e^{x} = y
+\end{align}`
+]
+
+.pull-right[
+`\begin{align}
+  \ln(y) &amp;= x \\
+  \log(y) &amp;= x
+\end{align}`
+]
+
+--
+
+Never worry about solving by hand
+
+
+```r
+# natural log (base e) of 8
+log(8)
+```
+
+```
+## [1] 2.079442
+```
+
+```r
+# exponentials e^(2.079...)
+exp(2.079442)
+```
+
+```
+## [1] 8.000004
+```
+
+
+
+---
+
+## Logs and exponentials are *inverse functions*
+
+.pull-left[
+Inverse functions: if `\(y = f(x)\)`, then `\(f^{-1}(y) = x\)`
+
+
+`\begin{align}
+  f^{-1}(f(x)) &amp;= x \\[12pt]
+  \log(e^{x}) &amp;= x \\[12pt]
+  e^{\log(x)} &amp;= x
+\end{align}`
+
+If you need to log a variable: `log(var)`
+
+If you need to "unlog" a variable: `exp(var)`
+]
+.pull-right[
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+## Why we log for "multiplicative" data
+
+.left-code[
+Sum of random fluctuations -&gt; Normal
+
+Product of random fluctuations -&gt; "Log Normal"
+
+
+]
+
+.right-plot[
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+
+**Logs turn *multiplicative* operations into *additive* (linear) operations**
+
+`\begin{align}
+  \log\left(a \times b \right) &amp;= \log\left(a\right) + \log\left(b\right)
+\end{align}`
+
+
+
+---
+
+## Remember those long tails?
+
+&lt;img src="17-nonlinear_files/figure-html/long-tails-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Take the log, long tails look normal
+
+&lt;img src="17-nonlinear_files/figure-html/log-long-tails-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Logs in practice
+
+.pull-left[
+
+
+```r
+library("gapminder")
+
+# most recent gapminder year
+gap_07 &lt;- gapminder %&gt;%
+  filter(year == max(year)) 
+
+# linear relationship looks bad
+ggplot(gap_07, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "GDP per cap", y = "Life Exp")
+```
+
+]
+
+.pull-right[
+&lt;img src="17-nonlinear_files/figure-html/gap-unlog-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+## Logs in practice
+
+.pull-left[
+
+Plot `\(y = f(log(x))\)`
+
+
+```r
+# log(x) is... better
+ggplot(gap_07, 
+       aes(x = log(gdpPercap), y = lifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "log(GDP per cap)", y = "Life Exp")
+```
+]
+
+
+.pull-right[
+&lt;img src="17-nonlinear_files/figure-html/gap-log-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Logs in practice
+
+.pull-left[
+
+Estimate the model
+
+
+```r
+# new variable is log(x)
+gap_07 &lt;- gap_07 %&gt;%
+  mutate(log_gdp = log(gdpPercap))
+
+log_model &lt;- lm(lifeExp ~ log_gdp, data = gap_07)
+
+tidy(log_model)
+```
+
+```
+## # A tibble: 2 x 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)     4.95     3.86       1.28 2.02e- 1
+## 2 log_gdp         7.20     0.442     16.3  4.12e-34
+```
+]
+
+--
+
+.pull-right[
+`\begin{align}
+  \hat{\mathrm{life}} &amp;= 4.95 + 7.2\log(\mathrm{gdp.pc})
+\end{align}`
+
+As *log GDP per capita* increases by one unit...
+]
+
+
+
+
+---
+
+
+
+.pull-left[
+## Logs in practice
+
+Interpret graphically
+
+
+```r
+# get predicted values for log(x)
+# calculate unlogged x
+# create upper &amp; lower conf interval bounds
+log_preds &lt;- augment(log_model) %&gt;%
+  mutate(gdp_pc = exp(log_gdp),
+         MOE = 1.96 * .se.fit,
+         conf.low = .fitted - MOE,
+         conf.high = .fitted + MOE) %&gt;%
+  print()
+```
+
+```
+## # A tibble: 142 x 13
+##    lifeExp log_gdp .fitted .se.fit  .resid    .hat .sigma .cooksd
+##      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+##  1    43.8    6.88    54.5   0.972 -10.7   0.0186    7.09 2.18e-2
+##  2    76.4    8.69    67.5   0.599   8.89  0.00706   7.11 5.58e-3
+##  3    72.3    8.74    67.9   0.600   4.43  0.00710   7.14 1.39e-3
+##  4    42.7    8.48    66.0   0.601 -23.3   0.00712   6.87 3.85e-2
+##  5    75.3    9.46    73.1   0.704   2.26  0.00976   7.15 5.03e-4
+##  6    81.2   10.4     80.2   1.01    1.04  0.0200    7.15 2.21e-4
+##  7    79.8   10.5     80.5   1.02   -0.712 0.0207    7.15 1.08e-4
+##  8    75.6   10.3     79.2   0.956  -3.52  0.0180    7.14 2.28e-3
+##  9    64.1    7.24    57.1   0.854   6.98  0.0144    7.12 7.10e-3
+## 10    79.4   10.4     80.0   0.999  -0.598 0.0197    7.15 7.22e-5
+## # … with 132 more rows, and 5 more variables: .std.resid &lt;dbl&gt;,
+## #   gdp_pc &lt;dbl&gt;, MOE &lt;dbl&gt;, conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;
+```
+
+]
+
+--
+
+.pull-right[
+
+```r
+# plot y over unlogged x, add yhat line
+ggplot(log_preds, aes(x = gdp_pc, y = lifeExp)) +
+  geom_point(color = "gray50") +
+  geom_ribbon(
+    aes(ymin = conf.low, ymax = conf.high), 
+    fill = "maroon", alpha = .3
+  ) +
+  geom_line(aes(y = .fitted))
+```
+
+&lt;img src="17-nonlinear_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+
+
+---
+
+## Other log rules
+
+`\begin{align}
+  \log\left(a \times b \right) &amp;= \log\left(a\right) + \log\left(b\right) \\[12pt]
+  \log\left(\frac{a}{b}\right) &amp;= \log\left(a\right) - \log\left(b\right) \\[12pt]
+  \log\left(a^{b}\right) &amp;= b \times \log\left(a\right) \\[12pt] 
+  \log\left(1\right) &amp;= 0 \\[12pt] 
+  \log\left(0\right) &amp;= ?
+\end{align}`
+
+
+
+---
+
+class: center, middle
+
+## Remember...
+
+Diminishing effects, natural boundaries
+
+Data generated from "multiplicative" process (populations, dollars)
+
+Don't solve logs yourself; only need to `log(x)`
+
+Undoing logs: `exp(log_x)`
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

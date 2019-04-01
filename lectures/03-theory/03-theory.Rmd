@@ -1,0 +1,522 @@
+---
+title: "Theorizing and Hypothesizing"
+# subtitle: "Welcome Notes"
+author: "Understanding Political Numbers"
+date: "Jan 30, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+---
+
+
+
+# Agenda
+
+Schedule
+
+Review empiricism, induction fallacy, falsification
+
+Math lesson: functions
+
+Theory & Hypotheses (in the scientific method)
+
+Voter turnout example
+
+Essay 1
+
+
+???
+
+- Lecture schedule staying mostly the same (modifying to include an essay on "piping" data)
+- New syllabus online
+- Combining Exercises 1 and 2 (not twice the length but integrating the goals)
+- go back to other lecture for review
+
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "01-intro", "01-intro.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "03_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 2, dpi = 100)
+
+img <- "lectures/03-theory/img"
+```
+
+
+
+---
+
+## What is a function?
+
+.pull-left[
+Map input $x$ to a unique output
+
+An "algorithm" or "routine"
+
+Vocabulary: *argument*, *definition*
+]
+
+.pull-right[
+```{r, out.width = "50%"}
+include_graphics(here(img, "fun.png"))
+```
+]
+
+--
+
+```{r, include = FALSE}
+f_ex <- 3 + (2 * 7)
+```
+
+Suppose $f(x) = 3 + 2x$. 
+
+If $x = 7$, then $f(x) =$ 
+--
+
+$`r f_ex`$
+
+
+???
+
+- Function is called $f$
+- The *argument* is $x$
+- The *definition* describes how $x$ gets "mapped" into the output
+- Use the graphic to map 7 to 17
+
+
+---
+
+## What is a function?
+
+$f(x) = 3 + 2x$, for $x = \left[0 \quad 1 \quad 2 \quad 3 \quad 4 \quad 5 \right]$
+
+???
+
+- Function with a *vector* as the argument
+- Not mysterious, 1-1 correspondence of input to output
+- warning: math and code
+
+--
+
+```{r lin-fun, echo = FALSE, fig.show = "hide"}
+f_data <- tibble(x = 0:5, y = 3 + (2*x),
+                 ylab = case_when(x < 5 ~ str_glue("{y} \\\\"),
+                                  TRUE ~ as.character(y)))
+ggplot(f_data, aes(x, y)) +
+  geom_point() +
+  geom_line(linetype = 3) +
+  coord_cartesian(ylim = c(0, max(f_data$y))) +
+  labs(y = "f(x)") +
+  NULL
+```
+
+.left-code[
+$f(x) = 3 + 2 \begin{bmatrix} 0 \\ 1 \\ 2 \\ 3 \\ 4 \\ 5 \end{bmatrix} = \begin{bmatrix} `r f_data$ylab %>% str_c(collapse = "")` \end{bmatrix}$
+
+```{r, echo = TRUE, eval = FALSE}
+x <- 0:5
+f_x <- 3 + (2 * x)
+```
+]
+
+???
+
+- sideways just for visual ease
+
+--
+
+.right-plot[
+```{r lin-fun, fig.width = 5, fig.height = 4}
+```
+]
+
+???
+
+- points are output
+- line is implicit, what the output would be if we fed f() a continuous sequence
+
+
+
+---
+
+## What is a function?
+
+Linear function w/ more general arguments: $f(x, a, b) = a + bx$
+
+???
+
+- "general" meaning, it can do everything the previous function can do, and more
+- intercept and slope can be whatever you want!
+
+--
+
+```{r, fig.width = 8, fig.height = 3, out.width = "80%"}
+flex_data <- tibble(x = 0:5) %>%
+  crossing(a = c(0, 1, 2)) %>%
+  mutate(b = case_when(a == 0 ~ 1,
+                       a == 1 ~ -1,
+                       a == 2 ~ 0),
+         lab = str_glue("a = {a}, b = {b}"),
+         f_x = a + (b * x))
+
+ggplot(flex_data, aes(x = x, y = f_x)) +
+  geom_point() +
+  geom_line(linetype = 3) +
+  labs(y = "f(x)") +
+  facet_wrap(~ lab) +
+  scale_y_continuous(breaks = seq(-4, 4, 2)) +
+  theme(panel.grid.major = element_line(color = "gray90"))
+```
+
+
+
+???
+
+- Functions don't have to be just lines
+- If you can math it, it can be a function
+
+--
+
+
+A function to find the mean: $m(x) = \displaystyle\frac{\sum\limits_{i} x_{i}}{N}$
+
+```{r, include = FALSE}
+y_ex <- 1:100
+```
+
+--
+
+If $z = \left[1, 2, 3, \ldots, 100 \right]$, then $m(z) =$ ...
+--
+
+`r mean(y_ex)`
+
+
+
+---
+
+class: center, inverse, middle
+
+# Science again
+
+
+
+---
+
+class: center
+
+## The scientific method (ideally)
+
+Have a question
+
+Consult scientific theory
+
+State hypothesis
+
+Collect & analyze data
+
+Evaluate hypotheses & implications for theory
+
+???
+
+- theory: what do we think explains this phenomenon?
+- Hypothesis: if theory is true, I should expect this result
+- data: controlled setting
+- were expectations accurate? If not, we should think about what went wrong (theory, design) and what to do next. If yes, we should think about how informative the study actually was and also what to do next
+
+Inquiry is *systematic* and *rigorous*.
+
+- future studies should work like past studies (if idea is good and data are reliable)
+- Subsequent studies should probably only be incrementally different from past studies in order to isolate what small changes produce what effects (which of these hundred differences?)
+- scientific progress is proving old ideas wrong (at least casting doubt)
+
+
+--
+
+### Example: Socioeconomic status and voter turnout
+
+???
+
+- People with High socioeconomic status (income, non-liquid wealth, education, other indicators of social class)
+- Have high voter turnout (do you vote?)
+- As you get higher SES, the probability of voting goes up
+- The question is why?
+- Important: methods of doing participation, participation and representative democracy, is there something about institutions that implicitly make it more difficult to participate
+
+
+
+
+
+---
+
+# Research Question
+
+How does X affect Y?
+
+Dependent variable
+
+Independent variable
+
+
+
+???
+
+- usually has the X Y form
+- More complicated: why does X affect Y
+- dependent variable, Y, depends on X. f(x)
+- independent variable, X doesn't depend on Y. 
+- But also, in experiments you *manipulate X* independently of Y. Like, you independently manipulate how much sunlight plants get and see how it affects the way they grow. 
+- In politics, I could independently manipulate the campaign contact that people get (door knockers, campaign mail, TV ads), and then their voting choices could *depend* on what campaign contact they get
+
+
+
+---
+
+# Theory
+
+Colloquial and scientific meanings
+
+???
+
+- colloquial: you're just kicking around an off-hand explanation for something
+- science: ideas that explain empirical patterns in the world
+- There are patterns, and theories explain how the patterns got there
+- A set of propositions that aim to explain a cause and effect mechanism in the world
+
+
+<!-- --
+
+Not theory of evolution. Theory of evolution *by natural selection* -->
+
+???
+
+- Evolution is "only a theory," but evolution isn't the theory. Evolution is the set of facts we seek to explain
+- there is a lot of information out there that makes no natural sense without evolution
+  - we share ~60% of "active" genes are shared with bananas; systematic differences in the presence or absence of shared genes maps overtop the tree of life
+  - Strongly suggestive of some common ancestry between plants and animals (a very very very long time ago when all life was microscopic)
+  - relevant question isn't whether evolution happened but how
+- The theory is that evolution happened "through a process of natural selection"
+  - genetic variation in a species
+  - variation leads to systematically different life outcomes in the aggregate: avoiding being eaten, avoiding disease, consuming food, social cohesion, all things that affect reproduction of your genetic material
+  - over enough time, this selection process turns small variation in individual organisms into big variation
+- There are theoretical extensions of natural selection that explain group dynamics, patterns of sexual behavior, and so on
+
+
+--
+
+Theory is *falsifiable*
+
+???
+
+- Theories have to have the potential to be wrong
+- If a theory couldn't be wrong, there would be no value in testing it scientifically. The test wouldn't help me evaluate whether the theory is a good explainer of the world. 
+- Example with Karl Marx. Warning, this is an oversimplification, toy example, not a serious lesson about Marx, so don't run with it. Just an example. 
+  - Karl Marx's predicted that workers in the industrial west would rise up in revolution against capitalists and seize the means of production
+  - when that never happened, could interpret Marx's ideas as being wrong. 
+  - Instead some Marx's followers said, no Marx is still right about class, it's just that capitalists co-opted enough workers into the middle class that it prevented revolution
+  - This is a difficult situation for a theory, because if the theory explains both revolution and the absence of revolution, then we begin to wonder what the analytical value of the theory is
+- I'm sure that there are more sophisticated ways to think about Marx's ideas in a contemporary context but again, just an example
+
+--
+
+Theory is *parsimonious* and *general*
+
+???
+
+- The point of theory is to make broad, general statements about how the world works, that can be applied across a wide range of examples
+- Individual examples, of course, are complex, multifaceted, rich in detail
+- That's all true, but the point of theory isn't to explain all of the details. It's to explain as much as possible with as little lifting as possible
+- Theory isn't about explaining every single case. If a theory is complicated enough to explain the whole world, then there are no *general* lessons that we can draw from it. 
+
+
+---
+
+class: middle
+
+.left-code[
+> *Abstraction means throwing away detail, getting rid of particulars. We begin with a variety of different things or events—objects, people, countries—and by ignoring how they differ, we produce some abstract concept like "furniture," "honor killing," "social-democratic welfare state," or "white privilege."*
+]
+
+.right-plot[
+```{r}
+include_graphics(here(img, "nuance.png"))
+```
+]
+
+
+???
+
+- This is the lesson of the "Fuck Nuance" reading by Kieran Healy
+- People are individuals, but we don't learn about human social interaction *generally* without making *generalizations*
+  - we will see this throughout the course
+  - we may describe broad differences in the way different groups of people vote, for example
+  - the point of these examples is *not* to say that everybody in a social group behaves in the same way for the same reason.
+  - The point is instead to try to figure out what is *generally* the case, what is true *on average*
+- It's ethically important to remember that groups are composed of individuals, and we don't want to use social theory to form harmful stereotypes about anybody
+- Theory, if it's good, explains things. Explaining things requires ignoring some of the rich details
+
+
+
+---
+
+# Hypothesizing
+
+Does X affect Y? **If** theory is true, **then** I should expect \_\_\_\_\_\_\_\_\_\_ in my study
+
+
+If [general thing about the world] then [specific thing in my study]
+
+--
+
+A good study uses a *discerning* hypothesis
+
+???
+
+- results of the study make it easy to see if the theory is working or not
+- results should look *different* if true or false, it should be straightforward to tell
+- in practice many different theories might predict similar things, so you have to be careful designing a study that helps you tell these theories apart
+
+
+---
+
+# Theories of turnout
+
+Is voting a cost-benefit calculation? An act of civic volunteerism?
+
+???
+
+- voting is costly (information, time, transit) and benefits are variable
+- voting requires you to shoulder individual responsibility for a collective act, you need the ability to vote (bureaucratic skills and information), some motivation to vote (investment in a community)
+
+
+--
+
+How might SES affect turnout? 
+
+- Material stake
+- Political information
+- Civic education
+
+--
+
+Non-discerning hypothesis: high SES individuals vote more (useless)
+
+--
+
+Discerning hypotheses:
+
+- Material stake: *income* affects turnout (not education)
+- Information: knowledge affects turnout, *education* affects knowledge
+- Civics: civic engagement affects turnout, *education* affects engagement
+
+--
+
+All *falsifiable*
+
+
+---
+
+## Collecting and analyzing data
+
+Unpacking this all semester
+
+- Measuring important variables
+- Measuring associations (positive/negative relationships)
+- Isolate the important effect
+- Strength of signal (vs noise)
+
+
+```{r pos-neg, include = TRUE, fig.width = 6, fig.height = 3, out.width = "60%"}
+tibble(x = rnorm(100, 5, 1.5)) %>%
+crossing(sign = c(1, -1)) %>%
+mutate(y = 10 + sign * x + rnorm(100, 0, 2.5),
+       direction = case_when(sign == 1 ~ "Positive Relationship",
+                             sign == -1 ~ "Negative Relationship")) %>%
+ggplot(aes(x = x, y = y)) +
+  geom_point(shape = 1, size = 1) +
+  geom_smooth(method = "lm", color = "black", size = 0.5,
+              se = FALSE) +
+  scale_x_continuous(breaks = extended_breaks(Q = c(2, 1)), lim = c(0, 10)) +
+  facet_wrap(~ direction %>% fct_rev()) +
+  labs(x = "Independent Variable (X)",
+       y = "Dependent Variable (Y)") +
+  theme()
+```
+
+
+???
+
+Measuring:
+
+- Education: years in school, highest degree completed? Highest degree started? Does graduate education matter? Is the effect of education linear?
+- Income: pre-tax income? Post-tax income? Disposable income after expenses? Net worth? Income relative to your surroundings? Income percentile? Is the effect of income linear? Or after a certain point of wealth does income not matter?
+- Other measure of SES: Occupation, class self-identification
+
+
+---
+
+class: inverse, center, middle
+
+## Essay 1
+
+
+
+---
+
+## Looking ahead
+
+On Monday: 
+
+- Measurement and causality issues in social science
+- Assign Essay 1 (due Weds, Feb 6)
+
+On Wednesday:
+
+- Talking about `Data`
+
+In section: 
+
+- R basics, user interface, simple functions
+
+???
+
+- Wednesday "practice" items optional
+- Will set up Datacamp access
+- Week after: graphics!
+
+
+
+
+
+<!-- - Theory
+- Hypotheses
+  + if theory were true, we should see $x$
+  + if theory were true, we should *not* see $y$
+- Examples
+  + Voter ID
+  + Voting reforms/costs
+  + Economic theory of migration/refugees
+- Good theory vs bad theory
+  + parsimony vs unnecessary "nuance"
+  + falsifiability vs catch-all
+    * Marx, will workers revolt -->

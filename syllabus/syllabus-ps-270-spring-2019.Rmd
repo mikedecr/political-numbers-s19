@@ -1,0 +1,470 @@
+---
+output: 
+  pdf_document:
+    keep_tex: true
+    fig_caption: yes
+    latex_engine: pdflatex
+    template: /users/michaeldecrescenzo/doc-templates/rmd/syllabus/mgd-syllabus-template.tex
+geometry: margin=1in
+
+institution: University of Wisconsin--Madison
+title: "Political Science 270"
+subtitle: "Understanding Political Numbers"
+term: "Spring 2019"
+updated: "`r format(Sys.time(), '%B %d, %Y')`"
+
+instructor: "Instructor: Michael DeCrescenzo"
+email: "decrescenzo@wisc.edu"
+officehours: "M 2:30--4:30 p.m."
+office: "North Hall 101A"
+
+lecture: "MW 11:00--11:50 a.m., Ingraham 222"
+credits: "3"
+web: "Canvas and <https://mikedecr.github.io/ps-270/>"
+
+TA: 
+- name: Michael Masterson
+  email: masterson2@wisc.edu
+  officehours: WR 9:45--10:45 a.m.
+  office: 121 North Hall
+
+fonts:
+  - package: MinionPro
+    options: lf, mathtabular, minionint
+  - package: MyriadPro
+  - package: zi4
+    options: varqu, scaled = 0.95
+header-includes:
+   - \linespread{1.05}
+# classoption: final
+---
+
+
+
+# Course Description
+
+During the 2016 presidential election campaign, an election forecast developed by Nate Silver (editor in chief of FiveThirtyEight) predicted that Hillary Clinton had roughly a 70% chance of winning the presidency.[^538] Other forecasts predicted a Clinton victory with about 90% probability.[^538-uncertainty] Donald Trump, the underdog in these forecasts, was the eventual winner. These forecasts raised many questions about data, probability, and political phenomena. Voters wondered, where do these forecasts come from, what data do they use, and should they be trusted? Academics and journalists asked a different set of questions: were these forecasts "wrong," did they do a good job communicating their *uncertainty* to the public, and are these forecasts ethically responsible in the first place? 
+
+  [^538]: <https://projects.fivethirtyeight.com/2016-election-forecast/#plus>
+
+  [^538-uncertainty]: Nate Silver's explanation of the differences between models: <https://fivethirtyeight.com/features/why-fivethirtyeight-gave-trump-a-better-chance-than-almost-anyone-else/>
+
+These are all questions related to *political numbers*---the use of data and statistics to analyze the events of the world, promote public policies, or build social theories. Data are increasingly prevalent in politics---and in journalism, industry ("data science"), and academics---but data are complex and challenging. What can we learn about politics (and the social world more broadly) when we take a scientific, empirical view of it? When should we trust data, and when will data lead us astray? In this class, we will learn to consume, criticize, and produce our own political numbers. On the consumption side, we will discuss how data are used in journalism, policy advocacy, and academic research. On the production side, we will learn the fundamentals of computational data analysis and data visualization.
+
+
+## Learning Outcomes
+
+Here are a few different ways to express our objectives for the semester:
+
+1. Think critically, skeptically, and *ethically* about the use of data in politics and policy debate.
+2. Evaluate whether ideas about the social world are supported by evidence.
+3. Ask relevant, specific, and *falsifiable* research questions.
+4. Collect, analyze, and visualize real-world data. 
+5. Build computational, statistical, and communicative skills.
+
+The skills you build in this course will transfer to other areas of school and life. If you learn to ask the right questions, develop evidence-based answers, and communicate those answers clearly to an audience, then you will get an "A" on every term paper and impress future employers.
+
+This course fulfills the Quantitative Reasoning&nbsp;*B* (QR-B) requirement. Students must complete their QR-A before enrolling. The instructional mode is all face-to-face and follows the "Traditional/Carnegie" credit model.[^credits] Other designations: social science breadth, elementary level, L&S credit.
+
+  [^credits]: At least two hours of outside work for every one hour spent in class, per the university's credit policy: <https://teachlearn.provost.wisc.edu/course-syllabi/>
+
+
+
+
+
+
+# Computing and Technical Requirements
+
+<!-- what is Data Science? -->
+
+We will learn data analysis by *doing* data analysis. We will use the open-source (and free!) statistical programming language called **`R`**. R is very popular in data science and statistics, it makes beautiful graphics, and it is great fun. A few things to flag:
+
+- **This course requires programming.** R is a programming language; it works by writing commands to manipulate data. *This will require practice*, but rest assured that students excel at learning R every semester.
+- **This course has no programming prerequisites,** but you should have some familiarity with your computer (e.g. installing applications, creating folders). Every programing language has its quirks, but R is a good language for beginners, and we approach it carefully. 
+- **This course has no statistical prerequisites.** We will discuss and employ statistical concepts, but we will introduce and practice these concepts as we go.
+- **We *must* use math.** There's no avoiding it. We will not go *crazy*, we will not use calculus, but we will work with some equations and algebra concepts that you have seen before. 
+
+In order to fulfill the computing requirements for the course, you must...
+
+- **Have a computer for you can use.**[^computer]
+- **Install R.** Download the appropriate version for your computer at <https://cloud.r-project.org/> and then install.
+- **Install RStudio.** RStudio is an app that makes it easier to write and run R code. Imagine that R is the engine, and RStudio is the dashboard. Download the free *desktop version* at <https://www.rstudio.com/products/rstudio/download/>. Be sure to install it *fully*.[^rstudio]
+
+[^computer]: The university has laptop-lending programs for students who need one. If this applies to you, come see me so we can set this up. Sections are held in a computer lab.
+[^rstudio]: On some computers, it is possible to *run* Rstudio without having fully installed it. This mostly applies to Mac users, who must be sure to drag the RStudio app icon into their "applications" folder and then delete the installer from their computer.
+
+
+## Seeking Help
+
+Computer programming can be frustrating because computers are stupid, and error messages are not always helpful. Fortunately, help is out there. [StackOverflow](https://stackoverflow.com/) is a Q&A site dedicated to helping people with their programming problems. [RStudio Community](https://community.rstudio.com/) is a similar concept, but tailored for people using RStudio and "Tidyverse" packages (which applies to us). Google is helpful, but be sure to search for "rstats" instead of "r."
+
+<!-- 
+We will also have a classroom Slack channel where students can ask questions and provide each other with advice.[^slack] Questions may be about readings, homework, R, and so on. I will monitor the Slack channel (so no funny business!), but this is primarily a place for students to share tips with each other. Students regularly run into the same issues as one another, so it's helpful to ask these questions in a shared space. 
+
+  [^slack]: <https://ps270-s19.slack.com> 
+-->
+
+Your teaching assistant and I can provide some help with R by email and in office hours, but please refrain from reaching out to us *until you have exhausted other sources of help*. Why? Because navigating online resources is an essential skill for learning any programming language. You will learn R better by learning to help yourself! 
+
+
+
+# Class Setup
+
+Lectures will discuss broad concepts in political numbers, social science research, "data science," and statistics. We will cover some R material, but the majority of R instruction will take place in lab. 
+
+I will post lecture slides online after class, but you should be aware: I do not design my slides as outlines for your personal notes. They are not substitutes for attendance and individual note-taking.
+
+Discussion sections (sometimes referred to as "lab") will be a space for practicing the hairy details: programming with R, reviewing useful math concepts, and practicing statistical concepts.
+
+<!-- This course's materials are open-source and can be viewed on Github.[^git]
+
+[^git]: <https://github.com/mikedecr/political-numbers-s19> -->
+
+## Readings and other Materials
+
+We will refer to material from several helpful texts. Luckily, they are all online and free, so bookmark them *now*. Primarily we will rely on...
+
+- *Modern Dive* (Ismay and Kim, <https://moderndive.com>)
+- *R for Data Science* (Grolemund and Wickham, <https://r4ds.had.co.nz/>)
+- *Data Visualization: A practical introduction* (Healy, <http://socviz.co/>)
+
+I have also acquired an educational license for DataCamp, an online video lecture platform for learning to program. I strongly recommend that you practice the DataCamp lessons in the course schedule as we advance. I will send an email with information about setting this up soon.
+
+Other readings are listed in the schedule below. Some other interesting sites for learning about political numbers include [Flowing Data](https://flowingdata.com/), [FiveThirtyEight](https://fivethirtyeight.com/), [Dear Data](http://www.dear-data.com/), and [Political Violence at a Glance](http://politicalviolenceataglance.org/).
+
+
+<!-- https://kieranhealy.org/files/papers/plain-person-text.pdf -->
+
+<!-- ```{r, echo = FALSE, results="asis"} 
+bib["vasquez2009twp", "wagner2007ws"]
+```  -->
+
+
+
+
+## Deliverables
+
+Grades are intended to assess your learning about (1) data and code, (2) scientific and critical reasoning, and (3) statistical reasoning. Your grade will be computed using...
+
+- Three short exercises (20%)
+- Two short essays (30%)
+- Research project (50%), based on the following components:
+  + Proposal (5%)
+  + Data (10%)
+  + Presentation (5%)
+  + Final paper (30%)
+
+There are *no exams*, and aside from the presentation "tournament" (see below), there will be no extra credit either. All assignments and code shall be submitted on Canvas.[^assignments] The following grading scale will be used (note the closed and open intervals):
+
+- A: [93, 100]
+- AB: [88, 93)
+- B: [83, 88)
+- BC: [78, 82)
+- C: [70, 78)
+- D: [60, 70)
+- F: [0, 60)
+
+<!-- writing:
+- 12pt Times
+- justified
+- 1.5 space
+- PDF format
+- 1.5" margins
+- imitate the style guidance of an example paper I give them?
+- https://twitter.com/NicDuquette/status/1074337228959014914
+ -->
+
+[^assignments]: Code should run without errors, and written work should be uploaded in PDF format (which have a `.pdf` file extension; for instructions on converting Word documents to PDF, visit <https://www.bettercloud.com/monitor/the-academy/save-word-doc-pdf/>).
+
+**Exercises** are designed to practice essential skills of R programming and analysis. These will be brief, oriented around data manipulation, data visualization, and data analysis.
+
+**Short essays** are designed to blend critical thinking with technical skills. These assignments require you to make an argument and support it with evidence.
+
+**The research project** is an original analysis of a topic of your choosing. Ask an original research question, gather relevant data, and conduct an analysis (using statistical tools and graphics) to address the question. This assignment is completed in stages; we separately ask for a research proposal, the data you are using, a brief presentation in your discussion section, and the final paper itself (due on the final exam date).
+
+Every student will deliver a brief (5–7 minutes) presentation of their research project in their discussion section. Each discussion section will nominate the best project from their section to advance to "the finals." Finalists will present their project to the entire class in the final lecture of the semester. All finalists will be guaranteed at least an *AB* grade in the course. The winning presentation, as determined by a vote of the class and the instructors, will earn a guaranteed *A* for the course.[^grade]
+
+  [^grade]: Yes, you can still earn an *A* or *AB* without placing in the tournament.
+
+## Grading and Assignment Policies
+
+Collaboration: Collaboration and consultation with your classmates will help you learn. I encourage good-natured collaboration on assignments, but you must turn in your own work. Plagiarism is easy to spot---I know because I have spotted it in the past---and will not be tolerated (see "Academic Integrity" below). Assignment sheets may contain additional guidance on acceptable forms of collaboration, and I am *more than happy* to answer your questions on acceptable forms of collaboration. 
+
+Attendance: Your attendance is your own responsibility, but skipping class is sure to harm your grade. Do you already know how statistics and R? If "No," you need to come to class. Consult your classmates for notes from days you miss. If difficult life circumstances are regularly affecting your ability to attend class, please speak with me ASAP so we can create accommodations.
+
+Late work: We will accept late work for certain assignments. We penalize late work by 10 percentage points, plus an additional 10 points for each 24-hour period that passes after the assignment's due date. We can't accept late work for exercises because we review the solutions the day they are due.
+
+Grade disputes: Mistakes happen. If you want to dispute a grade, give us a principled argument about how your work was better than the grade it received. Grade discussions must be initiated (1) in person, i.e. during office hours or before/after class, and (2) at least 24 hours after a grade is returned.
+
+
+
+## Academic Integrity
+
+We encourage collaboration but take academic integrity and honesty very seriously. If you cheat, fabricate, plagiarize, collaborate outside acceptable limits,or help others commit these acts, you can face disciplinary action including but not limited to failing an assignment, failing the course, or facing more serious disciplinary action dispensed by higher university authorities. Substantial or repeated cases of misconduct will be referred to the Office of Student Conduct & Community Standards for additional review. For more, see <https://conduct.students.wisc.edu/academic-integrity/>. I am happy to answer questions about responsible citation practices and other concerns!
+
+
+## Diversity and Inclusion
+
+Diversity is a source of strength, creativity, and innovation for UW-Madison. We value the contributions of each person and respect the profound ways their identity, culture, background, experience, status, abilities, and opinion enrich the university community. We commit ourselves to the pursuit of excellence in teaching, research, outreach, and diversity as inextricably linked goals. The University of Wisconsin-Madison fulfills its public mission by creating a welcoming and inclusive community for people from every background---people who as students, faculty, and staff serve Wisconsin and the world. Visit <https://diversity.wisc.edu/> for more.
+
+
+## Accommodations
+
+The University of Wisconsin--Madison supports the right of all enrolled students to a full and equal educational opportunity.
+
+The Americans with Disabilities Act (ADA), Wisconsin State Statute (36.12), and UW-Madison policy (Faculty Document 1071) require that students with disabilities be reasonably accommodated in instruction and campus life. Reasonable accommodations for students with disabilities is a shared faculty and student responsibility. Students are expected to inform faculty [me] of their need for instructional accommodations by the end of the third week of the semester, or as soon as possible after a disability has been incurred or recognized. Faculty [I], will work either directly with the student [you] or in coordination with the McBurney Center to identify and provide reasonable instructional accommodations. Disability information, including instructional accommodations as part of a student's educational record, is confidential and protected under FERPA. For more, visit <http://mcburney.wisc.edu/facstaffother/faculty/syllabus.php>.
+
+Other extraordinary life circumstances can interfere with class performance. There are various resources available to help students through difficult times, including the Dean of Students Office (<https://doso.students.wisc.edu/>) and the Division of Student Life (<https://students.wisc.edu/>). 
+
+Please discuss any potential accommodations with me ASAP.
+
+
+
+
+## Email Policies
+
+It is virtually certain that I will send important emails to update you on assignments and course materials. You will be expected to read and act on the information contained in emails.
+
+I am usually quick to respond to student emails, but some warnings:
+
+- I may not answer questions directly and instead refer you to the syllabus, a textbook chapter, or other materials I distribute for class.
+- We give at least a week and a half to work on every assignment. That's more than enough time to identify issues and seek help. Eleventh-hour emails about an assignment are not guaranteed an immediate response.
+- Grade disputes should be raised in person, not over email (see above).
+
+
+## Computers in Class
+
+This class requires programming, so computers are allowed in class *for work purposes*. I won't stop you if you choose to waste your time in class, but I care very much about whether your computer misuse is distracting to your classmates. I have authorized your TA to snitch on irresponsible computer use in class. Consider installing an app on your computer that blocks distracting websites during class. 
+
+
+
+
+
+<!-- schedule here -->
+
+\newpage
+
+
+# Class Schedule
+
+Review each lecture's associated readings before coming to class. Please consult lectures and email for updates to the schedule (depending on the progression of the course). Other copies of this schedule can be found on Canvas and at <https://mikedecr.github.io/ps-270/>.
+
+<!-- The course is roughly divided into three overarching themes: Science, Technical Skills, and Applications.  -->
+
+<!-- A easier-to-read version of this schedule may be found online at  -->
+
+
+## Foundations: Science and evidence
+
+Wednesday, January 23: Introduction
+
+
+<!-- - Section: Introductions, install R and RStudio -->
+
+Monday, January 28: Evidence and empiricism
+<!-- Example: gender gap? -->
+
+<!-- - Hadley Wickham, ["Data Science: How is it different to statistics?"](http://bulletin.imstat.org/2014/09/data-science-how-is-it-different-to-statistics%E2%80%89/) -->
+- Olugbenga Ajilore, ["Why Social Science? Because It Can Challenge Conventional Wisdom"](https://www.whysocialscience.com/blog/2018/8/27/because-it-can-challenge-conventional-wisdom)
+- Margherita Belgioioso, ["Is Radical Islam the Main Terrorist Threat to the EU?"](http://politicalviolenceataglance.org/2017/02/22/is-radical-islam-the-main-terrorist-threat-to-the-eu/)
+
+
+Wednesday, January 30: Theorizing, hypothesizing, falsification
+<!-- Example: socioeconomics and turnout -->
+
+- Kieran Healy, ["F\*\*k Nuance."](https://kieranhealy.org/files/papers/fuck-nuance.pdf)
+<!-- - Section: `.Rproj`, R basics -->
+
+
+## Social Science Data: What is it and why does it suck?
+
+Monday, February 4: Measurement and causality
+<!-- example: campaign contributions -->
+
+- Lynn Vavreck, ["A Campaign Dollar’s Power Is More Valuable to a Challenger"](https://www.nytimes.com/2014/10/08/upshot/a-campaign-dollars-power-is-more-valuable-to-a-challenger.html)
+- (Skim) Jenny Bryan, ["Naming Things"](https://www2.stat.duke.edu/~rcs46/lectures_2015/01-markdown-git/slides/naming-slides/naming-slides.pdf)
+
+
+Wednesday, February 6: Data
+
+<!-- - *R for Data Science*, ["Introduction"](https://r4ds.had.co.nz/introduction.html) -->
+- (Practice) *R for Data Science*, ["Workflow: basics"](https://r4ds.had.co.nz/workflow-basics.html)
+- (Practice) Datacamp's *Free Introduction to R*, [Ch. 1](https://campus.datacamp.com/courses/free-introduction-to-r/chapter-1-intro-to-basics-1?ex=1)
+<!-- - Section: read, filter, select -->
+
+
+## Graphics: The "fun" part of data analysis
+
+
+Monday, February 11: Good, bad, and ugly graphics
+
+- *Data Visualization: A Practical Introduction*, ["Look at Data"](http://socviz.co/lookatdata.html#lookatdata)
+- (Browse) Claus Wilke, *Fundamentals of Data Visualization*, ["Directory of Visualizations"](https://serialmentor.com/dataviz/directory-of-visualizations.html)
+
+
+Wednesday, February 13: Graphics in R
+
+- **DUE:** Essay 1 (Brainstorming a Study)
+- (Practice) *Data Visualization*, ["Make a Plot"](http://socviz.co/makeplot.html#makeplot)
+<!-- - *R for Data Science*, ["Data Visualization"](https://r4ds.had.co.nz/data-visualisation.html) -->
+<!-- - Section: practice `ggplot`, scatterplots -->
+
+
+## Signal and Noise
+
+
+Monday, February 18: Averages and aggregation
+<!-- Example: age and turnout? -->
+
+- (Practice) *R for Data Science*, ["Data transformation"](https://r4ds.had.co.nz/transform.html)
+- (Practice) Datacamp's *Introduction to the Tidyverse*, ["Data Wrangling"](https://www.datacamp.com/courses/introduction-to-the-tidyverse) (up through the 'Filtering and arranging' lesson)
+<!-- - (Practice) *Modern Dive*, ["Data Wrangling"](https://moderndive.com/5-wrangling.html) -->
+
+Wednesday, February 20: Variation and randomness
+
+- (Watch the first 5.5 mins) [The Galton Board](https://www.youtube.com/watch?v=UCmPmkHqHXk)
+- (Practice) *Modern Dive*, ["Data Visualization via `ggplot2`"](https://moderndive.com/3-viz.html)
+<!-- - Section: Data manipulation, mutate, group_by, summarize -->
+
+Monday, February 25: "Piping" data in R
+
+- *R for Data Science*, ["Piping"](https://r4ds.had.co.nz/pipes.html)
+
+
+## X and Y: Relationships and regression
+
+Wednesday, February 27: Relationships as "conditional expectations"
+
+- **DUE:** Exercise 1 (Polls)
+<!-- - Section: `lm`, interpreting regression output -->
+
+Monday, March 4: Linear regression
+
+Wednesday, March 6: Statistical significance and hypothesis testing
+<!-- distributional assumption, likelihood for other distributions, Bayesian likelihood -->
+
+- **DUE:** Project proposal/research question
+<!-- - Section: `t.test`, `lm`, `predict`, `augment`? -->
+
+
+
+
+## Fancy Regression
+
+
+Monday, March 11: Multiple regression
+
+<!-- - Jordan Becker, ["Clearing the Air on Transatlantic Burden-Sharing"](https://warontherocks.com/2017/06/clearing-the-air-on-transatlantic-burden-sharing-part-iii-lets-turn-to-data/) -->
+
+
+Wednesday, March 13: Measurement and finding data
+
+- **DUE:** Exercise 2 (WI Recount)
+- Nick Barrowman, ["Why Data Is Never Raw"](https://www.thenewatlantis.com/publications/why-data-is-never-raw)
+<!-- - Section: Multiple regression -->
+
+
+Monday, March 18: *Spring Break* (Collect your project data!)
+
+Wednesday, March 20: *Spring Break* (Collect your project data!)
+<!-- ***(\*\*\* Spring Break \*\*\* Monday, March 18 \& Wednesday, March 20. Collect your project data!)*** -->
+
+
+<!-- ## Fancy Regression, Pt. 2 -->
+
+Monday, March 25: Indicators and interactions
+
+- Enos, Fowler, and Vavreck, ["Increasing Inequality: The Effect of GOTV Mobilization on the Composition of the Electorate."](https://uwmadison.box.com/s/en50c3skqjn5lnltqmco0bhhserkh4xq) *The Journal of Politics*
+
+Wednesday, March 27: (Spooky voice) Nonlinear relationships
+
+- **DUE:** Project data
+- Watch: [The Zipf Mystery](https://youtu.be/fCn8zs912OE)
+- Watch: ["How I feel about logarithms"](https://youtu.be/N-7tcTIrers)
+<!-- - Watch: ["1,2,3,4,5,6,7,8..."](https://youtu.be/Pxb5lSPLy9c) -->
+- (Practice) ["Logarithms... How?"](https://youtu.be/Zw5t6BTQYRU)
+- (Practice) *R for Data Science*, ["Model Building"](https://r4ds.had.co.nz/model-building.html)
+<!-- - Section: predicted values, practicing regression -->
+
+
+## Political Numbers "In the Wild"
+
+
+Monday, April 1: Evaluating public policy
+<!-- - Selection bias, omitted variables, uncertainty, sensitivity -->
+
+<!-- - Watch: ["Risk."](https://www.youtube.com/watch?v=w-CK8VxMz9g) -->
+- Watch: ["Regression to the mean"](https://youtu.be/1tSqSMOyNFE)
+<!-- voter ID turnout as selecting on the DV -->
+
+Wednesday, April 3: Experiments and interventions
+
+- Derek Willis, ["Professors’ Research Project Stirs Political Outrage in Montana"](https://www.nytimes.com/2014/10/29/upshot/professors-research-project-stirs-political-outrage-in-montana.html)
+<!-- - Section -->
+   
+Monday, April 8: Big data, ethics, and power
+
+- Claudia Brugman, ["Why Social Science? Because Social Science Research and Education Are Critical for National Security"](https://www.whysocialscience.com/blog/2018/11/20/because-social-science-research-and-education-are-critical-for-national-security)
+- Listen: *99% Invisible*, ["The Age of the Algorithm"](https://99percentinvisible.org/episode/the-age-of-the-algorithm/)
+<!-- - Tara Bahrampour (*Washington Post*), ["Trump administration officials suggested sharing census responses with law enforcement, court documents show"](https://www.washingtonpost.com/local/social-issues/trump-administration-officials-suggested-sharing-census-responses-with-law-enforcement-court-documents-show/2018/11/19/41679018-ec46-11e8-8679-934a2b33be52_story.html?noredirect=on&utm_term=.a36825f11b40) -->
+<!-- - Dave Gershgorn, ["Companies are on the hook if their hiring algorithms are biased"](https://qz.com/1427621/companies-are-on-the-hook-if-their-hiring-algorithms-are-biased/) -->
+<!-- Voter ID commission? -->
+<!-- - emotionally unintelligent people trying to design machines to behave bette so they don't have to  -->
+
+Wednesday, April 10: Elections and campaigns
+
+- **DUE:** Essay 2 (World Health Data)
+<!-- - Listen: *DataFramed*, ["Andrew Gelman discusses election forecasting and polling"](https://www.datacamp.com/community/blog/election-forecasting-polling) -->
+- Rothschild and Goeld, ["When You Hear the Margin of Error Is Plus or Minus 3 Percent, Think 7 Instead"](https://www.nytimes.com/2016/10/06/upshot/when-you-hear-the-margin-of-error-is-plus-or-minus-3-percent-think-7-instead.html)
+- (Practice) *Data Visualization*, ["Work with Models"](http://socviz.co/modeling.html#modeling)
+<!-- - Sasha Issenberg, ["How Obama’s Team Used Big Data to Rally Voters"](https://www.technologyreview.com/s/509026/how-obamas-team-used-big-data-to-rally-voters/) -->
+
+Monday, April 15: Writing a research paper
+
+- Tiffany Barnes and Stephanie Burchard, ["\`Engendering' Politics: The Impact of Descriptive Representation on Women’s Political Engagement in Sub-Saharan Africa"](https://uwmadison.box.com/s/p4vt02g7e6obgzwpvvyynhgzz1v6x5nf)
+- Steven V. Miller, ["Assorted Tips for Students on Writing Research Papers"](http://svmiller.com/blog/2015/12/assorted-tips-students-research-papers/)
+
+Wednesday, April 17: Data and the Judiciary
+
+- **DUE:** Presentations (week 1)
+<!-- - Opinion of Justice Sullivan, *People v. Collins*, Supreme Court of California -->
+<!-- - Amy Maxmen, ["Why it’s hard to prove gender discrimination in science"](https://www.nature.com/articles/d41586-018-05109-w) -->
+- Kenneth R.\ Mayer, ["Is Political Science Relevant? Ask an Expert Witness."](https://uwmadison.box.com/s/5keiy76xdfuzb2oslmavqmyeva300zv6) *The Forum*
+<!-- - Section: Presentations -->
+
+Monday, April 22: Election Forecasting
+<!-- (and more ethics) -->
+
+- (Listen) ["Opinion Polling for Presidential Elections"](https://dataskeptic.com/blog/episodes/2017/opinion-polling-for-presidential-elections), *Data Skeptic* podcast
+
+
+## Wrapping Up/Looking Ahead
+
+
+Wednesday, April 24: Big problems in political and social research
+
+<!-- + Replication crisis, p-values, publication bias, small sample sizes, statistical power, overconfident measurement -->
+
+- **DUE:** Presentations (week 2)
+- Watch: ["Is Most Published Research Wrong?"](https://www.youtube.com/watch?v=42QuXLucH3Q)
+<!-- - Section: Presentations -->
+
+
+Monday, April 29: How people have tried to solve big problems
+<!-- + Pre-registration, null findings, open science -->
+
+- (Skim & Bookmark) Kieran Healy, [*The Plain Person's Guide to Plain Text Social Science*](https://kieranhealy.org/files/papers/plain-person-text.pdf)
+- (Skim & Bookmark) Jenny Bryan, ["Excuse me, do you have a moment to talk about version control?"](https://peerj.com/preprints/3159.pdf)
+- (Skim & Bookmark) Jenny Bryan et al., [*Happy Git and GitHub for the useR*](http://happygitwithr.com/)
+
+
+Wednesday, May 1: Finalists present
+<!-- - Short reaction paper? Pick an issue in science, how is it being addressed, what problems do you still think about? -->
+
+
+## Research Paper due May 6, 11:59 p.m.
+
+<!-- Questions for Barry
+- Gender and racial balance
+- timing of assignments / grading
+ -->

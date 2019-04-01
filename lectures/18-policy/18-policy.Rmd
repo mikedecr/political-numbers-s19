@@ -1,0 +1,578 @@
+---
+title: "Evaluating Public Policy"
+subtitle: "Problems (easy) vs Solutions (hard)"
+author: "Understanding Political Numbers"
+date: "April 1, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "18-policy", "18-policy.Rmd"))
+# knitr::purl(here::here("lectures", "18-policy", "18-policy.Rmd"), output = here::here("R", "lecture_policy.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "18_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/18-policy/img"
+```
+
+
+
+## No shortage of bad things in the world
+
+
+---
+
+class: middle
+
+```{r, out.width = "65%"}
+include_graphics(here(img, "mortality.png"))
+```
+
+
+---
+
+class: middle
+
+```{r, out.width = "80%"}
+include_graphics(here(img, "us-turnout.jpg"))
+```
+
+
+---
+
+.pull-left[
+### Policy "problems"
+
+Are data in context?
+
+What's causing the problem?
+
+What policy could address that mechanism?
+]
+
+--
+
+.pull-right[
+### Policy "solutions"
+
+Has the policy been implemented elsewhere?
+
+Is there evidence that the policy works? How do you know?
+
+Can the evidence be *generalized?*
+
+What if the policy hasn't been enacted anywhere else?
+
+]
+
+
+
+---
+
+class: center, middle
+
+##  Unintended consequences of policy
+
+As economists say, "externalities"
+
+
+
+---
+
+
+class: inverse, middle, center
+
+# Voter Identification Requirements
+
+
+---
+
+.pull-left[
+### Problem? Election security
+
+- Are there fraudulent ballots? 
+- Voters have shaky confidence that votes are counted as intended
+
+
+### Solution? Tighter ID requirements
+
+- Bills, bank statements, birth certificates, SS cards not good enough
+- Student photo ID? Not good enough (no signature)
+- Wisconsin: must have photo and a signature
+]
+
+--
+
+.pull-right[
+
+### Externalities?
+
+```{r, out.width = "100%", fig.width = 5, fig.height = 4}
+tibble(x = seq(-5, 5, .01),
+       y = plogis(x)) %>%
+  ggplot(aes(x, y)) +
+    geom_line() +
+    labs(x = "Utility of voting\n(Benefits minus costs)",
+         y = "Probability of Voting")
+```
+]
+
+
+
+---
+
+
+```{r, out.width = "75%"}
+include_graphics(here(img, "IDs.png"))
+```
+
+
+
+---
+
+### Do voter ID requirements reduce turnout?
+
+Unit of analysis: states (state-years)
+
+Independent variable: state has voter ID law (1) or not (0)
+
+Dependent variable: turnout rate (% VEP)
+
+
+---
+
+```{r data, include = FALSE}
+list.files(here("data"))
+
+to <- read_csv(here("data", "us-turnout.csv")) %>%
+  print()
+
+count(to, state)
+
+
+
+# data("nls_panel", package="PoEdata")
+# nls_panel <- as_tibble(nls_panel)
+
+
+# to <- to %>%
+#   mutate(strict_id = case_when(state == "Georgia" & year >= 2008 ~ 1,
+#                                state == "Indiana" & year >= 2006 ~ 1,
+#                                state == "Tennessee" & year >= 2012 ~ 1,
+#                                state == "Kansas" & year >= 2012 ~ 1,
+#                                state == "Wisconsin" & year >= 2016 ~ 1,
+#                                state == "Mississippi" & year >= 2014 ~ 1,
+#                                state == "Alabama" & year >= 2014 ~ 1,
+#                                state == "Virginia" & year >= 2018 ~ 1,
+#                                TRUE ~ 0)) %>%
+#   print()
+
+```
+
+
+
+```{r, fig.width = 9, fig.height = 8, out.width = "65%", include = TRUE}
+ggplot(to, aes(x = year, y = fct_rev(state))) +
+  geom_tile(aes(fill = as.factor(strict_id)),
+            color = "white") +
+  viridis::scale_fill_viridis(discrete = TRUE, option = "viridis",
+                              begin = 0.5, end = 0) +
+  labs(x = NULL, y = NULL, fill = "Strict Photo ID") +
+  scale_x_continuous(breaks = seq(1984, 2016, 8)) 
+```
+
+
+
+
+---
+
+class: center, middle
+
+## Sticky Causality
+
+.pull-left[
+
+#### Turnout in 2008
+
+```{r, results = 'asis'}
+fx_08 <- to %>%
+  filter(year == 2008) %>%
+  group_by(strict_id) %>%
+  summarize(turnout = mean(turnout)) %>%
+  mutate_all(round, 1) 
+
+fx_08 %>%
+  kable(format = "html") 
+```
+
+Voter ID states (IN and GA) had `r fx_08$turnout[1] - fx_08$turnout[2]` percent lower turnout in 2008
+
+]
+
+
+
+
+--
+
+.pull-right[
+
+#### Turnout in 2004, *before* any strict photo ID laws
+
+```{r, results = 'asis'}
+fx_04 <- to %>%
+  filter(year == 2004) %>%
+  mutate(strict_id = case_when(state %in% c("Indiana", "Georgia") ~ 1,
+                               TRUE ~ 0)) %>%
+  group_by(strict_id) %>%
+  summarize(turnout = mean(turnout)) %>%
+  mutate_all(round, 1) 
+
+fx_04 %>%
+  kable(format = "html")
+```
+
+IL and GA had `r fx_04$turnout[1] - fx_04$turnout[2]` percent lower turnout *before* strict photo ID
+
+
+]
+
+
+---
+
+class: middle, center
+
+.pull-left[
+
+### Confounding and selection bias
+
+There's something about states ( $U$ ) that make them adopt voter ID requirements ( $X$ )
+
+Is that something related to turnout ( $Y$ ) also?
+
+We should compare states *against themselves*
+]
+
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "selection.png"))
+```
+]
+
+
+
+
+---
+
+class: middle
+<!-- states over time -->
+
+```{r, out.width = "60%", fig.width = 5, fig.height = 4}
+ggplot(filter(to, year %in% c(2008, 2012) & state %in% c("Tennessee", "Kansas")),
+       aes(x = year, y = turnout, color = state)) +
+  geom_line(show.legend = FALSE) +
+  geom_point(show.legend = FALSE) +
+  scale_x_continuous(breaks = c(2008, 2012),
+                     labels = c("Before Voter ID\n(2008)", "After Voter ID\n(2012)")) +
+  coord_cartesian(xlim = c(2004, 2016), ylim = c(45, 65)) +
+  annotate(geom = "text", x = 2010, y = 63, label = "Kansas") +
+  annotate(geom = "text", x = 2010, y = 51, label = "Tennessee") +
+  labs(y = "Turnout (%)", x = NULL)
+```
+
+---
+
+class: middle
+
+<!-- average over time -->
+.left-code[
+
+### Turnout naturally fluctuates
+
+Turnout goes down in voter ID states, so what?
+
+Is that different from non-voter ID states?
+
+We want to compare across time *and* across states
+]
+
+
+.right-plot[
+
+```{r, fig.width = 6, fig.height = 4, out.width = "100%"}
+national_to <- to %>%
+  group_by(year, midterm) %>%
+  summarize(mean_turnout = mean(turnout)) 
+
+ggplot(national_to, aes(x = year, y = mean_turnout)) +
+  geom_line(aes(group = as.factor(midterm)), linetype = "dotted",
+            show.legend = FALSE) +
+  geom_point(aes(shape = as.factor(midterm)),
+             fill = "white",
+             show.legend = FALSE) +
+  scale_shape_manual(values = c("0" = 21, "1" = 16)) +
+  scale_x_continuous(breaks = seq(1984, 2016, 8)) +
+  annotate(geom = "text", x = 2005, y = 55, label = "Presidential") +
+  annotate(geom = "text", x = 1990, y = 45, label = "Midterm") +
+  geom_text(data = filter(national_to, year %in% c(2008, 2012), 
+                          midterm == FALSE),
+            aes(label = year),
+            vjust = 2) +
+  labs(x = NULL, y = "Turnout (%)")
+```
+
+]
+
+
+
+
+
+
+---
+
+.left-code[
+
+## Difference-in-differences
+
+Background characteristics
+
+Difference 1: difference over time
+
+Difference 2: are treatment and control changes the same?
+
+Counterfactuals
+
+
+\begin{align}
+  \hat{y} &= a + b_{1}\left(\mathrm{Treat}\right) + b_{2}\left(\mathrm{After}\right) + \\ 
+  &\quad b_{3}\left(\mathrm{Treat \times After}\right)
+\end{align}
+
+
+
+]
+
+.right-plot[
+
+```{r, out.width = "90%"}
+include_graphics(here(img, "diffs.png"))
+```
+]
+
+---
+
+## Understanding the Diff-in-diff model
+
+\begin{align}
+  \hat{y} &= a + b_{1}\left(\mathrm{Treat}\right) + b_{2}\left(\mathrm{After}\right) + \\ 
+  &\quad b_{3}\left(\mathrm{Treat \times After}\right)
+\end{align}
+
+Control group, before treatment (after = 0, treat = 0): $a$
+
+Treatment group, before treatment (after = 0, treat = 1): $a + b_{1}$
+
+Control group, after treatment (after = 1, treat = 0): $a + b_{2}$
+
+Treatment group, after treatment (after = 1, treat = 1): $a + b_{1} + b_{2} + b_{3}$
+
+--
+
+** $b_{3}$ is the effect of treatment, controlling for over-time change ( $b_{2}\mathrm{After}$ ) and background characteristics of the treatment and control groups ( $b_{1}\mathrm{Treat}$ ) **
+
+
+---
+
+## With real data
+
+
+\begin{align}
+  \hat{\mathrm{turnout}} &= a + d_{\mathit{year}} + d_{\mathit{states}} + b\left(\mathrm{ID.Law}\right)
+\end{align}
+
+--
+
+.left-code[
+
+```{r}
+turnout_data <- select(to, -midterm)
+```
+
+```{r, echo = TRUE}
+turnout_data
+```
+]
+
+--
+
+.right-plot[
+
+```{r, echo = TRUE}
+# within lm(), as.factor() makes a sequence of dummies
+# one category is automatically omitted (alphanumerically)
+diff_diff <- 
+  lm(turnout ~ strict_id + as.factor(state) + as.factor(year),
+     data = filter(turnout_data)) 
+```
+]
+
+
+---
+
+.left-code[
+```{r summary, echo = TRUE, results = 'hide'}
+summary(diff_diff)
+```
+
+Each state/year effect is comparison to omitted category (Alabama or 1980)
+
+e.g. CA is (on avg) 2% higher turnout than AL
+
+Turnout in 2008 was (on avg) 7 pts higher than 1980
+
+Turnout under voter ID is (on avg) 1.2 pts higher (not sig.)
+
+]
+
+.right-plot[
+```{r summary}
+```
+
+
+]
+
+
+---
+
+class:center
+
+## Threats of time-varying confounders?
+
+--
+
+
+```{r windows, fig.width = 6, fig.height = 4, out.width = "60%"}
+window_mods <- crossing(window = seq(1980, 2006, 2),
+         turnout_data) %>%
+  mutate(inner = window) %>%
+  group_by(window) %>%
+  filter(year >= window) %>%
+  nest() %>%
+  mutate(
+    model = map(data, ~ lm(turnout ~ as.factor(year) + as.factor(state) + 
+                           strict_id, data = .x)), 
+    tidy = map(model, tidy, conf.int = TRUE)
+  )
+
+window_mods %>%
+  unnest(tidy) %>%
+  filter(term == "strict_id") %>%
+  ggplot(aes(x = window, y = estimate)) +
+    geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+    geom_hline(yintercept = 0) +
+    labs(x = "Earliest year in data\n(Latest is 2018)", y = "Voter ID effect on turnout") +
+    scale_x_continuous(breaks = seq(1980, 2016, 8)) +
+    ylim(c(-4, 4))
+
+```
+
+--
+
+**Counter-mobilization, Battleground states, Other legal changes**
+
+
+---
+
+## Exogenous vs endogenous policy change
+
+Policy change comes from within the system (endogenous)
+
+Policy change is imposed from external forces (exogenous)
+
+**Exogenous policy change are easier to study**
+
+
+
+---
+
+# Looking ahead
+
+On Wednesday: 
+
+- experiments (and ethics)
+
+- Discuss in-section presentation
+
+
+Section:
+
+- More multiple regression
+
+
+Next week:
+
+- Big data (by Michael)
+
+- Elections, campaigns, polls...
+
+
+
+

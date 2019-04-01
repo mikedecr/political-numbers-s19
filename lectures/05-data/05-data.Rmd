@@ -1,0 +1,499 @@
+---
+title: "Data (Finally!)"
+# subtitle: '(or, "Social Science: what is it, and why does it suck?")'
+author: "Understanding Political Numbers"
+date: "Feb 6, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+---
+
+class: center, middle
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+# library("boxr"); box_auth()
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "05_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3
+                      # , dpi = 100
+                      )
+
+img <- "lectures/05-data/img"
+```
+
+# Agenda
+
+Technical lesson: The whole lecture
+
+A "vocabulary" of data tables
+
+Variable "coding"
+
+
+???
+
+- get us comfortable using the language of data
+- get us comfortable with a mental picture of data in our heads
+
+Essay 1
+
+- Variable measuring: How specific? Don't need to talk about specific data sources. I don't need to know what survey you would get voter data from, or what government data you would use to get information on military casualties or something
+- Discuss is conceptually. Talk about *possibilities*, not the specifics of a data source
+
+
+
+---
+
+class: inverse, middle, center
+
+# Setting the scene
+
+???
+
+Data on all countries in the world
+
+- Life expectancy
+- GDP per capita
+- Total population
+
+---
+
+class: middle, center
+
+# How do you organize data?
+
+
+???
+
+It lives in my computer, 
+
+- but what format is going to help me
+- is it just a text file that has writing in it? No
+- Maybe it should live in a spreadsheet, but do you know why it should live in a spread sheet? Do you know why that is useful?
+- What kind of language can we use to talk about that spreadsheet? (And other topics of data organization)
+
+
+
+---
+
+class: center
+
+## Data tables (a.k.a. "data frames")
+
+```{r, results = 'asis', cache = FALSE}
+library("gapminder")
+gapminder %>%
+  head() %>%
+  kable(format = "html")
+```
+
+
+(Data from the `gapminder` R package)
+
+???
+
+Let's just get oriented
+
+- Just describe what's in here (without row/column vocab)
+- we have country, we know what continent it's in
+- it looks like their GDP per capita was (...)
+
+--
+
+Rows are **cases,** a.k.a. "units." What "objects" you studying?
+
+Columns are **variables,** a.k.a. *attributes* or *features* of cases
+
+Cells are **values,** a.k.a. observed measurements of a variable
+
+
+
+---
+
+## Data tables are organized by the "unit of observation"
+
+One row per "unit." What is the unit of observation?
+
+```{r, results = 'asis', cache = FALSE}
+gapminder %>%
+  head() %>%
+  kable(format = "html")
+```
+
+--
+
+**Unit of observation:** what variable (or combination of variables) *uniquely identifies* cases from one another?
+
+
+???
+
+- Uniquely identifying cases is extremely important for keeping data organized
+- especially if combining data from multiple sources, you need to match information in one table with information in another
+- Data may contain "country codes" or "ID numbers"
+
+
+
+
+---
+
+# Variables live in columns
+
+.left-code[
+Isolating one variable
+
+```{r vars, results = 'asis', cache = FALSE}
+gapminder %>%
+  select(continent) %>%
+  head() %>%
+  kable(format = "html")
+```
+]
+
+
+--
+
+.right-plot[
+**Levels**: all possible *values* that a variable could have
+
+```{r secret-recode, echo = FALSE}
+gapminder <- gapminder %>%
+  mutate(continent = as.character(continent),
+         country = as.character(country))
+```
+
+```{r, echo = TRUE}
+unique(gapminder$continent) 
+```
+]
+
+
+---
+
+## On so many levels...
+
+--
+
+**Levels of a variable** are possible values taken by a variable
+
+- "We expose our plants to various levels of sunlight"
+
+
+--
+
+**Levels of measurement** describe information contained in measures
+
+- Nominal, ordinal, interval, ratio
+
+???
+
+- We don't often talk explicitly about levels of measurement
+- We are just aware of them because the form of the data affect the types of analysis that you could do
+- That's an important point
+
+
+--
+
+**Level of analysis** means "unit of analysis"
+
+- Individual-level analysis
+- State-level analysis
+- Cross-national analysis
+
+
+
+
+---
+
+### Benefits of tabular data
+
+
+.pull-left[
+
+**Calculations.** If $\mathit{GDP \, per \, capita} = \displaystyle\frac{\mathit{GDP}}{\mathit{Pop}}$, find GDP.
+
+```{r, results = "asis"}
+gapminder %>%
+  filter(year == max(year)) %>%
+  select(-lifeExp, -continent, -year) %>%
+  # mutate(gdp = str_c(rep("?", 14  ), collapse = "")) %>%
+  head() %>%
+  kable(format = "html")
+```
+
+]
+
+???
+
+- Calculations are easy because variables are organized so you can do quick math
+- 
+
+
+
+
+---
+
+### Benefits of tabular data
+
+
+.pull-left[
+
+**Calculations.** If $\mathit{GDP \, per \, capita} = \displaystyle\frac{\mathit{GDP}}{\mathit{Pop}}$, find GDP.
+
+```{r, results = "asis"}
+gapminder %>%
+  filter(year == max(year)) %>%
+  select(-lifeExp, -continent, -year) %>%
+  mutate(gdp = gdpPercap * pop) %>%
+  head() %>%
+  kable(format = "html")
+```
+
+]
+
+???
+
+- Calculations are easy because variables are organized so you can do quick math
+
+
+--
+
+.pull-right[
+**Plotting**. For each unit, variable values serve as $(x, y)$ coordinates.
+
+```{r plot-data, fig.width = 5, fig.height = 3, out.width = "100%"}
+for_plot <- gapminder %>%
+  filter(year == max(year)) %>%
+  mutate(gdp = gdpPercap * pop)
+
+ggplot(for_plot, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(aes(color = country == "United States",
+                 size = country == "United States",
+                 shape = country == "United States",
+                 fill = country == "United States"),
+             show.legend = FALSE) +
+  scale_x_log10(labels = function(x) dollar(x, largest_with_cents = 1)) +
+  geom_text(data = filter(for_plot, country == "United States"),
+            aes(x = gdpPercap, y = lifeExp,
+                label = "U.S."),
+            nudge_y = -3) +
+  scale_color_manual(values = c("FALSE" = secondary, "TRUE" = "white")) +
+  scale_fill_manual(values = c("FALSE" = secondary, "TRUE" = primary)) +
+  scale_shape_manual(values = c("FALSE" = 16, "TRUE" = 21)) +
+  scale_size_manual(values = c("FALSE" = 1.5, "TRUE" = 3)) +
+  labs(x = "GDP per capita (log transformed)",
+       y = "Life Expectancy (years)",
+       caption = str_glue("({unique(for_plot$year)} data only)")) +
+  NULL
+```
+]
+
+
+
+
+---
+
+class: center, middle, inverse
+
+# Data in the computer
+
+
+---
+
+# Data in R
+
+.left-code[
+```{r gap-intro, echo = TRUE, results = 'hide'}
+# attach the 'gapminder' package
+library("gapminder")
+
+# ...which contains this dataset
+gapminder
+```
+
+Data can be numeric (`1952`) or text (`"Afghanistan"`)
+]
+
+.right-plot[
+```{r gap-intro}
+```
+]
+
+
+???
+
+- tibble means data table / data frame; it has cases as rows and variables in columns
+- Columns have variable names, this is how you refer to the *vector* when you're programming
+- there's a label for the data type. Integers (whole numbers), "doubles" (numbers with decimal precision), "factors" (categories that have text labels)
+
+
+---
+
+## "Coding" and "recoding"
+
+.left-code[
+You may encounter categorical data with numeric codes. 
+
+```{r numeric, results = "asis"}
+set.seed(5)
+gapminder %>%
+  group_by(continent) %>%
+  filter(year == max(year)) %>%
+  sample_n(1) %>%
+  select(country, continent) %>%
+  mutate(`continent (numeric)` = as.numeric(continent)) %>%
+  kable(format = "html")
+```
+]
+
+--
+
+.right-plot[
+Consult the "codebook"
+
+```{r codebook}
+include_graphics(here(img, "codebook.png"))
+```
+]
+
+
+???
+
+What is *recoding*?
+
+- data don't always come in the form you need it
+- maybe you want to make a text label, change an existing label,
+- collapse a complicated index (strong liberal, liberal, slightly liberal) to be just "liberal"
+
+
+
+---
+
+class: center, middle, inverse
+
+# Practical advice
+
+
+---
+
+class: center, middle
+
+# Practical advice
+
+
+When "tidying up" your data
+
+When recording "raw" data
+
+$Observed = Truth + Bias + Error$
+
+
+???
+
+- Tidying: how are rows and columns when collecting new data, modifying existing data
+  - rows are cases/units, columns are variables
+- Raw data: include as much detail as possible up front
+  - my advice, text coding for categorical/qualitative variables
+  - You can always convert to numeric later, but starting with specificity and informative labels is good
+  - give yourself the option to go simpler, but you can't get more complex once the data are already collected
+- Raw data: only the detail that you can justify
+  - detail that *you don't have* is noise or bias
+
+
+
+---
+
+class: center, middle, inverse
+
+# What's next?
+
+
+
+
+---
+
+# What's next?
+
+In section: getting oriented in R
+
+Check out online practice resources
+
+Next week: graphics (in theory) and graphics (in R)
+
+Short Essay 1 due **one week from today**
+
+
+
+<!-- 
+A vocabulary of data
+
+- data table / data frame
+- row and column
+- case/observation and variable
+- cell, value, levels
+
+Measurement
+
+- numeric coding
+- codebook
+
+Manipulating a data table
+
+- add / multiply variables
+- plot one variable against another variable (coordinates)
+- sum, mean
+
+Vocabulary of research design
+
+- independent variable
+- dependent variable
+- treatment and control
+- covariate
+
+
+
+ -->
+
+<!-- Measurements -->
+
+<!-- examples of codings? -->
+
+<!-- Variables -->
+
+<!-- examples of levels -->
+
+<!-- Data Tables -->
+
+<!-- What you can do 
+- plot X and Y
+- add variables
+-->
+
+
+
+

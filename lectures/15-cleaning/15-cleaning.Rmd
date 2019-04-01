@@ -1,0 +1,462 @@
+---
+title: "Data Cleaning"
+subtitle: '(Please grab your next assignment sheet)'
+author: "Understanding Political Numbers"
+date: "March 13, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "15-cleaning", "15-cleaning.Rmd"))
+# knitr::purl(here::here("lectures", "15-cleaning", "15-cleaning.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "15_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/15-cleaning/img"
+```
+
+class: inverse, middle, center
+
+# Review
+
+
+---
+
+class: center, middle
+
+### Multiple regression
+
+\begin{align}
+  y = \alpha + \beta_{1} x_{1} + \beta_{2} x_{2} + \beta_{3} x_{3} + \ldots + \epsilon
+\end{align}
+
+<br>
+
+**Evaluating coefficient estimates**
+
+What's the sign? (+ / -)
+
+What's the magnitude? (how big)
+
+Is it significant?
+
+
+
+???
+
+y assumed to be a fn of multiple independent variables
+
+Called predictors
+
+
+---
+
+class: center, middle
+
+## Example: voter registration in Wisconsin
+
+Uniform statewide voter registration requirements $\rightarrow$ lower turnout?
+
+<br>
+
+**Controlling for...**
+
+Municipal expenditures on election administration
+
+Population size
+
+
+---
+
+class: center
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "burden.png"))
+```
+
+\begin{align}
+  \hat{y} &= a + (b_{1} \times \mathrm{Requirement}) + (b_{2} \times \mathrm{logExpenditures}) + (b_{3} \times \mathrm{logPopulation}) \\[12pt]
+  \hat{y} &= 1.298 + (-0.018 \times \mathrm{Requirement}) + (0.007\times \mathrm{logExpenditures}) + (-0.095\times \mathrm{logPopulation})
+\end{align}
+
+
+---
+
+class: center
+
+### Predicted values
+
+
+???
+
+What's the average turnout as a function of administrative spending?
+
+- why? 
+- Because maybe cities that invest heavily in elections have an easier time implementing the new requirements
+- Voter registration should reduce voter turnout (because it's more difficult to vote)
+- But cities can ease the burden by investing more money and effort in their election processes
+
+--
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "burden-2.png"))
+```
+
+
+???
+
+A version of the model where the effect of spending is allowed to vary for cities that didn't change their registration rules
+
+- what other controls are there?
+- population
+
+
+
+---
+
+class: center, middle, inverse
+
+# Data organization and cleaning
+
+---
+
+
+background-image: url(img/profit.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+class: middle, center
+
+### 1. Spreadsheets
+
+### 2. Shaping / Merging
+
+### 3. Recoding
+
+
+---
+
+
+.pull-left[
+## Data in spreadsheets
+
+Downloading pre-packaged data
+
+Creating your own spreadsheet
+]
+
+
+.pull-right[
+```{r, out.width = "80%"}
+include_graphics(here(img, "data-dir.png"))
+```
+]
+
+```{r, eval = FALSE, echo = TRUE}
+# Package for reading .dta, .sav, .por files
+# Don't listen to google when it tells you to use {foreign} pkg
+library("haven")
+
+my_data <- read_dta(here("data", "some-data.dta"))  # for .dta files
+my_data <- read_spss(here("data", "some-data.sav")) # for .sav (or .por)
+
+# for excel files
+library("readxl")
+my_data <- read_excel(here("data", "some-data.xlsx"))
+
+# "Catch-all" data reading package
+library("rio")
+my_data <- import(here("data", "some-data.dta"))
+```
+
+
+
+---
+
+## Shaping data
+
+
+**Wide data:** the same variable is split across multiple columns.
+
+
+<br>
+
+--
+
+.pull-left[
+
+```{r, echo = TRUE}
+AirPassengers
+```
+]
+
+--
+
+.pull-right[
+<center><h4>We don't want this </h4></center>
+]
+
+
+---
+
+## Shaping data
+
+
+**Long data:** Each variable gets its own column
+
+--
+
+.pull-left[
+
+```{r}
+longair <- AirPassengers %>%
+  as_tibble() %>%
+  mutate(
+    year = time(AirPassengers) %>%
+           as.integer(), 
+    month = cycle(AirPassengers) %>% 
+            month.abb[.]
+  ) %>%
+  select(year, month, passengers = x) %>%
+  print()
+```
+]
+
+
+--
+
+.pull-right[
+<center><h4> Much better </h4></center>
+]
+
+
+
+
+
+---
+
+## Shaping data
+
+Go from wide to long with `gather()`
+
+
+```{r}
+print("WIDE")
+wide_data <- longair %>%
+  spread(key = month, value = passengers) %>%
+  select(year, one_of(month.abb)) %>%
+  print()
+```
+
+
+
+---
+
+## Shaping data
+
+Go from wide to long with `gather()`
+
+.pull-left[
+
+```{r longo, echo = TRUE, results = 'hide'}
+# how to use gather()
+#   key = variable name for the labels
+#   value = variable name for the data
+#   variables you want to "stack" (comma sep'd)
+#   can grab a range of variables using : colon
+wide_data %>%
+  gather(key = month, value = passengers, 
+         Jan, Feb, Mar, Apr:Dec)
+```
+]
+
+.pull-right[
+```{r longo, echo = FALSE}
+```
+]
+
+
+---
+
+## Merging
+
+I have two data tables
+
+.pull-left[
+```{r}
+arrests <- USArrests %>% 
+  as_tibble(rownames = "state_name") %>% 
+  select(state_name, Murder) %>%
+  print()
+```
+]
+
+
+.pull-right[
+```{r}
+midwest_poverty <- tibble(state_name = state.name, 
+       state = state.abb) %>%
+  inner_join(midwest) %>%
+  select(state_name, state, poverty = percbelowpoverty, pop = poptotal) %>%
+  group_by(state, state_name) %>%
+  summarize(mean_poverty = sum((pop / sum(pop)) * poverty)) %>%
+  ungroup() %>%
+  print()
+```
+]
+
+
+
+---
+
+## Merging
+
+Inner join: return only the rows that match
+
+```{r, echo = TRUE}
+inner_join(arrests, midwest_poverty, by = "state_name") 
+```
+
+
+
+---
+
+## Merging
+
+Left join: return the "left" dataset and anything that matches from the right
+
+```{r, echo = TRUE}
+# arranging to show the effect
+left_join(arrests, midwest_poverty, by = "state_name") %>%
+  arrange(mean_poverty)
+```
+
+
+---
+
+## Recoding / Cleaning
+
+Selectively altering variables
+
+```{r, echo = TRUE}
+# case_when(logical_test ~ result)
+# works like: if [logical_test] then [result]
+# unmatched cases default to NA but you can catch all with `TRUE ~ result`
+
+midwest_poverty %>%
+  mutate(is_great = case_when(state == "WI" ~ "Pretty great", 
+                              state == "IL" ~ "Medium",
+                              TRUE ~ "Crappy"))
+```
+
+
+---
+
+## Recoding / Cleaning
+
+Fun with strings ("character vectors")
+
+```{r, echo = TRUE}
+my_string <- c("a", "b", "cdef")
+my_string
+
+str_detect(my_string, pattern = "b")  # detect a pattern
+str_replace(my_string, pattern = "b", replace = "bee") # replace a pattern
+str_sub(my_string, start = 1, end = 2) # grab a substring
+```
+
+
+---
+
+## Recoding / Cleaning
+
+Indicator variables (aka dummy variables, aka binary variables): 0 or 1
+
+```{r, echo = TRUE}
+# equals 1 if a condition is satisfied
+arrests %>%
+  mutate(
+    placed_ive_lived = case_when(state_name == "Missouri" ~ 1, 
+                                 state_name == "California" ~ 1, 
+                                 state_name == "Wisconsin" ~ 1, 
+                                 TRUE ~ 0)
+  ) %>%
+  print()
+```
+
+
+<!-- 
+
+Regression review
+
+- paper example
+
+Data collection
+
+- table organization
+- table 'finality'
+
+Cleaning
+
+- case_when
+- dummies
+- stringr
+
+Shaping
+
+joining
+
+ -->

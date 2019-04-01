@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Measurement and Causality in Social Science</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Measurement and Causality in Social Science
+## (or, “Social Science: what is it, and why does it suck?”)
+### Understanding Political Numbers
+### Feb 4, 2019
+
+---
+
+
+# International Relations Diversity Initiative
+
+If you are...
+
+- A person of color
+- Junior or Senior
+- U.S. citizen
+- *Curious about* graduate school in international relations or comparative politics
+
+Friday, April 12, all-day event on graduate school, advice for applying, resources available for students of color, current research in our department...
+
+If interested
+
+- **By Friday** send me one paragraph explaining your scholarly interests, curiosities about graduate school, level of familiarity with graduate school
+- **By Friday** meet with me to discuss these things
+
+---
+
+class: center, middle
+
+# Agenda
+
+Short Essay 1
+
+Technical lesson: DAGs
+
+Thinking about social science
+
+Measurement
+
+Causality
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Short Essay 1
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Technical Lesson
+
+
+
+---
+
+# Directed Acyclic Graphs (DAGs)
+
+
+
+&lt;img src="04-social-science_files/figure-html/dag-1-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+???
+
+Diagrams that show causal relationships
+
+- "causal" meaning "cause and effect"
+- we refer to "causality" or "causation"
+
+How it works:
+
+- **Graph** in the sense that it is a diagram containing nodes and edges
+  - "nodes" are variables in the causal system (X, Y)
+  - "edges" connect nodes (arrows)
+- **Directed** because the arrows show a direction of causality. X causes Y
+- **Acyclic** means not-cyclical. There is a path from cause to effect, and the path doesn't circle back. Y doesn't go back to cause X.
+  - in reality, it might circle back
+  - which goes to show that DAGs are simplifications of the world
+  - They are just mental tools that are designed subtract nuance out of the picture
+  - They are "models" like toy versions of the world
+- Imagine `\(X\)` is how much time you spend practicing R code, and `\(Y\)` how well you do in this class
+
+
+
+
+
+---
+
+## They're good DAGs, Brent
+
+&lt;img src="04-social-science_files/figure-html/dag-example-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+Useful for displaying complicated theories of how the world works
+
+- X causes Y, but "through" Z
+- Really Z affects Y, and Z is affected by X
+- X doesn't affect Y if it doesn't affect Z in between
+- X is time spent practicing R, Z is getting better at R, Y is doing well in this class
+  - You can spend a lot of time practicing, but you won't do well in the class, unless the practice makes you get better at R
+
+When it comes time design an analysis or do statistics, these are useful for figuring out what you need to measure, what your statistical analysis should be designed to do, and so on.
+
+
+---
+
+class: inverse, middle, center
+
+# Social Science
+
+
+---
+
+class: middle, center
+
+# How it works
+
+*Method, method, method*
+
+Complexity? "Art, not science?"
+
+
+
+
+&lt;!-- people are complex, but so is nature --&gt;
+
+&lt;!-- averages --&gt;
+
+
+
+???
+
+- Science is a *method*. It is a systematic approach to evidence-based study of the world. 
+  - build theory
+  - study to test observable implications of theory
+  - hypothesizing about the data you should observe (or not)
+  - analyze the data
+  - draw conclusions and improve
+  - philosophically, scientifically, it works the same
+- Social Science is different because it studies people
+  - that brings unique challenges
+  - but we should be clear-eyed about what those challenges are
+- "People are too complex" or "politics is an art, not a science"
+- Complexity:
+  - yeah people have complex thoughts; the reasons why they do things are not always obvious
+  - but nature is also complex. If you've ever been to organic chemistry class, you know that nature is complex
+  - So I don't think complexity is the thing; and I think people who say things like "People are too complex" or "politics is an art" just haven't taken the careful approach that we're going to take
+- You can learn a lot about people using the same kinds of tools you learn about other things
+- Plant
+  - You have a plant
+  - You think you're doing everything right, but it doesn't grow. You try all these different things
+  - Imagine you had like a thousand plants, and you can set them up in various combinations of conditions
+  - You would be better able to see what kinds of similarities and differences emerge.
+  - So let's do this with people
+  - Get a lot of data, and look for patterns when we have *lots* of people to compare all at once
+- People example
+  - if I surveyed this classroom, and asked you to think about which political issue is most important to you, there would be lots of individual variation
+  - but imagine that I asked every single person in the school
+  - some patterns would probably emerge. Answers might be correlated for people with the same political party, based on gender, race, sexual orientation, your economic/financial situation when you were growing up, whether you are a first-generation college student
+  - *yes* variation, but getting lots of data and averaging can be extremely powerful
+- *practically*, science can be different 
+    - we ask different questions, 
+    - rely on different measurements/data, 
+    - sometimes have to use different study designs to analyze how the world works
+    - we'll come back 
+
+
+---
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/04-social-science/img/pew-voters.png" width="85%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+???
+
+- Pew data: they take surveys
+- Study interviewed &gt;3k people before the election, and then looked up official records to find out if those people voted
+  - you can do this
+  - not *who* you voted for
+- Compare voters and nonvoters along age, race, etc.
+- patterns emerge
+- This tells you a lot?
+  - Why does public policy look the way it does? Who are elected officials really accountable to?
+  - There are lots of theoretical ideas you can draw out of this
+
+
+---
+
+class: center, middle
+
+## Challenges of social science
+
+Ethical problem of studying people
+
+Measurement
+
+Causality
+
+
+???
+
+When you're studying people, you can't be too invasive
+
+- Measurement
+  - I want to know what you're thinking, but I can't read your mind
+  - I can't crack you open and look at your thoughts
+  - I have to do other things to learn about your behavior and your thoughts and feelings
+  - These things have problems
+- Causality issues
+  - I study whether voters in primary elections are ideological
+  - do they use their amount of liberalism to pick which primary candidate
+  - I can't experiment on people and say, this person is going to be liberal...
+  - or this candidate is going to be more conservative...
+  - And because we don't have that much control, this creates problems
+
+
+&lt;!-- Social science --&gt;
+
+&lt;!--  one criticism of some political science work is that the findings of x or y are just "common sense." Maybe. But common sense is often not all that common. Sometimes there is more than one thing that seems to be common sense but they are in conflict — how do those different views get adjudicated? Perhaps with some analysis. Sometimes the common sense is wrong. Also, the best work takes something that people have thought about, points out a new perspective, and makes people think "huh, why didn’t I think of that before, that makes so much sense," which then becomes common sense. --&gt;
+
+
+---
+
+class: middle, center, inverse
+
+# Measurement
+
+---
+
+# "Levels of Measurement"
+
+.left-code[
+**Categorical** measures
+
+- Nominal measures: *unordered* classification 
+- Ordinal measures: *ordered* classification
+
+**Quantitative** measures
+
+- Interval measures: *fixed-interval* scales and indices
+- Ratio measures: *true-zero* counts, proportions, 
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/04-social-science/img/NOM.jpg" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: center, middle
+
+# Measurement Concerns
+
+Observability
+
+Issues with self-reporting
+
+Validity
+
+Reliability
+
+
+
+
+
+???
+
+Example: Political ideology (left-right, liberal conservative) or Math ability
+
+- Not the same as party ID
+- it *affects* the way you feel about issues like taxes, abortion, climate change, but it isn't the same thing as your opinions on those issues
+
+Observability: I can't see it
+
+Self-reporting: Can I trust your responses?
+
+- Recall/availability
+- Social desirability
+
+Validity: does the observable indicator reflect the underlying concept?
+
+- When I ask people about their ideology, does the measure get at what I want?
+
+Reliability: Does it behave similarly when you use it multiple times? Is it replicable from one instance to the next?
+
+- If I asked you tomorrow, would I get a similar answer?
+
+
+Things we can do:
+
+- some things about what you do creates a paper trail
+- You live somewhere
+- You make money, you register to vote
+- We can ask you survey questions
+- We can collect data that the government release
+
+
+
+--
+
+### A "heuristic model" for thinking about measurement:
+
+`\begin{align}
+  Observed = Truth + Bias + Error
+\end{align}`
+
+---
+
+class: middle, center, inverse
+
+# Causality (and its detractors)
+
+???
+
+As we've seen in discussions of hypotheses etc. we often are interested in the relationship between X and Y
+
+- if X causes Y, they should be related
+- High X, high Y (or low Y)
+
+Difficulty is that correlations appear for many reasons
+
+
+---
+
+class: middle, center
+
+## "Spurious" Correlation
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/04-social-science/img/spurious.png" width="924" style="display: block; margin: auto;" /&gt;
+
+&lt;http://tylervigen.com/spurious-correlations&gt;
+
+???
+
+Correlations that appear for non-causal reasons
+
+
+
+---
+
+## Spurious correlation between X and Y
+
+&lt;img src="04-social-science_files/figure-html/spurious-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+
+class: middle, center
+
+
+
+
+
+
+&lt;img src="04-social-science_files/figure-html/plot-dime-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+# Causality
+
+&gt; *Data can tell you that the people who took a medicine recovered faster than those who did not take it, but they can’t tell you why. Maybe those who took the medicine did so because they could afford it and would have recovered just as fast without it.*
+― Judea Pearl, *The Book of Why*
+
+
+--
+
+*Counterfactuals*
+
+???
+
+Imagine a parallel universe, where everything about the world were the same
+
+- except I could change the independent variable, x
+
+The issue with confounding is that `\(x\)` and `\(y\)` may be related, but there are also lots of other things that `\(x\)` is correlated with. So you never observe that true counterfactual. If you change `\(x\)`, you change lots of other things
+
+- To be assured that x causes y, you need one of two things
+- One is for *all other variables* to be held constant
+- This is what we mean by "controlling"
+
+
+--
+
+All-else constant (i.e. "controlling for" other variables)
+
+
+???
+
+- the other would be to find a situation where `\(x\)` is affected for some reason that comes from outside of the feedback loop
+
+
+
+--
+
+Experiments
+
+???
+
+You *can* control the independent variable, but you don't observe the parallel universe
+
+- you instead just randomly place units into treatment and control groups, so that you can learn about things on average
+
+We will have a whole week where we talk more about experiments
+
+- and more weeks where we unpack more issues of causality
+
+
+---
+
+class: center, middle
+
+# Generalizing
+
+Do our findings *generalize* beyond the study?
+
+???
+
+- data source is convenient but not the exact population you want
+- We've studied an *instance* of a broader phenomenon
+  - does studying how things work in the U.S. tell us about the world?
+  - maybe sometimes, but we have to think about when it should and should not be applicable
+- The social world, our theories about it, and our data are all confined by social context
+  - why I don't like the idea that "the data are trying to tell you something"
+  - it assumes that the data conform to some interpretable view of things
+  - if the data are caused by something I don't understand, then I can't assume that the data are going to tell me something I can understand.
+
+
+
+
+---
+
+# Looking ahead
+
+Office hours: 2:30--4:30
+
+On Wednesday: Unpacking data
+
+In Section: R lessons!
+
+Next week: graphics!
+
+Check emails for: online schedule, syllabus, Datacamp
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

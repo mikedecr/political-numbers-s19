@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data Cleaning</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-03-13" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Data Cleaning
+## (Please grab your next assignment sheet!)
+### Understanding Political Numbers
+### March 13, 2019
+
+---
+
+
+
+
+
+class: inverse, middle, center
+
+# Review
+
+
+---
+
+class: center, middle
+
+### Multiple regression
+
+`\begin{align}
+  y = \alpha + \beta_{1} x_{1} + \beta_{2} x_{2} + \beta_{3} x_{3} + \ldots + \epsilon
+\end{align}`
+
+&lt;br&gt;
+
+**Evaluating coefficient estimates**
+
+What's the sign? (+ / -)
+
+What's the magnitude? (how big)
+
+Is it significant?
+
+
+
+???
+
+y assumed to be a fn of multiple independent variables
+
+Called predictors
+
+
+---
+
+class: center, middle
+
+## Example: voter registration in Wisconsin
+
+Uniform statewide voter registration requirements `\(\rightarrow\)` lower turnout?
+
+&lt;br&gt;
+
+**Controlling for...**
+
+Municipal expenditures on election administration
+
+Population size
+
+
+---
+
+class: center
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/15-cleaning/img/burden.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+`\begin{align}
+  \hat{y} &amp;= a + (b_{1} \times \mathrm{Requirement}) + (b_{2} \times \mathrm{logExpenditures}) + (b_{3} \times \mathrm{logPopulation}) \\[12pt]
+  \hat{y} &amp;= 1.298 + (-0.018 \times \mathrm{Requirement}) + (0.007\times \mathrm{logExpenditures}) + (-0.095\times \mathrm{logPopulation})
+\end{align}`
+
+
+---
+
+class: center
+
+### Predicted values
+
+
+???
+
+What's the average turnout as a function of administrative spending?
+
+- why? 
+- Because maybe cities that invest heavily in elections have an easier time implementing the new requirements
+- Voter registration should reduce voter turnout (because it's more difficult to vote)
+- But cities can ease the burden by investing more money and effort in their election processes
+
+--
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/15-cleaning/img/burden-2.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+A version of the model where the effect of spending is allowed to vary for cities that didn't change their registration rules
+
+- what other controls are there?
+- population
+
+
+
+---
+
+class: center, middle, inverse
+
+# Data organization and cleaning
+
+---
+
+
+background-image: url(img/profit.jpg)
+background-color: #000000
+background-size: contain
+
+
+---
+
+class: middle, center
+
+### 1. Spreadsheets
+
+### 2. Shaping / Merging
+
+### 3. Recoding
+
+
+---
+
+
+.pull-left[
+## Data in spreadsheets
+
+Downloading pre-packaged data
+
+Creating your own spreadsheet
+]
+
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/15-cleaning/img/data-dir.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+```r
+# Package for reading .dta, .sav, .por files
+# Don't listen to google when it tells you to use {foreign} pkg
+library("haven")
+
+my_data &lt;- read_dta(here("data", "some-data.dta"))  # for .dta files
+my_data &lt;- read_spss(here("data", "some-data.sav")) # for .sav (or .por)
+
+# for excel files
+library("readxl")
+my_data &lt;- read_excel(here("data", "some-data.xlsx"))
+
+# "Catch-all" data reading package
+library("rio")
+my_data &lt;- import(here("data", "some-data.dta"))
+```
+
+
+
+---
+
+## Shaping data
+
+
+**Wide data:** the same variable is split across multiple columns.
+
+
+&lt;br&gt;
+
+--
+
+.pull-left[
+
+
+```r
+AirPassengers
+```
+
+```
+##      Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+## 1949 112 118 132 129 121 135 148 148 136 119 104 118
+## 1950 115 126 141 135 125 149 170 170 158 133 114 140
+## 1951 145 150 178 163 172 178 199 199 184 162 146 166
+## 1952 171 180 193 181 183 218 230 242 209 191 172 194
+## 1953 196 196 236 235 229 243 264 272 237 211 180 201
+## 1954 204 188 235 227 234 264 302 293 259 229 203 229
+## 1955 242 233 267 269 270 315 364 347 312 274 237 278
+## 1956 284 277 317 313 318 374 413 405 355 306 271 306
+## 1957 315 301 356 348 355 422 465 467 404 347 305 336
+## 1958 340 318 362 348 363 435 491 505 404 359 310 337
+## 1959 360 342 406 396 420 472 548 559 463 407 362 405
+## 1960 417 391 419 461 472 535 622 606 508 461 390 432
+```
+]
+
+--
+
+.pull-right[
+&lt;center&gt;&lt;h4&gt;We don't want this &lt;/h4&gt;&lt;/center&gt;
+]
+
+
+---
+
+## Shaping data
+
+
+**Long data:** Each variable gets its own column
+
+--
+
+.pull-left[
+
+
+```
+## # A tibble: 144 x 3
+##     year month passengers
+##    &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1  1949 Jan          112
+##  2  1949 Feb          118
+##  3  1949 Mar          132
+##  4  1949 Apr          129
+##  5  1949 May          121
+##  6  1949 Jun          135
+##  7  1949 Jul          148
+##  8  1949 Aug          148
+##  9  1949 Sep          136
+## 10  1949 Oct          119
+## # … with 134 more rows
+```
+]
+
+
+--
+
+.pull-right[
+&lt;center&gt;&lt;h4&gt; Much better &lt;/h4&gt;&lt;/center&gt;
+]
+
+
+
+
+
+---
+
+## Shaping data
+
+Go from wide to long with `gather()`
+
+
+
+```
+## [1] "WIDE"
+```
+
+```
+## # A tibble: 12 x 13
+##     year   Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov
+##    &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1  1949   112   118   132   129   121   135   148   148   136   119   104
+##  2  1950   115   126   141   135   125   149   170   170   158   133   114
+##  3  1951   145   150   178   163   172   178   199   199   184   162   146
+##  4  1952   171   180   193   181   183   218   230   242   209   191   172
+##  5  1953   196   196   236   235   229   243   264   272   237   211   180
+##  6  1954   204   188   235   227   234   264   302   293   259   229   203
+##  7  1955   242   233   267   269   270   315   364   347   312   274   237
+##  8  1956   284   277   317   313   318   374   413   405   355   306   271
+##  9  1957   315   301   356   348   355   422   465   467   404   347   305
+## 10  1958   340   318   362   348   363   435   491   505   404   359   310
+## 11  1959   360   342   406   396   420   472   548   559   463   407   362
+## 12  1960   417   391   419   461   472   535   622   606   508   461   390
+## # … with 1 more variable: Dec &lt;dbl&gt;
+```
+
+
+
+---
+
+## Shaping data
+
+Go from wide to long with `gather()`
+
+.pull-left[
+
+
+```r
+# how to use gather()
+#   key = variable name for the labels
+#   value = variable name for the data
+#   variables you want to "stack" (comma sep'd)
+#   can grab a range of variables using : colon
+wide_data %&gt;%
+  gather(key = month, value = passengers, 
+         Jan, Feb, Mar, Apr:Dec)
+```
+]
+
+.pull-right[
+
+```
+## # A tibble: 144 x 3
+##     year month passengers
+##    &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1  1949 Jan          112
+##  2  1950 Jan          115
+##  3  1951 Jan          145
+##  4  1952 Jan          171
+##  5  1953 Jan          196
+##  6  1954 Jan          204
+##  7  1955 Jan          242
+##  8  1956 Jan          284
+##  9  1957 Jan          315
+## 10  1958 Jan          340
+## # … with 134 more rows
+```
+]
+
+
+---
+
+## Merging
+
+I have two data tables
+
+.pull-left[
+
+```
+## # A tibble: 50 x 2
+##    state_name  Murder
+##    &lt;chr&gt;        &lt;dbl&gt;
+##  1 Alabama       13.2
+##  2 Alaska        10  
+##  3 Arizona        8.1
+##  4 Arkansas       8.8
+##  5 California     9  
+##  6 Colorado       7.9
+##  7 Connecticut    3.3
+##  8 Delaware       5.9
+##  9 Florida       15.4
+## 10 Georgia       17.4
+## # … with 40 more rows
+```
+]
+
+
+.pull-right[
+
+```
+## # A tibble: 5 x 3
+##   state state_name mean_poverty
+##   &lt;chr&gt; &lt;chr&gt;             &lt;dbl&gt;
+## 1 IL    Illinois           11.9
+## 2 IN    Indiana            10.7
+## 3 MI    Michigan           13.1
+## 4 OH    Ohio               12.5
+## 5 WI    Wisconsin          10.7
+```
+]
+
+
+
+---
+
+## Merging
+
+Inner join: return only the rows that match
+
+
+```r
+inner_join(arrests, midwest_poverty, by = "state_name") 
+```
+
+```
+## # A tibble: 5 x 4
+##   state_name Murder state mean_poverty
+##   &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;
+## 1 Illinois     10.4 IL            11.9
+## 2 Indiana       7.2 IN            10.7
+## 3 Michigan     12.1 MI            13.1
+## 4 Ohio          7.3 OH            12.5
+## 5 Wisconsin     2.6 WI            10.7
+```
+
+
+
+---
+
+## Merging
+
+Left join: return the "left" dataset and anything that matches from the right
+
+
+```r
+# arranging to show the effect
+left_join(arrests, midwest_poverty, by = "state_name") %&gt;%
+  arrange(mean_poverty)
+```
+
+```
+## # A tibble: 50 x 4
+##    state_name Murder state mean_poverty
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;
+##  1 Wisconsin     2.6 WI            10.7
+##  2 Indiana       7.2 IN            10.7
+##  3 Illinois     10.4 IL            11.9
+##  4 Ohio          7.3 OH            12.5
+##  5 Michigan     12.1 MI            13.1
+##  6 Alabama      13.2 &lt;NA&gt;          NA  
+##  7 Alaska       10   &lt;NA&gt;          NA  
+##  8 Arizona       8.1 &lt;NA&gt;          NA  
+##  9 Arkansas      8.8 &lt;NA&gt;          NA  
+## 10 California    9   &lt;NA&gt;          NA  
+## # … with 40 more rows
+```
+
+
+---
+
+## Recoding / Cleaning
+
+Selectively altering variables
+
+
+```r
+# case_when(logical_test ~ result)
+# works like: if [logical_test] then [result]
+# unmatched cases default to NA but you can catch all with `TRUE ~ result`
+
+midwest_poverty %&gt;%
+  mutate(is_great = case_when(state == "WI" ~ "Pretty great", 
+                              state == "IL" ~ "Medium",
+                              TRUE ~ "Crappy"))
+```
+
+```
+## # A tibble: 5 x 4
+##   state state_name mean_poverty is_great    
+##   &lt;chr&gt; &lt;chr&gt;             &lt;dbl&gt; &lt;chr&gt;       
+## 1 IL    Illinois           11.9 Medium      
+## 2 IN    Indiana            10.7 Crappy      
+## 3 MI    Michigan           13.1 Crappy      
+## 4 OH    Ohio               12.5 Crappy      
+## 5 WI    Wisconsin          10.7 Pretty great
+```
+
+
+---
+
+## Recoding / Cleaning
+
+Fun with strings ("character vectors")
+
+
+```r
+my_string &lt;- c("a", "b", "cdef")
+my_string
+```
+
+```
+## [1] "a"    "b"    "cdef"
+```
+
+```r
+str_detect(my_string, pattern = "b")  # detect a pattern
+```
+
+```
+## [1] FALSE  TRUE FALSE
+```
+
+```r
+str_replace(my_string, pattern = "b", replace = "bee") # replace a pattern
+```
+
+```
+## [1] "a"    "bee"  "cdef"
+```
+
+```r
+str_sub(my_string, start = 1, end = 2) # grab a substring
+```
+
+```
+## [1] "a"  "b"  "cd"
+```
+
+
+---
+
+## Recoding / Cleaning
+
+Indicator variables (aka dummy variables, aka binary variables): 0 or 1
+
+
+```r
+# equals 1 if a condition is satisfied
+arrests %&gt;%
+  mutate(
+    placed_ive_lived = case_when(state_name == "Missouri" ~ 1, 
+                                 state_name == "California" ~ 1, 
+                                 state_name == "Wisconsin" ~ 1, 
+                                 TRUE ~ 0)
+  ) %&gt;%
+  print()
+```
+
+```
+## # A tibble: 50 x 3
+##    state_name  Murder placed_ive_lived
+##    &lt;chr&gt;        &lt;dbl&gt;            &lt;dbl&gt;
+##  1 Alabama       13.2                0
+##  2 Alaska        10                  0
+##  3 Arizona        8.1                0
+##  4 Arkansas       8.8                0
+##  5 California     9                  1
+##  6 Colorado       7.9                0
+##  7 Connecticut    3.3                0
+##  8 Delaware       5.9                0
+##  9 Florida       15.4                0
+## 10 Georgia       17.4                0
+## # … with 40 more rows
+```
+
+
+&lt;!-- 
+
+Regression review
+
+- paper example
+
+Data collection
+
+- table organization
+- table 'finality'
+
+Cleaning
+
+- case_when
+- dummies
+- stringr
+
+Shaping
+
+joining
+
+ --&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

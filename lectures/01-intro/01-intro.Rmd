@@ -1,0 +1,542 @@
+---
+title: "Welcome Notes"
+# subtitle: "Welcome Notes"
+author: "Understanding Political Numbers"
+date: "Jan 23, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+---
+
+
+class: middle, center, inverse
+
+## What are political numbers?
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "01-intro", "01-intro.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "01_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 2, dpi = 100)
+
+img <- "lectures/01-intro/img"
+```
+
+
+???
+
+- Let's get started, I'm Mike
+
+
+- Data from the world of politics
+- evaluate policy
+- make a political point
+- study the world
+
+---
+
+class: center
+ 
+### Unemployment Rate
+
+
+
+
+
+
+--
+
+.middle[
+```{r, out.width = "90%", fig.cap = "https://twitter.com/gIoryoso"}
+include_graphics(here(img, "work-bitch.jpg_large"))
+```
+]
+
+
+???
+
+Definitional controversy:
+
+- how to define?
+- Who's "unemployed" vs "underemployed"
+- Who's "looking" for a job
+- Who's excluded from this calculation and why?
+
+Because it's a political weapon
+
+- politicians and party messages
+
+Who creates this number?
+
+- BLS (THE GOVERNMENT)
+- Governments are powerful
+- Is the institution insulated from political pressure? 
+- Is the measure *legislated* or agency-created?
+
+
+---
+
+class: middle
+
+<!-- ### Presidential Approval -->
+
+```{r, fig.cap = 'www.fivethirtyeight.com', out.width = "80%"}
+include_graphics(here(img, "approval.png"))
+```
+
+
+???
+
+Caption indicates complexity
+
+- poll quality, recency, sample size, partisan bias
+
+Very important
+
+- predictive of presidential and Congressional elections
+- presidents do things to raise this
+
+
+---
+
+class: center, middle
+
+```{r, fig.cap = 'Highton (2017), "Voter Identification Laws and Turnout in the United States"', out.width = "75%"}
+include_graphics(here(img, "voter-id.jpg_large"))
+```
+
+???
+
+graph:
+
+- strict photo ID reqs not a thing until about 2006
+- but voter ID states have low turnout in 2000
+
+researcher:
+
+- "is turnout lower in states with voter ID?"
+- Yes but does voter ID *cause* that?
+- Well, it already shows up before voter ID is a thing.
+- So we can't tell yet, (without more work)
+- Is turnout lower *than it would have been* if not for voter ID? much tougher
+
+
+
+---
+
+class: center
+
+## Big questions
+
+???
+
+- Data help us think *scientifically*, but what's so great about that?
+- What makes social science different?
+
+
+--
+
+How can we use data to learn about politics?
+
+
+--
+
+How can *I* do data analysis?
+
+
+???
+
+- Statistical and computational tools
+
+
+--
+
+Good and bad examples? Problems (solutions?) with data?
+
+???
+
+- Political numbers "in the wild"
+
+
+--
+
+### Why data? Why now?
+
+???
+
+- data on the rise
+- campaigns, policy, law
+- technology, social media, machine learning, AI
+- "data science" jobs
+
+
+
+
+---
+
+class: inverse, middle, center
+
+# Have a syllabus...
+
+
+---
+
+class: inverse, middle, center
+
+## Who am I?
+
+### Who is your TA?
+
+
+???
+
+- Read the syllabus
+- Show math at "technical"
+
+
+
+---
+
+
+## Let's talk about stats, baby
+
+--
+
+How do you find the average (mean) of variable $\mathbf{x}$?
+
+
+--
+
+$\displaystyle \mathbf{x} = \displaystyle \begin{bmatrix} 12 \\ 5 \\ 4 \end{bmatrix}$
+???
+How would we do this?
+--
+
+$= \begin{bmatrix} x_{1} \\ x_{2} \\ x_{3} \end{bmatrix}$. 
+
+We refer to $x_{i}$ as the $i$th value of $x$. What would $x_{i}$ be if $i = 2$?
+
+
+???
+
+This indexing notation will be important
+
+How would we avg x? Add values and divide by how many
+
+--
+
+$\displaystyle \bar{x} = \frac{\sum\limits_{i = 1}^{N}x_{i}}{N} \qquad \qquad$ (where $N$ is the number of data points)
+
+<br>
+
+--
+
+$\displaystyle \bar{x} = \frac{x_{1} + x_{2} + x_{3}}{N} = \frac{12 + 5 + 4}{3} = 7$
+
+--
+
+**Point being,** we need to express intuitive ideas (like averaging) in their mathematical form
+
+
+---
+
+class: inverse, middle, center
+
+### "I'm not a math person"
+
+
+???
+
+- Non-math people just had bad teachers or bad lesson plans
+- You can do math because you have a human brain
+- Don't need stats, don't need CS
+- Applying stats w/ real examples, no context-free formula sheets
+- Averages and uncertainty, estimating an average and interpreting uncertainty
+
+
+---
+
+class: center, middle
+
+## What is R?
+
+## What is RStudio?
+
+
+---
+
+class: center, middle, inverse
+
+# What questions do we have?
+
+???
+
+ALWAYS it's ok to ask questions
+
+Keep reading syllabus
+
+Stop again on grades
+
+
+
+---
+
+class: center, middle
+
+
+# Grades
+
+**Exercises** are accountability mechanisms for learning `R` and data work
+
+**Short Essays** are for demonstrating critical thinking about data
+
+**The Research Paper** is a data-driven project of *your choosing*
+
+<br>
+
+**No attendance. No exams**
+
+
+???
+
+- Mixed feelings about grades
+- We need them so you force yourself to learn
+- Conscious of newcomers
+- some stuff is hard or new, raise your hand, we are happy to help, nothing to fear
+- attendance policies hurt the most vulnerable students, so I won't do them. But JFC you have to show up. If you can't, you gotta help us help you
+ 
+Extra credit vs. accommodations
+
+Keep reading syllabus
+
+- do schedule
+
+
+
+---
+
+class: center, middle, inverse
+
+## Schedule
+
+
+---
+
+## Science and Social Science
+
+
+```{r, fig.cap = 'Image from Kendall (2003), "Designing a research project"', out.height = "90%"}
+include_graphics(here(img, "rct.large.jpg"))
+```
+
+???
+
+- Using data => applying the scientific method
+- Advantages and shortcomings of scientific thinking
+- Img is a simple sketch of a randomized experiment, where you randomly assign observational units to treatment and control
+- What makes social science data different? Ability to do experiments
+  - can't randomize someone's gender to study its effects on voting, can't randomize someone's partisanship to study its effects on presidential approval, can't randomize the outbreak of war to study its effects on post-war ethnic conflict
+
+
+---
+
+## Skills (statistics, R)
+
+<!-- : Statistics, Probability, R -->
+
+.pull-left[
+
+```{r skills-invisible, include = FALSE, cache = FALSE}
+library("gapminder")
+options(scipen = 0)
+```
+
+```{r skills-example, eval = FALSE, echo = TRUE}
+# life expectancy as f(GDP per capita)
+ggplot(filter(gapminder, year == max(year)), 
+       aes(y = lifeExp, x = gdpPercap)) +
+  geom_point(color = "steelblue") +
+  # estimated fit line: y = f( log(x) )
+  geom_smooth(method = "lm", 
+              formula = y ~ log(x), 
+              color = "black") +
+  scale_x_log10(labels = scales::comma) +
+  labs(x = "GDP per capita (US $)",
+       y = "Life Expectancy (years)")
+```
+
+\begin{align}
+  \text{LifeExp}_{i} &= \alpha + \beta \log\left(\mathrm{GDP}_{i}\right) + \epsilon_{i}
+\end{align}
+
+]
+
+.pull-right[
+
+```{r skills-example, echo = FALSE, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+
+]
+
+???
+
+- working with data
+- data visualization
+- but also data analysis from a statistical point of view
+- simple statistical concepts to understand what a statistical *model* is, and do our own!
+
+
+
+---
+
+## Applications
+
+???
+
+- Gender gap: women are more Democratic?
+- Reality: Democrats used to be the majority of both parties
+- Both men and women less Democratic, but men moved more
+
+
+--
+
+```{r, fig.cap = 'Box-Steffensmeier, De Boef, and Lin (2004), "The Dynamics of the Partisan Gender Gap"', out.width = "75%"}
+include_graphics(here(img, "gender-gap.png"))
+```
+
+
+
+---
+
+## What's next
+
+
+In Section: Install `R` and RStudio
+
+???
+
+- Getting acquainted, but getting rolling
+
+--
+
+Next week: Science!
+
+- Monday: *empiricism* and the value of evidence
+
+???
+
+- Readings by Ajilore and Belgioioso, examples of theory-testing
+- "Ban the box" What is it?
+- Intended to make it easier for ex-offenders to get jobs
+- Doesn't work, increases racial bias in hiring
+
+
+
+--
+
+- On Wednesday: Theorizing and hypothesizing
+
+???
+
+- Read Healy: what is good theory, bad theory
+
+--
+
+- In Section: Getting started with `R`
+
+
+---
+
+class: center
+
+## Parting notes
+
+--
+
+Facts and evidence, not beliefs and opinions
+
+???
+
+- discussing arguments on a factual basis, what's the evidence (not about your beliefs)
+
+--
+
+*Positive*, not *normative*
+
+???
+
+Define: Tension between how the world is and how it should be
+
+- I want us to talk about different perspectives
+- But I want to make sure we're thinking about their *evidentiary* underpinnings, not just arguing
+
+There are still ethical concerns
+
+--
+
+Content disclaimer
+
+???
+
+- social problems: war, violence, discrimination, oppression
+- May discuss these issues in class, projects
+- Let's all do this responsibly, treat issues w/ care
+- We come from different backgrounds, perspectives, have our own stories, let's challenge our ideas without being cruel to each other
+
+--
+
+Asking for help
+
+???
+
+- Important skills for your future: code, stats, writing, graphics
+- This is the pt of the class, we gotta do it
+- Is it gonna hurt? Yes, at times. But that's learning
+- You can always raise your hand and ask a question
+- You may feel like you're the only person who doesn't understand, but it's just because nobody is asking a question
+- It gives *us* important feedback on what we need to do, so it helps everybody! 
+
+
+---
+
+class: inverse, middle, center
+
+### (Questions?)
+
+## See you Monday!
+
+
+
+<!-- What don't I say in the syllabus?
+1. This isn't about your political beliefs
+2. Job skills and future employment (law, campaigns, policy, think tanks, data science)
+ -->
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Linear Regression</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-03-04" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Linear Regression
+## (Estimating Linear Relationships)
+### Understanding Political Numbers
+### March 4, 2019
+
+---
+
+
+
+
+
+### Agenda
+
+
+.left-code[
+Admin stuff
+
+- Research Question due Monday March 11
+- Exercise 2 due Wednesday March 13
+
+Exercise 2 tips
+
+Linear regression
+]
+
+
+.right-plot[
+&lt;img src="12-regression_files/figure-html/ed-scatter-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+- added extra time
+
+---
+
+class: inverse, middle, center
+
+# Exercise 2
+
+
+
+---
+
+## Follow link to data
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/12-regression/img/js-tab.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Paste in Excel/Numbers and CLEAN
+
+.left-code[
+Beware:
+
+- merged rows
+- Unneeded rows
+- special characters in variable names (use `_`)
+- save as **CSV**
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/12-regression/img/xl.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Take cues from Ex 1 data
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/12-regression/img/tidy.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Helpful code tricks:
+
+.pull-left[
+
+Specify data in `geom_*` function
+
+
+```r
+library("tidyverse")
+
+ggplot(data = midwest, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(color = "gray") +
+  geom_point(
+*   data = filter(midwest, state == "IN"),
+    color = "black", 
+    size = 2 
+  ) 
+```
+
+Geoms inherit data and aesthetics from `ggplot()` by default
+]
+
+.pull-right[
+&lt;img src="12-regression_files/figure-html/new-data-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Helpful code tricks:
+
+
+.pull-left[
+
+Add specific annotations
+
+
+```r
+ggplot(data = midwest, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(color = "gray") +
+  geom_point(
+    data = filter(midwest, state == "IN"), 
+    color = "black", 
+    size = 2 
+  )  +
+* annotate(geom = "text",
+*          x = 15, y = 7, label = "Indiana")
+```
+]
+
+.pull-right[
+&lt;img src="12-regression_files/figure-html/annotate-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Helpful code tricks:
+
+
+.pull-left[
+
+Create an "identifying" variable
+
+
+```r
+# logical statements are TRUE or FALSE
+midwest$state == "IN"
+
+# new logical variable
+midwest2 &lt;- midwest %&gt;%
+  mutate(is_indiana = (state == "IN"))
+
+# map color to is_indiana
+ggplot(data = midwest2, 
+       aes(x = percollege, y = percprof)) +
+* geom_point(aes(color = is_indiana))
+```
+]
+
+.pull-right[
+&lt;img src="12-regression_files/figure-html/mapping-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Helpful code tricks:
+
+
+.pull-left[
+
+Hide legend
+
+
+```r
+# also: create identifier within aes() ?
+ggplot(data = midwest, 
+       aes(x = percollege, y = percprof)) +
+  geom_point(
+*   aes(color = (state == "IN")),
+*   show.legend = FALSE,
+  ) + 
+  annotate(geom = "text",
+           x = 15, y = 7, label = "Indiana") +
+  # customize colors, scale_aes_*()
+* scale_color_manual(
+*   values = c("TRUE" = "maroon",
+*              "FALSE" = "gray")
+* )
+```
+]
+
+.pull-right[
+&lt;img src="12-regression_files/figure-html/legend-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+---
+
+## One last thing: 45° line at `\(y = x\)`
+
+&lt;img src="12-regression_files/figure-html/abline-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: inverse, middle, center
+
+# Linear Regression
+
+
+
+
+---
+
+## Lines
+
+.left-code[
+A line is `\(y = a + bx\)`
+
+
+- `\(x\)` and `\(y\)`: data
+
+- `\(a\)` and `\(b\)`: parameters / coefficients
+  
+  - `\(a\)` is constant/y-intercept
+  
+  - `\(b\)` is slope
+]
+
+
+.right-plot[
+
+&lt;img src="12-regression_files/figure-html/line-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+
+
+
+---
+
+## The Linear "Model"
+
+.left-code[
+
+**Model**: mathematical/statistical assumptions about your data
+
+- "I think a line is a good way to summarize the relationship between `\(X\)` and `\(Y\)`"
+
+- `\(\mathrm{E}[Y \mid X] \neq \mathrm{E}[Y]\)` 
+
+- The *conditional mean* of `\(Y\)`
+
+
+
+**Estimating** (or "fitting") a model
+
+- Intercept or slope are unknown
+
+- Estimated (imperfectly) from data
+
+]
+
+.right-plot[
+&lt;img src="12-regression_files/figure-html/ed-scatter-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+???
+
+- The line is my expectation of `\(Y\)`
+- If I only knew an `\(x\)` value, my best prediction for `\(y\)` is on the line
+- Regression uses data to estimate parameters (slope and intercept) 
+- Why? If `\(X\)` affects `\(Y\)`, 
+  - then they will be related
+  - I want to describe that relationship
+  - I want to know how much change in Y I should expect if I change X
+  - I'm on the federal reserve: if we set interest rates to some value, what do we think will happen to inflation and unemployment? 
+  - I'm on a campaign: if we spend this much money on a TV ads, how much attitude change do we expect to get
+  - I'm a policymaker, if we set taxes to this amount, how much will consumption patterns change
+- these are all regression questions
+
+
+
+---
+
+class: middle, center
+
+## "All models are wrong; some are useful"
+
+— George Box (?)
+
+
+
+---
+
+## "Line of Best Fit"
+
+.left-code[
+
+Line is prediction for `\(y\)`, using knowledge of `\(x\)`
+
+- actual `\(y\)`: points (data)
+
+- prediction line: `\(\hat{y} = a + bx\)`
+
+- residual error (in red): `\(e = y - \hat{y}\)`
+
+
+"Give me the line (that is, `\(a\)` and `\(b\)` values) that result in lowest error"
+
+]
+
+
+.right-plot[
+
+&lt;img src="12-regression_files/figure-html/wi-only-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+???
+
+I actually hate this phrase because there are lots of ways to define "best fit"
+
+what is error?
+
+- It's all these little things that affect `\(y\)`, aside from `\(x\)` 
+- Doesn't mean that *only* `\(x\)` matters
+- error just represents a black box of all the other things that affect `\(y\)`
+
+
+Imagine an infinite number of potential lines
+
+- we want the SINGLE LINE that has the smallest error
+
+
+
+
+---
+
+## An Equation for `\(y_{i}\)`
+
+
+The `\(y\)` value for observation `\(i\)`
+
+
+???
+
+Only write the full equation once we're done building it
+
+--
+
+- `\(x_{i}\)` (we know their `\(x\)` value)
+
+--
+
+- `\(\hat{y}_{i} = a + bx_{i}\)` (predicted `\(y\)` is on the line)
+
+--
+
+- `\(y_{i} = \hat{y}_{i} + e_{i}\)` (actual `\(y\)` is predicted + error)
+
+--
+
+- `\(y_{i} = a + bx_{i} + e_{i}\)`
+
+
+
+
+---
+
+## An Equation for `\(y_{i}\)`
+
+.pull-left[
+
+The `\(y\)` value for observation `\(i\)`
+
+
+- `\(x_{i}\)` (we know their `\(x\)` value)
+
+
+- `\(\hat{y}_{i} = a + bx_{i}\)` (predicted `\(y\)` is on the line)
+
+
+- `\(y_{i} = \hat{y}_{i} + e_{i}\)` (actual `\(y\)` is predicted + error)
+
+
+- `\(y_{i} = a + bx_{i} + e_{i}\)`
+
+Systematic and random components
+
+]
+
+.pull-right[
+
+&lt;img src="12-regression_files/figure-html/wi-only-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+???
+
+Why all the subscript i's? Because the error is different for every point. Every point has its set of little things that affect it aside from `\(x\)`
+
+
+
+---
+
+### The "Ordinary Least Squares" (OLS) algorithm
+
+.pull-left[
+
+Find `\(a\)` and `\(b\)` that minimize the total amount of error
+
+Starting point: `\(y_{i} = a + bx_{i} + e_{i}\)`
+
+Total error: `\(\displaystyle\sum_{i = 1}^{N} e_{i}\)`
+
+Problem?
+
+]
+
+.pull-right[
+
+&lt;img src="12-regression_files/figure-html/wi-only-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+
+---
+
+### The "Ordinary Least Squares" (OLS) algorithm
+
+.pull-left[
+
+Find `\(a\)` and `\(b\)` that minimize the total amount of **squared** error
+
+Starting point: `\(y_{i} = a + bx_{i} + e_{i}\)`
+
+Total **squared** error: ** `\(\displaystyle\sum_{i = 1}^{N} e_{i}^{2}\)` **
+
+`\begin{align}
+  y_{i} &amp;= a + bx_{i} + e_{i} \\
+  e_{i} &amp;= y_{i} - (a + bx_{i}) \\
+  e_{i}^{2} &amp;= \left(y_{i} - (a + bx_{i})\right)^{2} \\
+  \displaystyle \sum_{i} e_{i}^{2} &amp;= \sum_{i} \left(y_{i} - (a + bx_{i})\right)^{2}
+\end{align}`
+
+Then minimize along `\(a\)` and `\(b\)` (calculus!)
+
+]
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/12-regression/img/RSS-3D.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+???
+
+Find `\(a\)` and `\(b\)` that minimize the total amount of error
+
+
+Isolate error: `\(e_{i} = y_{i} - (a + bx_{i})\)`
+
+Square both sides: `\(\displaystyle e_{i}^{2} =  \left( y_{i} - (a + bx_{i}) \right)^{2}\)`
+
+What's the total (squared) error? &lt;br&gt;
+`\(\displaystyle \sum_{i = 1}^{N} e_{i}^{2} = \sum_{i = 1}^{N} \left( y_{i} - (a + bx_{i}) \right)^{2}\)`
+
+Minimize with respect to `\(a\)` and `\(b\)` (calculus)
+
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/12-regression/img/RSS-3D.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## In R
+
+.pull-left[
+
+```r
+# y ~ x
+linreg &lt;- lm(percprof ~ percollege, 
+             data = midwest)
+linreg
+```
+
+```
+## 
+## Call:
+## lm(formula = percprof ~ percollege, data = midwest)
+## 
+## Coefficients:
+## (Intercept)   percollege  
+##     -1.7899       0.3413
+```
+
+```r
+ggplot(midwest, 
+       aes(percollege, y = percprof)) +
+  geom_point(color = "gray") +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_abline(intercept = coef(linreg)[1],
+              slope = coef(linreg)[2],
+              color = "red")
+```
+]
+
+.pull-right[
+Estimated equation is `\(\hat{y}_{i} = -1.79\)` + `\(0.34 x_{i}\)`
+
+&lt;img src="12-regression_files/figure-html/add-line-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Interpretation
+
+
+```
+## 
+## Call:
+## lm(formula = percprof ~ percollege, data = midwest)
+## 
+## Coefficients:
+## (Intercept)   percollege  
+##     -1.7899       0.3413
+```
+
+I predict `percprof` is -1.79 when `percollege` is 0
+
+I predict `percprof` increases by 0.34 when `percollege` increases by 1
+
+Not necessary *cause and effect*, just a predicted change
+
+--
+
+**Limitations**
+
+- These are just predictions (average vs. individual, population vs. sample!)
+- Extrapolating beyond data = danger
+- Nonsense predictions?
+- Understand your assumptions ("linear enough?")
+- Are there other methods out there?
+
+
+???
+
+More complex models are more complicated ways to predict the conditional mean of `\(y\)`
+
+
+---
+
+## Check your model
+
+.pull-left[
+Linear models assume that errors are independent and uncorrelated
+
+- Plot residuals vs predicted values
+- Should see no pattern
+- Patterns indicate something systematically wrong w/ model
+
+
+```r
+# contains handy modeling tools
+# install.packages("broom") 
+
+# use augment() from broom package
+preds &lt;- broom::augment(linreg)
+
+ggplot(preds, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) 
+```
+]
+
+.pull-right[
+&lt;img src="12-regression_files/figure-html/resids-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Looking forward
+
+On Wednesday: 
+
+- Statistical significance: How confident are we that this relationship is *real* or *just random*?
+
+In section:
+
+- Practicing `lm` and interpreting linear models
+
+Through the week:
+
+- research question meetings
+
+Next week: 
+
+- Monday: Multiple regression (**Research questions due**)
+- Wednesday: Gathering and cleaning data (**Ex 2 due**)
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

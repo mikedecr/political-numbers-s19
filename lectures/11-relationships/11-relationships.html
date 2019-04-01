@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Understanding Relationships</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Understanding Relationships
+## as “Conditional Expectations”
+### Understanding Political Numbers
+### Feb 27, 2019
+
+---
+
+
+
+
+
+# Agenda
+
+Exercise 1
+
+Relationship therapy
+
+Exercise...2!
+
+
+
+
+---
+
+# Data sources
+
+[DIME](https://data.stanford.edu/dime): campaign contributors and recipients
+
+[US Census](https://factfinder.census.gov/faces/nav/jsf/pages/index.xhtml), [BLS](https://www.bls.gov/data/)
+
+[Polity](http://www.systemicpeace.org/polity/polity4.htm): Political regimes
+
+[Correlates of War](http://www.correlatesofwar.org/): conflict, MIDs, alliances, trade flows, diplomacy
+
+[IMF](https://www.imf.org/en/Research/commodity-prices), [World Bank](https://data.worldbank.org/), [OECD](https://stats.oecd.org/qwids/): World economic and development data
+
+
+???
+
+- individuals, candidates, party organizations, PACs, 
+  - president, Congress, governors, judges, state legislators
+
+
+
+---
+
+class: inverse, middle, center
+
+# Exercise 1
+
+---
+
+class: center
+
+.pull-left[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/11-relationships/img/googling.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/11-relationships/img/changing.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+**Practice (and modify) old material. Write fresh code. Use notes and internet.**
+
+
+???
+
+- The pain is the learning
+  - If you feel confused, it is only because you are trying to understand
+- it should have been a grind but made sense at the end
+  - you should notice it coming together somewhat
+- 
+
+
+
+- The expectation is that this is a bit of a grind at first, but it makes sense by the end
+- if you feel like it isn't making sense, keep practicing the material we've given you so far
+  - don't just run code, type it out yourself
+  - try to modify code to see what it does
+  - try to re-create things using different data
+- Or, check out the materials that are in the syllabus
+  - I picked those out because they are companions to the things we're learning about in class
+  - Maybe they explain something in some way that you find more helpful
+
+
+---
+
+class: inverse, middle, center
+
+# Relationships
+
+
+---
+
+# `\(X\)` and `\(Y\)`
+
+.left-code[
+As `\(x\)` increases, `\(y\)` does what?
+
+Does `\(y\)` change when `\(x\)` changes?
+]
+
+.right-plot[
+&lt;img src="11-relationships_files/figure-html/midwest-1-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+# `\(X\)` and `\(Y\)`
+
+.left-code[
+As `\(x\)` increases, `\(y\)` does what?
+
+Does `\(y\)` change when `\(x\)` changes?
+]
+
+.right-plot[
+&lt;img src="11-relationships_files/figure-html/midwest-2-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+---
+
+## Positive and Negative Relationships
+
+&lt;img src="11-relationships_files/figure-html/unnamed-chunk-3-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+### Relationships among Categorical Variables
+
+.left-code[
+
+```r
+prof_degrees &lt;- midwest %&gt;%
+  group_by(state, inmetro) %&gt;%
+  summarize(prof = mean(percprof)) %&gt;%
+  mutate(
+    metro = ifelse(inmetro == 1, 
+                   "Metro Area", 
+                   "Non-Metro Area")
+  )
+
+ggplot(prof_degrees, 
+       aes(x = state, y = prof)) +
+  geom_point(aes(shape = metro), 
+             size = 2.5, 
+             fill = "white") +
+  scale_shape_manual(
+    values = c(16, 21)
+  ) + 
+  coord_cartesian(ylim = c(0, 8)) +
+  labs(x = "State", 
+       y = "Pct w/ Prof. Degree",
+       shape = NULL)
+```
+]
+
+.right-plot[
+&lt;img src="11-relationships_files/figure-html/profs-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+class: inverse, middle, center
+
+## A Mathematical Language for Relationships
+
+---
+
+class: center, middle
+
+## `\(\mathrm{E}\left[ Y \right]\)`
+
+
+
+???
+
+Review intuition of expectation
+
+
+
+---
+
+class: center, middle
+
+## `\(\mathrm{E}\left[ Y \mid X \right]\)`
+
+
+"Expected `\(Y\)`, given `\(X\)`"
+
+
+
+---
+
+## `\(\mathrm{E}\left[ Y \mid X \right]\)`
+
+
+.left-code[
+Relationship means the expectation is changing
+
+- Within sample: almost always some non-zero relationship
+- Inference to the population: an we infer that our expectation should change in the real world?
+]
+
+.right-plot[
+&lt;img src="11-relationships_files/figure-html/unnamed-chunk-4-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+---
+
+class: center, middle
+
+## Independence (no relationship)
+
+### `\(\mathrm{E}\left[Y\right] = \mathrm{E}\left[ Y \mid X \right]\)`
+
+#### "Knowing `\(X\)` doesn't affect my expectation of `\(Y\)`"
+
+
+???
+
+Every `\(y\)` value corresponds to an `\(x\)`
+
+- `\(y\)` has some expected value
+- does knowing `\(x\)` change what we expect out of `\(y\)`?
+
+
+
+
+---
+
+class: center, middle
+
+## Dependence
+
+### `\(\mathrm{E}\left[Y\right] \neq \mathrm{E}\left[ Y \mid X \right]\)`
+
+#### "Knowing `\(X\)` would change my expectation of `\(Y\)`"
+
+
+
+
+---
+
+## Correlation
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/11-relationships/img/rvals.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Common relationships
+
+&lt;img src="11-relationships_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+
+&lt;!-- Use math:
+  linear, 
+  logarithmic, 
+  exponential, 
+  polynomial, 
+  logistic --&gt;
+
+
+
+---
+
+# Finding `\(y_{i}\)`
+
+.pull-left[
+`\(y_{i} = a + bx_{i} + e_{i}\)`
+
+- Every observation `\(i\)` has an `\(x_{i}\)` and `\(y_{i}\)`
+
+- The line ( `\(a + bx_{i}\)` ) is our *prediction* for `\(y_{i}\)`
+
+- The "residual" `\(e_{i}\)` is the error between actual and predicted `\(y_{i}\)`
+]
+
+.pull-right[
+&lt;img src="11-relationships_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+#  Next week
+
+on Monday: *linear regression*
+
+- How do we estimate a "line of best fit"
+
+on Wednesday: *statistical significance*
+
+- How do we conclude that relationships are "real" or just noise?
+
+
+
+&lt;!-- parse_number --&gt;
+&lt;!-- geom_abline --&gt;
+&lt;!-- logicals --&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

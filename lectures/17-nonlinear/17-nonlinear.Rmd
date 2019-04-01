@@ -1,0 +1,583 @@
+---
+title: "Nonlinear Relationships"
+subtitle: "(Grab \"Essay 2\" Assignment Sheet)"
+author: "Understanding Political Numbers"
+date: "March 27, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: center, middle, inverse
+
+# Where do you find nonlinear relationships?
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "17-nonlinear", "17-nonlinear.Rmd"))
+# knitr::purl(here::here("lectures", "17-nonlinear", "17-nonlinear.Rmd"), output = here::here("R", "lecture_nonlinear.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "17_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/17-nonlinear/img"
+```
+
+
+
+---
+
+## Diminishing Effects
+
+```{r, fig.width= 5, fig.height = 4, out.width = "50%"}
+ggplot(midwest, aes(x = percollege, y = percbelowpoverty)) +
+  geom_point(shape = 21, color = "white", fill = "steelblue") +
+  geom_smooth(se = FALSE, color = "black") +
+  labs(x = "Percent College Graduates", y = "Percent Below Poverty Line",
+       title = "Poverty and Education",
+       subtitle = "Data from Midwest Counties")
+```
+
+
+
+---
+
+class: middle
+
+```{r, fig.width = 7, fig.height = 3.5, out.width = "80%"}
+nanas <- 
+  tibble(bananas = 0:5) %>%
+  mutate(`Total Utility` = case_when(bananas == 0 ~ 0,
+                             bananas > 0 ~ 1.5 + log(bananas)),
+         `Marginal Utility` = `Total Utility` - lag(`Total Utility`)) %>%
+  gather(key = type, value = value, ends_with("Utility")) %>%
+  mutate(type = fct_rev(as.factor(type))) 
+
+ggplot(nanas, aes(x = bananas, y = value)) +
+  facet_wrap(~ type, scales = "free") +
+  geom_line() +
+  geom_point() +
+  labs(x = "Number of Bananas", y = "Utiles",
+       title = "Value (Utility) of Eating Bananas")
+```
+
+
+
+
+---
+
+## Natural Boundaries
+
+```{r, fig.width= 6, fig.height = 4, out.width = "60%"}
+ggplot(midwest, aes(x = poptotal, y = percblack)) +
+  geom_point(shape = 21, color = "white", fill = "steelblue") +
+  scale_x_continuous(trans = "log", labels = function(x) {round(x, -3) %>% scales::comma()}) +
+  labs(x = "Population Total", y = "Percent Black/AA",
+       title = "Racial Composition and Population",
+       subtitle = "Data from Midwest Counties") +
+  geom_smooth(color = "black", se = FALSE)
+```
+
+
+---
+
+## "Multiplicative data"
+
+```{r, fig.width= 6, fig.height = 4, out.width = "60%"}
+ggplot(midwest, aes(y = percbelowpoverty, x = poptotal)) + 
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_log10() +
+  labs(x = "Population", y = "Percent Below Poverty")
+```
+
+
+
+---
+
+## Long right tails (imperfect indicator)
+
+```{r long-tails, fig.width = 10, fig.height = 5, out.width = "90%"}
+h_area <- ggplot(midwest, aes(x = area)) + geom_histogram()
+h_poptotal <- ggplot(midwest, aes(x = poptotal)) + geom_histogram()
+h_popdensity <- ggplot(midwest, aes(x = popdensity)) + geom_histogram()
+
+h_gappop <- ggplot(gapminder, aes(x = pop)) + geom_histogram()
+h_gdp <- ggplot(gapminder, aes(x = gdpPercap)) + geom_histogram()
+
+(h_area + h_poptotal + h_popdensity) / (h_gappop + h_gdp)
+```
+
+
+
+
+
+
+
+---
+
+class: inverse, middle, center
+
+## Logarithmic transformations
+
+
+
+---
+
+class: middle
+
+```{r, fig.width = 8, fig.height = 4, out.width = "90%"}
+log_data <- 
+  tibble(x = rnorm(1000, 0, 0.95) %>% exp(), 
+         y = log(x) + rnorm(1000, 0, 1))
+
+log_scatter <- ggplot(log_data, aes(x = x, y = y)) + 
+  geom_point() +
+  labs(title = "Logarithmic relationship",
+       subtitle = "Sudden increase that tapers off")
+
+log_hist <- ggplot(data = log_data, aes(x = x)) + 
+  geom_histogram() +
+  labs(title = "Skewed histogram",
+       subtitle = "Long right tail")
+
+log_scatter + log_hist
+```
+
+
+---
+
+class: middle
+
+```{r, fig.width = 8, fig.height = 4, out.width = "90%"}
+(log_scatter + 
+   aes(x = log(x)) + 
+   labs(title = "Logarithmic relationship",
+        subtitle = "Appears LINEAR after logging")) +
+(log_hist + 
+   aes(x = log(x)) + 
+   labs(title = "Skewed histogram",
+        subtitle = "Appears NORMAL after logging"))
+```
+
+
+
+
+---
+
+class: middle
+
+```{r, fig.width = 8, fig.height = 4, out.width = "90%"}
+exp_data <- 
+  tibble(x = rnorm(1000, 0, 0.95), 
+         y = exp(x + rnorm(1000, 0, 1)))
+
+exp_scatter <- ggplot(exp_data, aes(x = x, y = y)) + 
+  geom_point() +
+  labs(title = "Exponential relationship",
+       subtitle = "Explosive nonlinear increase")
+
+exp_scatter_log <- ggplot(exp_data, aes(x = x, y = log(y))) + 
+  geom_point() +
+  labs(title = "Exponential relationship",
+       subtitle = "Appears LINEAR after logging Y")
+
+exp_scatter + exp_scatter_log
+```
+
+
+
+
+---
+
+## What is log? (Baby don't hurt me)
+
+.pull-left[
+- Steep increase that diminishes
+
+- *Never* fully "levels off"
+
+- Defined over *positive* values only
+
+- Commonly appears with count data, money, population
+]
+
+.pull-right[
+
+```{r, fig.width = 4, fig.height = 3, out.width = "100%"}
+log_exp <- 
+tibble(x = seq(-10, 20, .01),
+       logx = log(x),
+       ex = exp(x)) %>%
+  gather(key = fn, value = y, logx, ex) 
+
+filter(log_exp, fn == "logx") %>%
+  ggplot(aes(x = x, y = log(x))) +
+    geom_line(linetype = 2) +
+    labs(y = "y = log(x)") +
+    coord_cartesian(xlim = c(-2, 20))
+```
+]
+
+---
+
+## Logarithms "undo" exponentials
+
+If $b^{x} = y$, then $\log_b(y) = x$
+
+--
+
+We usually only care about "base $e$" ( $e = `r exp(1)`\ldots$ )
+
+--
+.pull-left[
+\begin{align}
+  e^{x} = y
+\end{align}
+]
+
+.pull-right[
+\begin{align}
+  \ln(y) &= x \\
+  \log(y) &= x
+\end{align}
+]
+
+--
+
+Never worry about solving by hand
+
+```{r, echo = TRUE}
+# natural log (base e) of 8
+log(8)
+
+# exponentials e^(2.079...)
+exp(2.079442)
+```
+
+
+
+---
+
+## Logs and exponentials are *inverse functions*
+
+.pull-left[
+Inverse functions: if $y = f(x)$, then $f^{-1}(y) = x$
+
+
+\begin{align}
+  f^{-1}(f(x)) &= x \\[12pt]
+  \log(e^{x}) &= x \\[12pt]
+  e^{\log(x)} &= x
+\end{align}
+
+If you need to log a variable: `log(var)`
+
+If you need to "unlog" a variable: `exp(var)`
+]
+.pull-right[
+
+```{r, fig.width = 5, fig.height = 4, out.width = "100%"}
+  ggplot(log_exp, aes(x = x, y = y)) +
+    geom_abline(linetype = 2, color = "gray") +
+    geom_hline(yintercept = 0, color = "gray") +
+    geom_vline(xintercept = 0, color = "gray") +
+    geom_line(aes(group = fn)) +
+    coord_cartesian(xlim = c(-2.5, 5),
+                    ylim = c(-2.5, 5)) +
+    annotate(geom = "text", x = 4, y = 1, label = TeX("$\\log(x)$")) +
+    annotate(geom = "text", x = 1.5, y = 3, label = TeX("$e^x$")) +
+    annotate(geom = "text", x = 4, y = 4, label = TeX("$y = x$"),
+             vjust = -2)
+
+```
+]
+
+
+
+
+---
+
+## Why we log for "multiplicative" data
+
+.left-code[
+Sum of random fluctuations -> Normal
+
+Product of random fluctuations -> "Log Normal"
+
+```{r, include = FALSE}
+clt <- tibble(
+  x1 = runif(1000, 1, 10),
+  x2 = runif(1000, 1, 10),
+  x3 = runif(1000, 1, 10),
+  x4 = runif(1000, 1, 10),
+  x5 = runif(1000, 1, 10),
+  x6 = runif(1000, 1, 10),
+  x7 = runif(1000, 1, 10),
+  x8 = runif(1000, 1, 10),
+  x9 = runif(1000, 1, 10),
+  x10 = runif(1000, 1, 10),
+  summed = x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10,
+  mult = x1 * x2 * x3 * x4 * x5 * x6 * x7 * x8 * x9 * x10
+) %>%
+print()
+```
+]
+
+.right-plot[
+```{r, fig.width = 6, fig.height = 3, out.width = "100%"}
+normal <- ggplot(clt, aes(x = summed)) + 
+  geom_histogram(boundary = 0, binwidth = 1) +
+  labs(x = "Sum of random variables")
+lognormal <- ggplot(clt, aes(x = mult)) + 
+  geom_histogram(boundary = 0) +
+  labs(x = "Product of random variables")
+normal + lognormal
+```
+]
+
+--
+
+
+**Logs turn *multiplicative* operations into *additive* (linear) operations**
+
+\begin{align}
+  \log\left(a \times b \right) &= \log\left(a\right) + \log\left(b\right)
+\end{align}
+
+
+
+---
+
+## Remember those long tails?
+
+```{r long-tails, fig.width = 10, fig.height = 5, out.width = "90%"}
+```
+
+
+
+---
+
+## Take the log, long tails look normal
+
+```{r log-long-tails, fig.width = 10, fig.height = 5, out.width = "90%"}
+h_area <- ggplot(midwest, aes(x = log(area))) + geom_histogram()
+h_poptotal <- ggplot(midwest, aes(x = log(poptotal))) + geom_histogram()
+h_popdensity <- ggplot(midwest, aes(x = log(popdensity))) + geom_histogram()
+
+h_gappop <- ggplot(gapminder, aes(x = log(pop))) + geom_histogram()
+h_gdp <- ggplot(gapminder, aes(x = log(gdpPercap))) + geom_histogram()
+
+(h_area + h_poptotal + h_popdensity) / (h_gappop + h_gdp)
+
+```
+
+
+
+---
+
+## Logs in practice
+
+.pull-left[
+
+```{r gap-unlog, echo = TRUE, fig.show = 'hide'}
+library("gapminder")
+
+# most recent gapminder year
+gap_07 <- gapminder %>%
+  filter(year == max(year)) 
+
+# linear relationship looks bad
+ggplot(gap_07, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "GDP per cap", y = "Life Exp")
+```
+
+]
+
+.pull-right[
+```{r gap-unlog, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+
+]
+
+---
+
+## Logs in practice
+
+.pull-left[
+
+Plot $y = f(log(x))$
+
+```{r gap-log, echo = TRUE, fig.show = 'hide'}
+# log(x) is... better
+ggplot(gap_07, 
+       aes(x = log(gdpPercap), y = lifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "log(GDP per cap)", y = "Life Exp")
+```
+]
+
+
+.pull-right[
+```{r gap-log, fig.width = 5, fig.height = 4, out.width = "100%"}
+```
+]
+
+
+
+---
+
+## Logs in practice
+
+.pull-left[
+
+Estimate the model
+
+```{r, echo = TRUE}
+# new variable is log(x)
+gap_07 <- gap_07 %>%
+  mutate(log_gdp = log(gdpPercap))
+
+log_model <- lm(lifeExp ~ log_gdp, data = gap_07)
+
+tidy(log_model)
+```
+]
+
+--
+
+.pull-right[
+\begin{align}
+  \hat{\mathrm{life}} &= `r coef(log_model)[1] %>% round(2)` + `r coef(log_model)[2] %>% round(2)`\log(\mathrm{gdp.pc})
+\end{align}
+
+As *log GDP per capita* increases by one unit...
+]
+
+
+
+
+---
+
+
+
+.pull-left[
+## Logs in practice
+
+Interpret graphically
+
+```{r, echo = TRUE}
+# get predicted values for log(x)
+# calculate unlogged x
+# create upper & lower conf interval bounds
+log_preds <- augment(log_model) %>%
+  mutate(gdp_pc = exp(log_gdp),
+         MOE = 1.96 * .se.fit,
+         conf.low = .fitted - MOE,
+         conf.high = .fitted + MOE) %>%
+  print()
+```
+
+]
+
+--
+
+.pull-right[
+```{r, echo = TRUE, fig.width = 5, fig.height = 4, out.width = "100%"}
+# plot y over unlogged x, add yhat line
+ggplot(log_preds, aes(x = gdp_pc, y = lifeExp)) +
+  geom_point(color = "gray50") +
+  geom_ribbon(
+    aes(ymin = conf.low, ymax = conf.high), 
+    fill = "maroon", alpha = .3
+  ) +
+  geom_line(aes(y = .fitted))
+```
+
+]
+
+
+
+
+---
+
+## Other log rules
+
+\begin{align}
+  \log\left(a \times b \right) &= \log\left(a\right) + \log\left(b\right) \\[12pt]
+  \log\left(\frac{a}{b}\right) &= \log\left(a\right) - \log\left(b\right) \\[12pt]
+  \log\left(a^{b}\right) &= b \times \log\left(a\right) \\[12pt] 
+  \log\left(1\right) &= 0 \\[12pt] 
+  \log\left(0\right) &= ?
+\end{align}
+
+
+
+---
+
+class: center, middle
+
+## Remember...
+
+Diminishing effects, natural boundaries
+
+Data generated from "multiplicative" process (populations, dollars)
+
+Don't solve logs yourself; only need to `log(x)`
+
+Undoing logs: `exp(log_x)`
+

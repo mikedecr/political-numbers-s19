@@ -1,0 +1,682 @@
+---
+title: "Graphics"
+subtitle: '(The Good, the Bad, and the Ugly)'
+author: "Understanding Political Numbers"
+date: "Feb 11, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+class: center
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+# library("boxr"); box_auth()
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "06_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3
+                      # , dpi = 100
+                      )
+
+img <- "lectures/06-graphics/img"
+```
+
+
+# Agenda
+
+.left-code[
+.middle[
+Learning from bad graphics
+
+Principles for making good graphics
+
+Common graphics for common purposes
+]
+]
+
+
+.right-plot[
+```{r super-bowl, out.width = "75%"}
+include_graphics(here(img, "super-bowl.png"))
+```
+]
+
+
+
+---
+
+# Graphics. Why?
+
+--
+
+Is it about lots of info in a *small space*?
+
+--
+
+Lots of info presented in an *intuitive, easily interpreted way*
+
+???
+
+- graphics aren't "always better"; they work alongside text
+- focus in on the big idea
+- *patterns*
+- easy for consumers
+
+
+---
+
+# Graphics. Why?
+
+```{r why-tab, out.width = "50%"}
+include_graphics(here(img, "why-tab.png"))
+```
+
+???
+
+Table:
+
+- variables describe measure of political interactions with other people
+- "social network" doesn't mean online, just in your life
+- how big is this political network, how often do you talk about politics, agree vs disagree
+- the details of the measures themselves aren't super important. What is important is just the presentation of information.
+  - mean, std dev, min and max, number of data points
+- How efficiently is it displayed?
+
+---
+
+# Graphics. Why?
+
+```{r why-fig, out.width = "60%"}
+include_graphics(here(img, "why-fig.png"))
+```
+
+Source: [Kastellec and Leoni (2007)](https://www.princeton.edu/~jkastell/Tables2Graphs/graphs.pdf)
+
+???
+
+Compared to:
+
+- vertical axis we have each of those variables
+- Horizontal axis shows the data for each variable
+  - dot is mean, solid bar shows standard deviation, dashed lines go to the minimum and maximum
+  - N in parentheses
+
+This is a complex graphic, more complex than the canonical graphics that we will talk about today
+
+- but it's a clear demonstration of the value of graphics
+- **tables are still good for stuff**
+  - exact quantities are important
+
+
+---
+
+### Know thy data
+
+.pull-left[
+```{r anscombe, out.width = "90%"}
+include_graphics(here(img, "why-healy-anscombe.png"))
+```
+]
+
+???
+
+"Anscombe's Quartet"
+
+- Four "datasets": sets of $x$ and $y$ variables
+- means of $x$ and $y$ are almost identical in every panel
+- same correlation in every plot (0.81) and same "line of best fit"
+
+You can calculate these values, but they don't, on their own, mean that you understand your data
+
+
+<!-- ---
+
+## Know thy data -->
+
+
+- Anscombe's quartet is an extreme example, but let's look at something more realistic
+
+
+--
+
+.pull-right[
+```{r healy-varying-slopes, out.width = "70%"}
+include_graphics(here(img, "why-varying-slopes.png"))
+```
+]
+
+Source: [Healy Ch 1](http://socviz.co/lookatdata.html#lookatdata)
+
+???
+
+What's the relationship between X and Y?
+
+- If you include S. Africa, there is a really strong relationship
+- but S. Africa is skewing the relationship.
+- Excluding S. Africa, the relationship is much weaker
+
+
+
+---
+
+# Axes
+
+Graphics are *spatial* (meaning "space") representations of data
+
+Space needs *dimensions* (axes)
+
+.left-code[
+One dimension: a line
+]
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "one-d.png"))
+```
+]
+
+
+---
+
+# Axes
+
+.left-code[Two dimensions: a coordinate plane]
+
+.right-plot[
+```{r, fig.height = 3.5, fig.width = 5, out.width = "100%"}
+ggplot(midwest, aes(x = percollege / 100, y = percchildbelowpovert / 100)) +
+  geom_point() +
+  labs(title = "Education and Child Poverty",
+       subtitle = "in Midwestern Counties",
+       y = "Percent of Children\nBelow Poverty Line",
+       x = "Percent of Adults with College Education",
+       caption = "Data source: ggplot2::midwest") +
+  scale_x_continuous(labels = function(x) percent(x, accuracy = 1)) +
+  scale_y_continuous(labels = function(x) percent(x, accuracy = 1)) +
+  theme_minimal()
+```
+]
+
+
+
+---
+
+# Axes
+
+.left-code[
+Three dimensions: a surface? (usually overkill)
+
+(Easier to see more dimensions with use of color etc.)
+]
+
+.right-plot[
+```{r, out.width = "70%"}
+include_graphics(here(img, "RSS-3D.png"))
+```
+]
+
+
+
+---
+
+# Axes
+
+.left-code[
+Three dimensions: a surface? (usually overkill)
+
+(Easier to see more dimensions with use of color etc.)
+]
+
+.right-plot[
+```{r, fig.height = 3.5, fig.width = 5, out.width = "100%"}
+midwest %>%
+  mutate(UR = ifelse(inmetro == 1, "Metro Area", "Non-Metro Area")) %>%
+  ggplot(aes(x = percollege / 100, y = percchildbelowpovert / 100)) +
+  geom_point(aes(color = UR), alpha = 0.8) +
+  labs(title = "Education and Child Poverty",
+       subtitle = "in Midwestern States",
+       y = "Percent of Children\nBelow Poverty Line",
+       x = "Percent of Adults with College Education",
+       caption = "Data source: ggplot2::midwest",
+       color = NULL) +
+  scale_x_continuous(labels = function(x) percent(x, accuracy = 1)) +
+  scale_y_continuous(labels = function(x) percent(x, accuracy = 1)) +
+  viridis::scale_color_viridis(discrete = TRUE, option = "C", end = 0.75) +
+  # ggthemes::scale_color_colorblind() +
+  theme_minimal() +
+  theme(legend.position = c(0.75, 0.75))
+```
+]
+
+
+
+
+---
+
+class: middle, center
+
+## Graphics are about *comparisons* and *variation*
+
+
+???
+
+highlighting differences, or similarities
+
+- the line is higher over here than it is over here
+- there are more points over here than over here
+
+
+
+---
+
+class: middle, inverse, center
+
+# Less than great examples
+
+---
+
+
+<center><blockquote class="twitter-tweet"><p lang="en" dir="ltr">Five years on, it&#39;s disappointing that the data visualization community never fully recognized the benefits of 3D stacked scatter pie columns: <a href="https://t.co/egvMKQ7WbU">https://t.co/egvMKQ7WbU</a> <a href="https://t.co/ay9Zngedrl">pic.twitter.com/ay9Zngedrl</a></p>&mdash; Daniel MacArthur (@dgmacarthur) <a href="https://twitter.com/dgmacarthur/status/1001109915795116033?ref_src=twsrc%5Etfw">May 28, 2018</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></center>
+
+---
+
+# Let's talk about color
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "color-us.png"))
+```
+
+
+???
+
+- color is an accessibility issues
+- Color can make a graphic look beautiful, but there's a difference between color for *beauty* and color for *necessity*
+- Color for beauty, OK? 
+- Graphic shouldn't *need* color
+- OR use a colorblindness friendly color palette
+
+
+---
+
+# Let's talk about the $y$-axis
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "scale-bush.png"))
+```
+
+
+---
+
+# Let's talk about the $y$-axis
+
+```{r}
+library("gapminder")
+```
+
+```{r, fig.height = 3.5, fig.width = 5, out.width = "60%"}
+ggplot(filter(economics, date > "2005-01-01" & date < "2010-01-01"), aes(x = date, y = pce)) +
+  geom_line() +
+  coord_cartesian(ylim = c(0, max(economics$pce, na.rm = TRUE))) +
+  scale_y_continuous(labels = dollar) +
+  labs(title = "US Economic Consumption",
+       subtitle = "2005 through 2009",
+       y = "Personal Consumption Expenditures\n(billions)",
+       x = "Date",
+       caption = "Data source: ggplot2::economics") +
+  theme_minimal()
+```
+
+???
+
+- going all the way to zero is often good, but not always
+- sometimes it makes it hard to see the important variation
+
+---
+
+# Let's talk about the $y$-axis
+
+```{r, fig.height = 3.5, fig.width = 5, out.width = "60%"}
+ggplot(filter(economics, date > "2005-01-01" & date < "2010-01-01"), aes(x = date, y = pce)) +
+  geom_line() +
+  scale_y_continuous(labels = dollar) +
+  labs(title = "US Economic Consumption",
+       subtitle = "2005 through 2009",
+       y = "Personal Consumption Expenditures\n(billions)",
+       x = "Date",
+       caption = "Data source: ggplot2::economics") +
+  theme_minimal()
+```
+
+
+
+
+---
+
+class: middle, center
+
+## Ed Tufte: "Plot the data, not the zero"
+
+
+---
+
+# Failed Comparisons
+
+```{r, out.width = "50%"}
+include_graphics(here(img, "concept-venn.png"))
+```
+
+
+
+---
+
+### *Conceptual* dishonesty
+
+```{r, out.width = "80%"}
+include_graphics(here(img, "concept-EOs.jpg"))
+```
+
+???
+
+EOs regarding immigration and other rules that controlled the implementation of the Affordable Care Act
+
+- but these actions weren't even technically executive orders, they were agency determinations or agency findings that technically aren't even the same thing
+- So this is some misdirection
+
+
+
+---
+
+class: middle, center, inverse
+
+# Common graphics
+
+---
+
+# Scatterplots 
+
+```{r, fig.width = 5, fig.height = 3.5, out.width = "60%"}
+tibble(
+  x = rnorm(100), 
+  y = 0.5 * x + rlnorm(100)
+) %>%
+  ggplot(aes(x, y)) +
+  geom_point() 
+```
+
+
+---
+
+# Bar charts
+
+```{r, fig.height = 3.5, fig.width = 5, out.width = "60%"}
+midwest %>%
+  group_by(state) %>%
+  summarize(pop = sum(poptotal)) %>%
+  ggplot(aes(x = state, y = pop)) +
+    geom_col(fill = "gray70",
+             color = "gray20") +
+    scale_y_continuous(breaks = 1000000 * seq(0, 15, 2.5), 
+                       labels = comma) +
+    labs(x = "State", y = "Total Population") +
+    theme_minimal()
+```
+
+
+???
+
+Levels of measurement
+
+- you can still plot important information about categorical variables
+
+
+
+---
+
+# Small multiples
+
+```{r, fig.height = 3.5, fig.width = 5, out.width = "60%"}
+ggplot(midwest, aes(x = percollege, y = percchildbelowpovert)) +
+  geom_point() +
+  geom_smooth(color = "orangered") +
+  facet_wrap(~ state) +
+  labs(x = "Percent College Educated", y = "Percent of Children\nBelow Poverty Line")
+```
+
+
+
+---
+
+# Technical lesson: *distributions*
+
+.left-code[
+
+Look at one variable. Where are the data?
+
+- on the $x$-axis: What are the possible values? 
+- on the $y$-axis: How many of those values are there?
+
+This graphic: a **histogram**
+]
+
+.right-plot[
+```{r fig.width = 5, ,fig.height = 3.5, out.width = "100%"}
+ggplot(midwest, aes(x = percbelowpoverty / 100)) +
+  geom_histogram(color = "gray20", fill = "gray80") +
+  scale_x_continuous(labels = function(x) percent(x, accuracy = 1)) +
+  labs(x = "Percent Below Poverty",
+       y = "Frequency",
+       title = "Poverty in Midwest Counties")
+```
+]
+
+
+
+---
+
+# The Normal Distribution
+
+.left-code[
+The "standard bell curve"
+
+A.k.a. "Gaussian" distribution
+
+This example: average value of 0 and a "spread" of 1
+]
+
+.right-plot[
+```{r normal, fig.width = 5, fig.height = 3, out.width = "100%"}
+normie <- tibble(x = seq(-4, 4, .001), 
+                 d = dnorm(x))
+
+ptile <- .05
+qtile <- qnorm(p = 1 - ptile)
+
+ggplot(normie, aes(x = x, y = d)) + 
+  geom_ribbon(data = filter(normie, x > qtile),
+              aes(ymax = d, ymin = 0), 
+              fill = "dodgerblue") +
+  geom_line() +
+  coord_cartesian(ylim = c(0, 0.5)) +
+  scale_x_continuous(breaks = min(normie$x):max(normie$x)) +
+  annotate(geom = "text", x = 2.75, y = 0.2,
+           label = str_glue("{percent(ptile, accuracy = 1)} of observations\nabove {round(qtile, 2)}")) +
+  labs(x = TeX("Some variable that we will call $X$"),
+       y = TeX("Expected Frequency of $X$"))
+```
+]
+
+---
+
+## Good ways to plot distributions
+
+```{r, fig.width = 6, fig.height = 2.5, out.width = "80%"}
+distributions <- 
+  tibble(x = rnorm(50000)) %>%
+  mutate(Histogram = x, 
+         `Density Plot` = x) %>%
+         # `Box Plot` = x,
+         # `Violin Plot` = x) %>%
+  gather(key = plot_type, value = xval, -x) %>%
+  mutate(plot_type = fct_rev(plot_type))
+
+ggplot(distributions, aes(x = xval)) +
+  facet_wrap(~ plot_type, nrow = 1, scales = "free") +
+  geom_histogram(data = filter(distributions, plot_type == "Histogram"),
+                 color = "gray20", fill = "gray80") +
+  geom_density(data = filter(distributions, plot_type == "Density Plot"),
+               color = "gray20", fill = "gray80") +
+  labs(x = NULL, y = "Frequency")
+```
+
+
+---
+
+## Less good ways to plot distributions
+
+```{r, fig.width = 5, fig.height = 3.5, out.width = "60%"}
+more_distributions <- 
+  tibble(x = rnorm(1000)) %>%
+  mutate(`Box Plot` = x,
+         `Violin Plot` = x) %>%
+  gather(key = plot_type, value = xval, -x) %>%
+  mutate(plot_type = fct_relevel(plot_type, "Violin Plot"))
+
+
+ggplot(more_distributions, aes(x = plot_type, y = xval)) +
+  geom_boxplot(data = filter(more_distributions, plot_type == "Box Plot"), 
+               color = "gray20", fill = "gray80") +
+  geom_violin(data = filter(more_distributions, plot_type == "Violin Plot"), 
+              color = "gray20", fill = "gray80") +
+  labs(x = NULL, y = "Value") +
+  coord_flip()
+```
+
+???
+
+Box plots show "percentiles" of the data
+
+- box is the "inner 50%", from 25th percentile to 75th percentile
+
+Violin plots show a vagina
+
+
+
+---
+
+class: middle, center, inverse
+
+# Taste
+
+
+---
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "taste-healy.png"))
+```
+
+
+
+---
+
+# The "Data-to-Ink Ratio"
+
+```{r, out.width = "50%"}
+include_graphics(here(img, "taste-boxes-healy.png"))
+```
+
+
+---
+
+# Guidelines
+
+.left-code[
+Use graphics to *focus* your point
+
+What to plot:
+
+- distributions
+- relationships
+- statistical results
+
+Labels go a long way
+
+What goes in the plot vs. in the text?
+
+]
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "x-xkcd-relationship.png"))
+```
+]
+
+???
+
+- As a rule, include only what is necessary
+- Don't data dump
+
+---
+
+# Looking ahead
+
+On Wednesday: making graphics in R
+
+- the "grammar of graphics" and `ggplot()`
+- **Short Essay 1 DUE**
+- Assign R Exercise 1
+
+In Section: more `ggplot`
+
+
+<!-- 
+Lessons
+
+- Lessons from bad graphics
+- Principles for good graphics
+  - comparisons / variation
+  - scale
+    - not just about the graphic, but also about the data
+    - inflation, dollar value
+  - labels
+  - concept
+  - How much to include
+    - part of a paper?
+    - standalone?
+    - Tufte problem (data-ink ratio)
+- types of graphics
+  - relationships
+    - x vs y (scatter)
+    - y vs time (line)
+    - categorical, discrete, and continuous data
+  - histograms/density plots -> distributions
+    - relationship between a value (x) and how frequently it occurs (y)
+    - don't use pie charts
+  - small multiples
+ -->

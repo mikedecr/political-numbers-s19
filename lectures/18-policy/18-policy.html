@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Evaluating Public Policy</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <meta name="date" content="2019-04-01" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Evaluating Public Policy
+## Problems (easy) vs Solutions (hard)
+### Understanding Political Numbers
+### April 1, 2019
+
+---
+
+
+
+class: middle, center, inverse
+
+
+
+
+
+
+## No shortage of bad things in the world
+
+
+---
+
+class: middle
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/18-policy/img/mortality.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: middle
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/18-policy/img/us-turnout.jpg" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+.pull-left[
+### Policy "problems"
+
+Are data in context?
+
+What's causing the problem?
+
+What policy could address that mechanism?
+]
+
+--
+
+.pull-right[
+### Policy "solutions"
+
+Has the policy been implemented elsewhere?
+
+Is there evidence that the policy works? How do you know?
+
+Can the evidence be *generalized?*
+
+What if the policy hasn't been enacted anywhere else?
+
+]
+
+
+
+---
+
+class: center, middle
+
+##  Unintended consequences of policy
+
+As economists say, "externalities"
+
+
+
+---
+
+
+class: inverse, middle, center
+
+# Voter Identification Requirements
+
+
+---
+
+.pull-left[
+### Problem? Election security
+
+- Are there fraudulent ballots? 
+- Voters have shaky confidence that votes are counted as intended
+
+
+### Solution? Tighter ID requirements
+
+- Bills, bank statements, birth certificates, SS cards not good enough
+- Student photo ID? Not good enough (no signature)
+- Wisconsin: must have photo and a signature
+]
+
+--
+
+.pull-right[
+
+### Externalities?
+
+&lt;img src="18-policy_files/figure-html/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/18-policy/img/IDs.png" width="75%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+### Do voter ID requirements reduce turnout?
+
+Unit of analysis: states (state-years)
+
+Independent variable: state has voter ID law (1) or not (0)
+
+Dependent variable: turnout rate (% VEP)
+
+
+---
+
+
+
+
+
+&lt;img src="18-policy_files/figure-html/unnamed-chunk-5-1.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: center, middle
+
+## Sticky Causality
+
+.pull-left[
+
+#### Turnout in 2008
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; strict_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; turnout &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 63.3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 60.8 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+Voter ID states (IN and GA) had 2.5 percent lower turnout in 2008
+
+]
+
+
+
+
+--
+
+.pull-right[
+
+#### Turnout in 2004, *before* any strict photo ID laws
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; strict_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; turnout &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 62.5 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.5 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+IL and GA had 7 percent lower turnout *before* strict photo ID
+
+
+]
+
+
+---
+
+class: middle, center
+
+.pull-left[
+
+### Confounding and selection bias
+
+There's something about states ( `\(U\)` ) that make them adopt voter ID requirements ( `\(X\)` )
+
+Is that something related to turnout ( `\(Y\)` ) also?
+
+We should compare states *against themselves*
+]
+
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/18-policy/img/selection.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+---
+
+class: middle
+&lt;!-- states over time --&gt;
+
+&lt;img src="18-policy_files/figure-html/unnamed-chunk-9-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle
+
+&lt;!-- average over time --&gt;
+.left-code[
+
+### Turnout naturally fluctuates
+
+Turnout goes down in voter ID states, so what?
+
+Is that different from non-voter ID states?
+
+We want to compare across time *and* across states
+]
+
+
+.right-plot[
+
+&lt;img src="18-policy_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+
+
+
+
+---
+
+.left-code[
+
+## Difference-in-differences
+
+Background characteristics
+
+Difference 1: difference over time
+
+Difference 2: are treatment and control changes the same?
+
+Counterfactuals
+
+
+`\begin{align}
+  \hat{y} &amp;= a + b_{1}\left(\mathrm{Treat}\right) + b_{2}\left(\mathrm{After}\right) + \\ 
+  &amp;\quad b_{3}\left(\mathrm{Treat \times After}\right)
+\end{align}`
+
+
+
+]
+
+.right-plot[
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/18-policy/img/diffs.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Understanding the Diff-in-diff model
+
+`\begin{align}
+  \hat{y} &amp;= a + b_{1}\left(\mathrm{Treat}\right) + b_{2}\left(\mathrm{After}\right) + \\ 
+  &amp;\quad b_{3}\left(\mathrm{Treat \times After}\right)
+\end{align}`
+
+Control group, before treatment (after = 0, treat = 0): `\(a\)`
+
+Treatment group, before treatment (after = 0, treat = 1): `\(a + b_{1}\)`
+
+Control group, after treatment (after = 1, treat = 0): `\(a + b_{2}\)`
+
+Treatment group, after treatment (after = 1, treat = 1): `\(a + b_{1} + b_{2} + b_{3}\)`
+
+--
+
+** `\(b_{3}\)` is the effect of treatment, controlling for over-time change ( `\(b_{2}\mathrm{After}\)` ) and background characteristics of the treatment and control groups ( `\(b_{1}\mathrm{Treat}\)` ) **
+
+
+---
+
+## With real data
+
+
+`\begin{align}
+  \hat{\mathrm{turnout}} &amp;= a + d_{\mathit{year}} + d_{\mathit{states}} + b\left(\mathrm{ID.Law}\right)
+\end{align}`
+
+--
+
+.left-code[
+
+
+
+
+```r
+turnout_data
+```
+
+```
+## # A tibble: 1,000 x 4
+##     year state       turnout strict_id
+##    &lt;dbl&gt; &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+##  1  1980 Alabama        49.2         0
+##  2  1980 Alaska         58.7         0
+##  3  1980 Arizona        46.2         0
+##  4  1980 Arkansas       52           0
+##  5  1980 California     55           0
+##  6  1980 Colorado       57.2         0
+##  7  1980 Connecticut    63.9         0
+##  8  1980 Delaware       56           0
+##  9  1980 Florida        52           0
+## 10  1980 Georgia        42.1         0
+## # … with 990 more rows
+```
+]
+
+--
+
+.right-plot[
+
+
+```r
+# within lm(), as.factor() makes a sequence of dummies
+# one category is automatically omitted (alphanumerically)
+diff_diff &lt;- 
+  lm(turnout ~ strict_id + as.factor(state) + as.factor(year),
+     data = filter(turnout_data)) 
+```
+]
+
+
+---
+
+.left-code[
+
+```r
+summary(diff_diff)
+```
+
+Each state/year effect is comparison to omitted category (Alabama or 1980)
+
+e.g. CA is (on avg) 2% higher turnout than AL
+
+Turnout in 2008 was (on avg) 7 pts higher than 1980
+
+Turnout under voter ID is (on avg) 1.2 pts higher (not sig.)
+
+]
+
+.right-plot[
+
+```
+## 
+## Call:
+## lm(formula = turnout ~ strict_id + as.factor(state) + as.factor(year), 
+##     data = filter(turnout_data))
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -14.3247  -2.4630   0.1195   2.4472  15.0295 
+## 
+## Coefficients:
+##                                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                     52.7747     1.1226  47.012  &lt; 2e-16 ***
+## strict_id                        1.2652     0.9409   1.345 0.179076    
+## as.factor(state)Alaska          11.0648     1.3519   8.184 8.97e-16 ***
+## as.factor(state)Arizona         -2.8552     1.3519  -2.112 0.034959 *  
+## as.factor(state)Arkansas        -1.1102     1.3519  -0.821 0.411742    
+## as.factor(state)California       2.3348     1.3519   1.727 0.084504 .  
+## as.factor(state)Colorado         8.0348     1.3519   5.943 3.95e-09 ***
+## as.factor(state)Connecticut      7.6148     1.3519   5.632 2.35e-08 ***
+## as.factor(state)Delaware         2.7698     1.3519   2.049 0.040768 *  
+## as.factor(state)Florida          2.5298     1.3519   1.871 0.061629 .  
+## as.factor(state)Georgia         -4.9248     1.3519  -3.643 0.000285 ***
+## as.factor(state)Hawaii          -2.9402     1.3519  -2.175 0.029896 *  
+## as.factor(state)Idaho            7.5148     1.3519   5.558 3.56e-08 ***
+## as.factor(state)Illinois         3.6398     1.3519   2.692 0.007225 ** 
+## as.factor(state)Indiana         -1.2780     1.3577  -0.941 0.346768    
+## as.factor(state)Iowa            10.0698     1.3519   7.448 2.16e-13 ***
+## as.factor(state)Kansas           3.8467     1.3454   2.859 0.004342 ** 
+## as.factor(state)Kentucky        -2.0802     1.3519  -1.539 0.124222    
+## as.factor(state)Louisiana        1.7140     1.3699   1.251 0.211194    
+## as.factor(state)Maine           14.4748     1.3519  10.707  &lt; 2e-16 ***
+## as.factor(state)Maryland         3.2948     1.3519   2.437 0.014994 *  
+## as.factor(state)Massachusetts    8.3148     1.3519   6.150 1.15e-09 ***
+## as.factor(state)Michigan         6.2798     1.3519   4.645 3.89e-06 ***
+## as.factor(state)Minnesota       17.8498     1.3519  13.203  &lt; 2e-16 ***
+## as.factor(state)Mississippi     -4.7000     1.3446  -3.496 0.000495 ***
+## as.factor(state)Missouri         4.7098     1.3519   3.484 0.000518 ***
+## as.factor(state)Montana         11.3598     1.3519   8.403  &lt; 2e-16 ***
+## as.factor(state)Nebraska         6.0948     1.3519   4.508 7.37e-06 ***
+## as.factor(state)Nevada          -3.4202     1.3519  -2.530 0.011575 *  
+## as.factor(state)New Hampshire    6.2898     1.3519   4.652 3.76e-06 ***
+## as.factor(state)New Jersey       2.0348     1.3519   1.505 0.132644    
+## as.factor(state)New Mexico       0.1698     1.3519   0.126 0.900089    
+## as.factor(state)New York        -0.9502     1.3519  -0.703 0.482323    
+## as.factor(state)North Carolina  -1.4102     1.3519  -1.043 0.297172    
+## as.factor(state)North Dakota     8.8148     1.3519   6.520 1.15e-10 ***
+## as.factor(state)Ohio             4.5998     1.3519   3.402 0.000697 ***
+## as.factor(state)Oklahoma        -1.0652     1.3519  -0.788 0.430947    
+## as.factor(state)Oregon          11.7398     1.3519   8.684  &lt; 2e-16 ***
+## as.factor(state)Pennsylvania     1.2348     1.3519   0.913 0.361303    
+## as.factor(state)Rhode Island     5.4398     1.3519   4.024 6.20e-05 ***
+## as.factor(state)South Carolina  -5.2252     1.3519  -3.865 0.000119 ***
+## as.factor(state)South Dakota    11.5298     1.3519   8.528  &lt; 2e-16 ***
+## as.factor(state)Tennessee       -4.7333     1.3454  -3.518 0.000456 ***
+## as.factor(state)Texas           -5.1952     1.3519  -3.843 0.000130 ***
+## as.factor(state)Utah             2.1048     1.3519   1.557 0.119846    
+## as.factor(state)Vermont          8.8948     1.3519   6.579 7.89e-11 ***
+## as.factor(state)Virginia        -0.6535     1.3478  -0.485 0.627910    
+## as.factor(state)Washington       6.9648     1.3519   5.152 3.15e-07 ***
+## as.factor(state)West Virginia   -5.8902     1.3519  -4.357 1.47e-05 ***
+## as.factor(state)Wisconsin       11.0533     1.3454   8.216 7.03e-16 ***
+## as.factor(state)Wyoming          7.3148     1.3519   5.411 8.00e-08 ***
+## as.factor(year)1982            -11.7043     0.8549 -13.690  &lt; 2e-16 ***
+## as.factor(year)1984              0.4880     0.8504   0.574 0.566197    
+## as.factor(year)1986            -14.7800     0.8504 -17.381  &lt; 2e-16 ***
+## as.factor(year)1988             -1.5760     0.8504  -1.853 0.064156 .  
+## as.factor(year)1990            -14.7040     0.8504 -17.291  &lt; 2e-16 ***
+## as.factor(year)1992              4.0260     0.8504   4.734 2.54e-06 ***
+## as.factor(year)1994            -12.9640     0.8504 -15.245  &lt; 2e-16 ***
+## as.factor(year)1996             -2.8360     0.8504  -3.335 0.000887 ***
+## as.factor(year)1998            -15.8640     0.8504 -18.655  &lt; 2e-16 ***
+## as.factor(year)2000             -0.4140     0.8504  -0.487 0.626483    
+## as.factor(year)2002            -13.7360     0.8504 -16.153  &lt; 2e-16 ***
+## as.factor(year)2004              5.9360     0.8504   6.980 5.59e-12 ***
+## as.factor(year)2006            -12.8873     0.8506 -15.151  &lt; 2e-16 ***
+## as.factor(year)2008              6.9274     0.8512   8.138 1.28e-15 ***
+## as.factor(year)2010            -12.7786     0.8512 -15.012  &lt; 2e-16 ***
+## as.factor(year)2012              3.5508     0.8537   4.159 3.49e-05 ***
+## as.factor(year)2014            -16.9938     0.8578 -19.810  &lt; 2e-16 ***
+## as.factor(year)2016              4.3229     0.8605   5.024 6.08e-07 ***
+## as.factor(year)2018              4.2976     0.8636   4.976 7.72e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 4.252 on 929 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.8618,	Adjusted R-squared:  0.8515 
+## F-statistic: 83.96 on 69 and 929 DF,  p-value: &lt; 2.2e-16
+```
+
+
+]
+
+
+---
+
+class:center
+
+## Threats of time-varying confounders?
+
+--
+
+
+&lt;img src="18-policy_files/figure-html/windows-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+--
+
+**Counter-mobilization, Battleground states, Other legal changes**
+
+
+---
+
+## Exogenous vs endogenous policy change
+
+Policy change comes from within the system (endogenous)
+
+Policy change is imposed from external forces (exogenous)
+
+**Exogenous policy change are easier to study**
+
+
+
+---
+
+# Looking ahead
+
+On Wednesday: 
+
+- experiments (and ethics)
+
+- Discuss in-section presentation
+
+
+Section:
+
+- More multiple regression
+
+
+Next week:
+
+- Big data (by Michael)
+
+- Elections, campaigns, polls...
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "default",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

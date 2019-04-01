@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Variation and Randomness</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Variation and Randomness
+### Understanding Political Numbers
+### Feb 20, 2019
+
+---
+
+
+
+
+
+
+
+.pull-left[
+## Essay 1
+
+Overall great!
+
+Feedback:
+
+- Commit to a measure
+- Direction of relationship
+- Avoid "proving" and "disproving"
+- Contamination of the DV
+- Please proofread!
+
+My bad:
+
+- Latent probability vs incidence (e.g. of war)
+
+]
+
+--
+
+.pull-right[
+## R Exercise 1
+
+Installing vs. loading ("librarying") packages
+
+Folder names
+
+Data file name
+]
+
+
+---
+
+
+
+.pull-left[
+## Let's talk about papers
+
+Original research question
+
+- Does `\(X\)` affect `\(Y\)`?
+- What other things might affect `\(Y\)` (at least two other potential explainers)? Use theoretical reasoning
+
+Collect data (at least 50 cases)
+
+Write a 12-page paper (not counting graphics)
+
+- What's the question
+- Theory and hypotheses
+- Explain your data and method
+- Analysis (graphics and regression analysis)
+- Conclusion and potential improvements
+]
+
+--
+
+.pull-right[
+## What to do:
+
+Research question due March 11 (a Monday)
+
+- Variables, hypotheses, and (proposed) data sources
+- **Before then:** 15-minute meeting w/ Michael or me
+- Extra office hours
+
+
+Dataset due after spring break
+
+**More info coming soon**
+
+- Watch for email about scheduling meetings! You *must* meet with us
+- Formal assignment sheet soon!
+]
+
+---
+
+class: center, middle
+
+# &lt;https://mikedecr.github.io/ps-270/&gt;
+
+---
+
+## Will we ever use this in the real world?
+
+.pull-left[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/09-variation/img/plot-age-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/09-variation/img/catalist.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Where were we?
+
+.left-code[
+
+|The "real world"     |Your data |
+|:--------------|:---------|
+| "Population"  | Sample |
+|Theoretical mean |Sample mean      |
+| Expectation | Estimate |
+|Parameter | Statistic      |
+| `\(\mu\)` | `\(\bar{x}\)`      |
+
+Remember: 
+
+Observed data = Truth + Bias + Noise
+
+]
+
+--
+
+.right-plot[
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/09-variation/img/replicates-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+- In a given sample, I am randomly inaccurate, and that is to be expected.
+  - Every time I call someone, there's a 54% chance they support A, so there's randomness
+  - When randomness is at play, you get uncertainty
+
+
+- It looks like it's getting wider, but it isn't.
+- That's just random variation
+
+
+---
+
+class: center
+
+## Which is random?
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/09-variation/img/Random-dots.jpg" width="85%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Reality is clumpy
+
+Flip a coin. Probability of heads is `\(0.5\)`.
+
+--
+
+Flip a coin twice. Probability of two heads in a row is `\(0.5 \times 0.5 = 0.25\)`
+
+--
+
+Flip a coin `\(n\)` times. Probability of `\(n\)` heads in a row is `\(0.5^{n}\)`.
+
+--
+
+**I flip a coin 1000 times**. What's the longest sequences of heads I get?
+
+--
+
+
+
+
+```r
+# I ran this simulation in R
+max(one_thousand_flips$heads_in_a_row)
+```
+
+```
+## [1] 10
+```
+
+Wow! The probability of getting that many heads in a row is `\(0.5^{10} = 0.0009766\)`!
+
+--
+
+.center[**Unlikely things aren't always unusual.]**
+
+.center[**When you have lots of data, unlikely things are common.**]
+
+
+
+---
+
+background-image: url(img/fivethirtyeight-2016.png)
+background-color: #000000
+background-size: contain
+
+
+---
+
+class: inverse, center, middle
+
+# Time for something amazing
+
+
+---
+
+
+
+## 10,000 Independent Polls
+
+
+???
+
+Why 10,000?
+
+- reality is clumpy
+- but it's clumpy when you look up close
+- when you zoom out really far, clumpiness cancels out (randomly)
+
+
+--
+
+.pull-left[
+&lt;img src="09-variation_files/figure-html/bee-swarp-polls-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+???
+
+**bee swarm**
+
+- if we were to zoom in, we would see that every poll is different
+- Every poll is off a little bit
+- but overall, they're close to the truth
+- It looks like the farther you get from the truth, the fewer polls are out there
+
+
+**Distribution of outcomes**
+
+- We're going to look at a histogram
+- similar to a bar chart
+- it the distribution of the data
+  - where are the data
+
+--
+
+.pull-right[
+&lt;img src="09-variation_files/figure-html/hist-polls-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+**Holy shit**
+
+- How did this happen?
+- Every poll is a little bit random
+  - for every person who picks up the phone, there's a 54% change that they support candidate A
+  - so not everyone who picks up the phone is the same
+  - and sometimes you get clumpiness in a survey
+- but the clumpiness in one survey is unrelated to the clumpiness in other surveys
+  - Most surveys have some clumpiness, so they're a little off
+  - Fewer surveys have *lots of clumpiness*, but it's less likely to have lots of clumpiness
+  - That's why some surveys are *really* off, but there aren't as many of those
+
+
+---
+
+### The normal distribution
+
+.left-code[
+If some variable `\(Y\)` is affected (at least in part) by an accumulation of random fluctuations, then *the distribution of `\(Y\)`* will be approx. normal
+
+**A "draw" from a normal distribution:** Any *individual* observation of `\(y\)` is just one number, but the probability of observing that value (relative to the mean) is given by the normal distribution
+
+For example, one random draw:
+
+
+```
+## [1] 0.547
+```
+]
+
+.right-plot[
+&lt;img src="09-variation_files/figure-html/normal-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+&lt;img src="09-variation_files/figure-html/unnamed-chunk-7-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+&lt;img src="09-variation_files/figure-html/unnamed-chunk-8-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+
+&lt;img src="09-variation_files/figure-html/unnamed-chunk-9-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+&lt;img src="09-variation_files/figure-html/unnamed-chunk-10-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+&lt;img src="09-variation_files/figure-html/unnamed-chunk-11-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations `\(\rightarrow \infty\)`)
+
+&lt;img src="09-variation_files/figure-html/unnamed-chunk-12-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## What do "accumulating fluctuations" have to do with the mean
+
+or, "Why are means normally distributed?"
+
+`\begin{align}
+  \bar{x} &amp;= \frac{1}{n}\sum\limits_{i = 1}^{n}x_{i}
+\end{align}`
+
+--
+
+Summing the data is "adding up fluctuations." **Cool, huh!**
+
+
+
+
+---
+
+class: middle, center
+
+### "Order arising from disorder" or just *pure chaos*?
+
+
+---
+
+## Most likely babies
+
+.left-code[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/09-variation/img/babies.jpg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.right-plot[
+&lt;img src="09-variation_files/figure-html/babies-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+class: inverse, middle, center
+
+# How we use the normal distribution in statistics
+
+
+
+
+---
+
+## "The sampling distribution of `\(\bar{x}\)` is normal"
+
+.left-code[
+This means "the sample mean is a *normal draw* from the true mean".
+
+**How accurate is the mean?**
+
+What's the dispersion in the raw data? Calculate the *standard deviation* of data `\(x\)`:
+`\begin{align}
+  s(x) = \sqrt{\dfrac{\sum\limits_{i}^{n}(x_{i} - \bar{x})^{2}}{n - 1}}
+\end{align}`
+
+**Standard deviation** is the "average distance between a data point and `\(\bar{x}\)`"
+]
+
+.right-plot[
+Data `\(x\)` where `\(\bar{x} = 10\)`
+
+
+```
+## # A tibble: 100 x 3
+##        x `x - xbar` `(x - xbar)^2`
+##    &lt;int&gt;      &lt;dbl&gt;          &lt;dbl&gt;
+##  1    15          5             25
+##  2     1         -9             81
+##  3    10          0              0
+##  4    14          4             16
+##  5    19          9             81
+##  6     6         -4             16
+##  7    10          0              0
+##  8    20         10            100
+##  9    16          6             36
+## 10    19          9             81
+## # … with 90 more rows
+```
+
+]
+
+???
+
+- normal draw, meaning, it's a single number, but it's more likely to appear in the center of the distribution and less likely to appear in the tail
+- We don't know where the true mean is, but we know enough about the properties of the Normal distribution that we can build an informed guess
+  - we know that most 
+
+
+
+
+---
+
+## "The sampling distribution of `\(\bar{x}\)` is normal"
+
+.left-code[
+
+**Standard error** is "average error between `\(\bar{x}\)` and the true mean `\(\mu\)`"
+
+Standard error of `\(\bar{x}\)`:
+`\begin{align}
+  se(\bar{x}) &amp;= \frac{s(x)}{\sqrt{n}}
+\end{align}`
+
+Rules for averages:
+
+- ~ 68% of estimates are within `\(\pm\)` 1 std. error from "true" value
+- ~ 95% of estimates are within `\(\pm\)` 2 std. errors 
+- more than 99% of estimates are within `\(\pm\)` 3 std. errors 
+
+]
+
+
+
+.right-plot[
+&lt;img src="09-variation_files/figure-html/std-normal-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+---
+
+class: inverse, center, middle
+
+# Statistics is about dealing with *uncertainty* in real data
+
+### Here is how most people do statistics
+
+Every sample is an *imperfect* representation of the underlying population
+
+Calculate a sample estimate (such as a mean) and its standard error
+
+Most of the time, your estimate is within `\(\pm\)` 2 standard errors from the  "true value"
+
+
+
+
+
+
+???
+
+Lots of statistics depend on assumptions about the "distribution" of our data
+
+- a lot of these assumptions are like, assuming that our estimate of the mean is normally distributed
+- or assuming that our data are normally distributed
+
+It often feels like this is a tenuous assumption, that could easily be broken
+
+- it is actually hard to break, because it isn't fragile
+- The normal distribution is just what happens when you add lots of fluctuations together
+- and lots of things are influenced by lots of small fluctuations
+
+&lt;!-- 
+Lessons
+
+- data have randomness, you don't know how accurate you've been
+- clumping happens
+- randomness looks uneven when you zoom in
+- randomness looks even when you zoom (way) out
+- simulate normal (CLT)
+- simulate means, they're normal
+- Where to introduce concepts:
+  - std deviation: how much noise in my data
+  - std error: how (in)accurate is my estimate (in expectation)?
+ --&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

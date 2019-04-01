@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Graphics in R</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Understanding Political Numbers" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Graphics in R
+## using <code>ggplot</code>
+### Understanding Political Numbers
+### Feb 13, 2019
+
+---
+
+
+
+
+
+
+
+# Get started
+
+.left-code[
+In your `PS-270` folder on your computer, double-click `.Rproj` file to open RStudio.
+
+Create folders within `PS-270`
+
+- `R` folder, for `R` script files
+- `figures` folder, for saving figures
+- `data` folder, for data
+
+On Canvas: Download `lecture_ggplot.R` and save to `R` folder
+
+In Rstudio: open `lecture_ggplot.R`
+]
+
+.right-plot[
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/07-ggplot/img/dirs.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+- opening from Rproj file means that Rstudio opens ready to do PS-270 work
+- it's OK if you don't have your computer today, we will review similar material in section and the material is all online
+
+
+---
+
+### What is `ggplot`?
+
+
+&lt;img src="/Users/michaeldecrescenzo/Box Sync/teaching/270-numbers-S19/lectures/07-ggplot/img/gap-vote.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+A plotting system for R
+
+Originally its own package—bundled into the `{tidyverse}` package
+
+`gg` for "Grammar of Graphics"
+
+
+---
+
+.pull-left[
+## What is a "grammar" of graphics?
+
+**Data**: your data frame
+
+**Aesthetic mapping**: how data (variables) become plot attributes (axes, color, sizes)
+
+**Scales**: modifying the *mapping* from data to plot (customizing axes, colors, sizes)
+
+**Geoms**: geometric representations of data (points, lines, bars)
+
+**Facets**: sub-panels in the plot
+
+**Coordinates**: features of the coordinate system (orientation...)
+]
+
+
+--
+
+.pull-right[
+## Why `ggplot` is great
+
+- Premise: the grammar describes attributes of most (all?) graphics
+- Premise: `ggplot` functions manipulate the grammar
+- Conclusion: make *lots* of graphics using same basic tools
+]
+
+???
+
+Hands-on code examples will walk us through each of these components
+
+This makes `ggplot` very *general* and *flexible*
+
+
+
+---
+
+# Get oriented
+
+Load packages:
+
+
+```r
+# {tidyverse} contains ggplot tools
+library("tidyverse")
+
+install.packages("gapminder") # contains dataset
+install.packages("here")      # easier to save things
+library("gapminder")
+library("here")
+```
+
+The `lecture_ggplot.R` file already contains code that I wrote. You can...
+
+.pull-left[
+Execute the code as-is.
+  - Mac: `Command + Enter`
+  - Windows: `Ctrl + Enter`
+  - Tip: [more RStudio keyboard shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts)
+]
+
+.pull-right[
+Even better: re-type commands to familiarize yourself w/ the flow
+  - Use my code if something isn't working
+] 
+
+
+
+
+---
+
+## Meet the data
+
+
+```r
+# print the data
+gapminder           
+
+# variable names
+names(gapminder)
+```
+
+
+Different subsets of data will let us highlight different graphics capabilities
+
+
+```r
+# create a new object: 'gapminder' for most recent year
+gap07 &lt;- filter(gapminder, year == 2007)
+
+# create a new object: the subset of 'gapminder' where continent is "Oceania"
+gapOC &lt;- filter(gapminder, continent == "Oceania")
+
+# What's left?
+gap07
+gapOC
+```
+
+???
+
+- this is R code
+- `#` means comments
+- `##` means "results"
+- Remember: everything is an object in R
+
+- There is a dataset in R. Its name is `gapminder`
+
+
+
+The filter function (you will learn later)
+
+- Selects which rows to keep or drop 
+- This means "keep countries where the `continent` variable says 'Oceania'"
+
+
+
+---
+
+class: middle, center, inverse
+
+# Let's make a graph
+
+
+
+
+---
+
+## Start a plot
+
+
+```r
+ggplot(data = gap07, mapping = aes(x = gdpPercap, y = lifeExp))
+```
+
+&lt;img src="07-ggplot_files/figure-html/start-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+`ggplot` is a function
+
+- the function name is `ggplot`
+- You open parentheses
+- Then you supply arguments (comma separated)
+- `data` wants a data frame
+- `mapping` wants the results of the `aes()` function
+- You close the `ggplot` parentheses, making sure to close everything.
+
+You've declared a dataset, X axis variable, and Y axis variable
+
+
+
+---
+
+## Let's break it down
+
+
+```r
+*ggplot(data = gap07,
+       mapping = aes(x = gdpPercap, y = lifeExp))
+```
+
+**Grammar: data.** First, Declare the dataset where `ggplot` can find your data.
+
+
+---
+
+## Let's break it down
+
+
+```r
+ggplot(data = gap07,
+*      mapping = aes(x = gdpPercap, y = lifeExp))
+```
+
+**Grammar: data.** First, Declare the dataset where `ggplot` can find your data.
+
+**Grammar: aesthetic mapping**. Tell `ggplot` which variables to look at for plot-relevant data
+
+- Grab *axis* information from the `gdpPercap` and `lifeExp` variables.
+- If we want aesthetics (axes, point shape, color, line style) to correspond to variables, must use the `aes()` function.
+
+--
+
+(Browse the [Tidyverse Style Guide](https://style.tidyverse.org/))
+
+
+---
+
+## Geoms
+
+
+```r
+ggplot(data = gap07, mapping = aes(x = gdpPercap, y = lifeExp)) +
+* geom_point()
+```
+
+
+.left-code[
+Add components with `+`
+
+**Grammar: geoms.** Functions take the form `geom_*()`. 
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/scatter-ex-point-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+Lots of little points
+
+Describe plus
+
+*Demonstrate the fact that this is a grammar:* How do you think you represent the data with a line rather than with points?
+
+
+
+
+
+---
+
+## More aesthetics
+
+
+```r
+ggplot(data = gap07, mapping = aes(x = gdpPercap, y = lifeExp)) +
+* geom_point(aes(color = continent))
+```
+
+
+.left-code[
+**Grammar: aesthetics.** How does data become a plot feature?
+
+Translation: "I want different colors for each continent"
+
+Which aesthetics can be modified? Check the help file: `?geom_point` 
+]
+
+--
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/scatter-aes-color-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Labels (and saving)
+
+
+```r
+ggplot(data = gap07, mapping = aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(aes(color = continent)) +
+* labs(x = "GDP per Capita ($US, Inflation Adjusted)",
+*      y = "Life Expectancy (Years)",
+*      color = NULL,
+*      title = "National Economy and Life Expectancy",
+*      subtitle = "Data from 2007")
+```
+
+.left-code[
+
+**save the plot!** (inside the `figures` folder)
+
+
+```r
+ggsave(here("figures", "my-plot.pdf"), 
+       height = 3, width = 5)
+```
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/scatter-label-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+class: middle, center, inverse
+
+# New Plot
+
+
+---
+
+## New plot, using Oceania data
+
+
+```r
+*ggplot(gapOC, aes(x = year, y = lifeExp))
+```
+
+.left-code[
+
+`data =` and `mapping =` are implied
+
+We want a line for each country...what do we do?
+
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/oc-pt-1.png" width="TRUE" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+
+
+---
+
+## Lines
+
+
+
+```r
+ggplot(gapOC, aes(x = year, y = lifeExp)) + 
+* geom_line(aes(linetype = country,
+*               color = country))
+```
+
+.left-code[
+This dataset contains two countries.
+
+
+```r
+# count() tabulates a variable
+count(gapOC, country)
+```
+
+```
+## # A tibble: 2 x 2
+##   country         n
+##   &lt;fct&gt;       &lt;int&gt;
+## 1 Australia      12
+## 2 New Zealand    12
+```
+
+`geom_line()` needs `aes(something = country)` or else we get only one line
+
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/oc-line-1.png" width="TRUE" style="display: block; margin: auto;" /&gt;
+]
+
+
+???
+
+Order of aesthetics does not matter
+
+
+
+
+
+
+---
+
+## Scales (they modify default aesthetics)
+
+
+```r
+ggplot(gapOC, aes(x = year, y = lifeExp)) + 
+  geom_line(aes(linetype = country, color = country)) +
+* scale_color_brewer(palette = "Dark2")
+```
+
+.left-code[
+Variants include `scale_color_brewer()`, `scale_color_manual()`, `scale_color_continuous()`
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/oc-brew-1.png" width="TRUE" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Scales (they modify default aesthetics)
+
+
+```r
+ggplot(gapOC, aes(x = year, y = lifeExp)) + 
+  geom_line(aes(linetype = country, color = country)) +
+* scale_color_manual(values = c("Australia" = "dodgerblue",
+*                               "New Zealand" = "orangered"))
+```
+
+.left-code[
+All scale functions: `scale_aesName_modifier()`
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/oc-scale-1.png" width="TRUE" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Coordinates
+
+
+```r
+ggplot(gapOC, aes(x = year, y = lifeExp)) + 
+  geom_line(aes(linetype = country, color = country)) +
+* coord_cartesian(xlim = c(1950, 2010))
+```
+
+.left-code[
+This changed the `\(x\)` axis. How could I customize that?
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/oc-coord-1.png" width="TRUE" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Coordinates
+
+
+```r
+ggplot(gapOC, aes(x = year, y = lifeExp)) + 
+  geom_line(aes(linetype = country, color = country)) +
+  coord_cartesian(xlim = c(1950, 2010)) +
+* scale_x_continuous(breaks = seq(1950, 2010, 20)) +
+* labs(x = NULL, y = "Life Expectancy (Years)",
+*      color = NULL, linetype = NULL)
+```
+
+.left-code[
+`x` is an aesthetic, and you mapped it from data.
+
+So... you modify the default use a scale function.
+
+`coord_flip()` flips the horizontal and vertical axes
+]
+
+.right-plot[
+&lt;img src="07-ggplot_files/figure-html/oc-x-1.png" width="TRUE" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+class: center, middle, inverse
+
+# One Last Plot
+
+---
+
+# Using the full gapminder data
+
+
+```r
+ggplot(gapminder, aes(x = lifeExp))
+```
+
+&lt;img src="07-ggplot_files/figure-html/unnamed-chunk-5-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Facets: wrapping
+
+
+```r
+ggplot(gapminder, aes(x = lifeExp)) +
+* facet_wrap(~ year) # tilde is necessary
+```
+
+&lt;img src="07-ggplot_files/figure-html/unnamed-chunk-6-1.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Facets: wrapping
+
+
+```r
+ggplot(gapminder, aes(x = lifeExp)) +
+  facet_wrap(~ year) +
+  geom_histogram()
+```
+
+&lt;img src="07-ggplot_files/figure-html/unnamed-chunk-7-1.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Facets: grid
+
+
+```r
+ggplot(gapminder, aes(x = lifeExp)) +
+  facet_grid(continent ~ year) +
+  geom_histogram(fill = "white", color = "black")
+```
+
+&lt;img src="07-ggplot_files/figure-html/gap-grid-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+class: middle, center, inverse
+
+# Exercise 1
+
+---
+
+# What's next? 
+
+In section: more plots
+
+- including histograms (necessary for homework)
+
+Next week: signal and noise
+
+- mean and variance
+- more tools for R
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

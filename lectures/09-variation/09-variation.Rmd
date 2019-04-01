@@ -1,0 +1,726 @@
+---
+title: "Variation and Randomness"
+# subtitle: '(the "signal")'
+author: "Understanding Political Numbers"
+date: "Feb 20, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "05-data", "05-data.Rmd"))
+# knitr::purl(here::here("lectures", "08-means", "08-means.Rmd"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+# library("dagitty")
+# library("ggdag")
+
+# box
+# library("boxr"); box_auth()
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = TRUE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "09_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/09-variation/img"
+
+# library("viridis")
+options(scipen = 99999)
+```
+
+
+.pull-left[
+## Essay 1
+
+Overall great!
+
+Feedback:
+
+- Commit to a measure
+- Direction of relationship
+- Avoid "proving" and "disproving"
+- Contamination of the DV
+- Please proofread!
+
+My bad:
+
+- Latent probability vs incidence (e.g. of war)
+
+]
+
+--
+
+.pull-right[
+## R Exercise 1
+
+Installing vs. loading ("librarying") packages
+
+Folder names
+
+Data file name
+]
+
+
+---
+
+
+
+.pull-left[
+## Let's talk about papers
+
+Original research question
+
+- Does $X$ affect $Y$?
+- What other things might affect $Y$ (at least two other potential explainers)? Use theoretical reasoning
+
+Collect data (at least 50 cases)
+
+Write a 12-page paper (not counting graphics)
+
+- What's the question
+- Theory and hypotheses
+- Explain your data and method
+- Analysis (graphics and regression analysis)
+- Conclusion and potential improvements
+]
+
+--
+
+.pull-right[
+## What to do:
+
+Research question due March 11 (a Monday)
+
+- Variables, hypotheses, and (proposed) data sources
+- **Before then:** 15-minute meeting w/ Michael or me
+- Extra office hours
+
+
+Dataset due after spring break
+
+**More info coming soon**
+
+- Watch for email about scheduling meetings! You *must* meet with us
+- Formal assignment sheet soon!
+]
+
+---
+
+class: center, middle
+
+# <https://mikedecr.github.io/ps-270/>
+
+---
+
+## Will we ever use this in the real world?
+
+.pull-left[
+```{r, out.width = "100%", echo = FALSE}
+include_graphics(here(img, "plot-age-1.png"))
+```
+]
+
+.pull-right[
+```{r, out.width = "100%", echo = FALSE}
+include_graphics(here(img, "catalist.png"))
+```
+]
+
+
+
+---
+
+## Where were we?
+
+.left-code[
+
+|The "real world"     |Your data |
+|:--------------|:---------|
+| "Population"  | Sample |
+|Theoretical mean |Sample mean      |
+| Expectation | Estimate |
+|Parameter | Statistic      |
+| $\mu$ | $\bar{x}$      |
+
+Remember: 
+
+Observed data = Truth + Bias + Noise
+
+]
+
+--
+
+.right-plot[
+
+```{r, out.width = "90%", echo = FALSE}
+include_graphics(here(img, "replicates-1.png"))
+```
+]
+
+???
+
+- In a given sample, I am randomly inaccurate, and that is to be expected.
+  - Every time I call someone, there's a 54% chance they support A, so there's randomness
+  - When randomness is at play, you get uncertainty
+
+
+- It looks like it's getting wider, but it isn't.
+- That's just random variation
+
+
+---
+
+class: center
+
+## Which is random?
+
+```{r, echo = FALSE, out.width = "85%"}
+include_graphics(here(img, "Random-dots.jpg"))
+```
+
+
+---
+
+## Reality is clumpy
+
+Flip a coin. Probability of heads is $0.5$.
+
+--
+
+Flip a coin twice. Probability of two heads in a row is $0.5 \times 0.5 = 0.25$
+
+--
+
+Flip a coin $n$ times. Probability of $n$ heads in a row is $0.5^{n}$.
+
+--
+
+**I flip a coin 1000 times**. What's the longest sequences of heads I get?
+
+--
+
+```{r flip-clump, echo = FALSE}
+# ---- This is a simulation -----------
+# flip a coin 1000 times, count how many 'heads in a row'
+flips_in_a_row <- function(x, value) {
+    cs = cumsum(x == value)
+    cs - cummax((x != value) * cs)
+}
+
+one_thousand_flips <- tibble(trial = 1:1000) %>%
+  mutate(flip = sample(c("Heads", "Tails"), replace = TRUE, size = n()),
+         is_heads = as.numeric(flip == "Heads"), 
+         heads_in_a_row = case_when(flip == "Heads" ~ 
+                               flips_in_a_row(is_heads, value = 1),
+                             flip == "Tails" ~ 
+                               flips_in_a_row(is_heads, value = 0)))
+```
+
+```{r}
+# I ran this simulation in R
+max(one_thousand_flips$heads_in_a_row)
+```
+
+Wow! The probability of getting that many heads in a row is $0.5^{`r max(one_thousand_flips$heads_in_a_row)`} = `r 0.5^max(one_thousand_flips$heads_in_a_row)`$!
+
+--
+
+.center[**Unlikely things aren't always unusual.]**
+
+.center[**When you have lots of data, unlikely things are common.**]
+
+
+
+---
+
+background-image: url(img/fivethirtyeight-2016.png)
+background-color: #000000
+background-size: contain
+
+
+---
+
+class: inverse, center, middle
+
+# Time for something amazing
+
+
+---
+
+```{r polls, echo = FALSE}
+set.seed(123)
+n_polls <- 10000
+sample_size <- 1000
+
+polls <- tibble(replicate = 1:n_polls) %>%
+  group_by(replicate) %>%
+  mutate(sample_average = sample(c(1, 0), prob = c(.54, 1 - 0.54),
+                                 size = sample_size, replace = TRUE) %>%
+                          mean()) %>%
+  ungroup() 
+```
+
+## `r comma(n_polls)` Independent Polls
+
+
+???
+
+Why 10,000?
+
+- reality is clumpy
+- but it's clumpy when you look up close
+- when you zoom out really far, clumpiness cancels out (randomly)
+
+
+--
+
+.pull-left[
+```{r bee-swarp-polls, out.width = "100%", echo = FALSE, fig.width = 6, fig.height = 4}
+ggplot(polls, aes(x = replicate, y = sample_average)) +
+  geom_point(shape = 1) +
+  geom_hline(yintercept = 0.54, size = 2, color = "maroon") +
+  labs(title = str_glue("Estimates from {comma(n_polls)} independent polls"),
+       subtitle = str_glue("Each with sample size of {comma(sample_size)}"),
+       y = "Poll Estimate (Support for Candidate A)",
+       x = "Poll Number") +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) 
+```
+]
+
+
+???
+
+**bee swarm**
+
+- if we were to zoom in, we would see that every poll is different
+- Every poll is off a little bit
+- but overall, they're close to the truth
+- It looks like the farther you get from the truth, the fewer polls are out there
+
+
+**Distribution of outcomes**
+
+- We're going to look at a histogram
+- similar to a bar chart
+- it the distribution of the data
+  - where are the data
+
+--
+
+.pull-right[
+```{r hist-polls, out.width = "100%", echo = FALSE, fig.width = 6, fig.height = 4}
+ggplot(polls, aes(x = sample_average)) +
+  geom_histogram(binwidth = .005, boundary = TRUE,
+                 color = "black", fill = "gray80") +
+  geom_vline(xintercept = 0.54, size = 2, color = "maroon") +
+  labs(title = str_glue("Histogram of {comma(n_polls)} independent polls"),
+       subtitle = str_glue("Each with sample size of {comma(sample_size)}"),
+       x = "Poll Estimate (Support for Candidate A)",
+       y = "Frequency") +
+  coord_cartesian(xlim = c(polls %$% min(sample_average) - .025,
+                           polls %$% max(sample_average) + .025)) +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) 
+```
+]
+
+???
+
+**Holy shit**
+
+- How did this happen?
+- Every poll is a little bit random
+  - for every person who picks up the phone, there's a 54% change that they support candidate A
+  - so not everyone who picks up the phone is the same
+  - and sometimes you get clumpiness in a survey
+- but the clumpiness in one survey is unrelated to the clumpiness in other surveys
+  - Most surveys have some clumpiness, so they're a little off
+  - Fewer surveys have *lots of clumpiness*, but it's less likely to have lots of clumpiness
+  - That's why some surveys are *really* off, but there aren't as many of those
+
+
+---
+
+### The normal distribution
+
+.left-code[
+If some variable $Y$ is affected (at least in part) by an accumulation of random fluctuations, then *the distribution of $Y$* will be approx. normal
+
+**A "draw" from a normal distribution:** Any *individual* observation of $y$ is just one number, but the probability of observing that value (relative to the mean) is given by the normal distribution
+
+For example, one random draw:
+
+```{r, echo = FALSE}
+se_poll <- sqrt(.54 * (1 - .54) / 1000)
+rnorm(1, mean = .54, sd = se_poll) %>% round(3)
+```
+]
+
+.right-plot[
+```{r normal, echo = FALSE, out.width = "100%", fig.width = 6, fig.height = 4}
+ggplot(polls, aes(x = sample_average)) +
+  geom_histogram(binwidth = .005, boundary = TRUE,
+                 color = NA, fill = "gray80",
+                 aes(y = ..density..)) +
+  labs(title = str_glue("Histogram of {comma(n_polls)} polls"),
+       subtitle = "Overlaid with Normal Distribution",
+       x = "Poll Estimate (Support for Candidate A)",
+       y = NULL) +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  stat_function(fun = dnorm, args = list(mean = .54, sd = se_poll), 
+                color = "black", size = 1) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  annotate("text", label = TeX("$Pr(Y = y) = \\frac{1}{\\sqrt{2\\pi\\sigma^{2}}} \\, e^{-\\, \\frac{(y - \\mu)^{2}}{2\\sigma^{2}}}$"),
+           x = 0.58, y = 15)
+```
+]
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+```{r football-1, echo = FALSE}
+set.seed(9999)
+football_start <- tibble(student = 1:50, position = 50) %>%
+  mutate(position_1 = position + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_2 = position_1 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_3 = position_2 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_4 = position_3 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_5 = position_4 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_6 = position_5 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_7 = position_6 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_8 = position_7 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_9 = position_8 + sample(c(-1, 1), size = n(), replace = TRUE),
+         position_10 = position_9 + sample(c(-1, 1), size = n(), replace = TRUE))
+
+blank_football <- 
+  ggplot(football_start, aes(x = position, y = student)) +
+    theme_gray() +
+    theme(panel.background = element_rect(fill = "mediumseagreen"),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()) +
+    coord_cartesian(xlim = c(20, 80)) +
+    scale_x_continuous(breaks = seq(10, 90, 10),
+                       labels = c(seq(10, 50, 10), seq(40, 10, -10))) +
+    labs(x = NULL, y = NULL)
+```
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+```{r, echo = FALSE, out.width = "60%", fig.width = 6, fig.height = 4}
+blank_football + 
+  geom_point(aes(x = position), shape = 21, fill = "red", size = 3)
+```
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+```{r, echo = FALSE, out.width = "60%", fig.width = 6, fig.height = 4}
+blank_football +
+  geom_point(aes(x = position_1), shape = 21, fill = "red", size = 3)
+```
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+
+```{r, echo = FALSE, out.width = "60%", fig.width = 6, fig.height = 4}
+blank_football +
+  geom_point(aes(x = position_2), shape = 21, fill = "red", size = 3)
+```
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+```{r, echo = FALSE, out.width = "60%", fig.width = 6, fig.height = 4}
+blank_football +
+  geom_point(aes(x = position_3), shape = 21, fill = "red", size = 3)
+```
+
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+```{r, echo = FALSE, out.width = "60%", fig.width = 6, fig.height = 4}
+blank_football +
+  geom_point(aes(x = position_10), shape = 21, fill = "red", size = 3)
+
+```
+
+
+---
+
+## Accumulating fluctuations
+
+If some outcome is the result of an *accumulation of random fluctuations*, then the outcome is normally distributed (as the number of fluctuations $\rightarrow \infty$)
+
+```{r, echo = FALSE, fig.width = 6, fig.height = 4, out.width = "60%"}
+ggplot(football_start, aes(x = position_10)) +
+  geom_histogram(binwidth = 1, center = 50) +
+  scale_x_continuous(breaks = seq(0, 100, 1),
+                     limits = football_start %$% c(min(position_10), max(position_10))) +
+  labs(x = "Position", y = "Count",
+       title = "Histogram of 'Field Positions'",
+       subtitle = "After 10 random steps")
+```
+
+
+???
+
+This is just like the Galton Board
+
+- you should have watched it
+- Balls fall through pegs arranged in a triangular shape
+- the reason why more balls end up in the middle is because there are *more ways to get there*
+  - if every "path" you could take is equally likely
+  - but some of the "paths" take you to the same destination
+  - then destinations with more ways to get there are more likely
+
+---
+
+## What do "accumulating fluctuations" have to do with the mean
+
+or, "Why are means normally distributed?"
+
+\begin{align}
+  \bar{x} &= \frac{1}{n}\sum\limits_{i = 1}^{n}x_{i}
+\end{align}
+
+--
+
+Summing the data is "adding up fluctuations." **Cool, huh!**
+
+
+
+
+---
+
+class: middle, center
+
+### "Order arising from disorder" or just *pure chaos*?
+
+
+---
+
+## Most likely babies
+
+.left-code[
+```{r, out.width = "100%", echo = FALSE}
+include_graphics(here(img, "babies.jpg"))
+```
+]
+
+--
+
+.right-plot[
+```{r babies, echo = FALSE, out.width = "100%", fig.width = 6, fig.height = 4}
+n_babies <- 2 * 513
+
+babies <- tibble(females = seq(0, n_babies, 1)) %>%
+  mutate(p_females = dbinom(females, size = n_babies, prob = 0.5))
+
+ggplot(babies, aes(females, p_females)) +
+  geom_col(size = 0.15, color = "black", fill = "gray80") +
+  coord_cartesian(xlim = c(450, 570),
+                  ylim = c(0, max(babies$p_females) * 1.1)) +
+  labs(x = str_glue("Number of Females\n(out of {comma(n_babies)} total)"),
+       y = "Probability") +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  geom_vline(xintercept = 513, linetype = "dashed", color = "red") +
+  annotate("text",
+           x = 547, y = max(babies$p_females),
+           label = "Single most likely outcome:\nequal males and females!\n(if equal prob male and female)",
+           size = 3.5)
+```
+]
+
+
+---
+
+class: inverse, middle, center
+
+# How we use the normal distribution in statistics
+
+
+
+
+---
+
+## "The sampling distribution of $\bar{x}$ is normal"
+
+.left-code[
+This means "the sample mean is a *normal draw* from the true mean".
+
+**How accurate is the mean?**
+
+What's the dispersion in the raw data? Calculate the *standard deviation* of data $x$:
+\begin{align}
+  s(x) = \sqrt{\dfrac{\sum\limits_{i}^{n}(x_{i} - \bar{x})^{2}}{n - 1}}
+\end{align}
+
+**Standard deviation** is the "average distance between a data point and $\bar{x}$"
+]
+
+.right-plot[
+Data $x$ where $\bar{x} = 10$
+
+```{r deviates, echo = FALSE}
+xdata <- tibble(x = sample(1:20, size = 100, replace = TRUE)) %>%
+  mutate(`x - xbar` = x - 10,
+         `(x - xbar)^2` = (x - 10)^2) %>%
+  print()
+```
+
+]
+
+???
+
+- normal draw, meaning, it's a single number, but it's more likely to appear in the center of the distribution and less likely to appear in the tail
+- We don't know where the true mean is, but we know enough about the properties of the Normal distribution that we can build an informed guess
+  - we know that most 
+
+
+
+
+---
+
+## "The sampling distribution of $\bar{x}$ is normal"
+
+.left-code[
+
+**Standard error** is "average error between $\bar{x}$ and the true mean $\mu$"
+
+Standard error of $\bar{x}$:
+\begin{align}
+  se(\bar{x}) &= \frac{s(x)}{\sqrt{n}}
+\end{align}
+
+Rules for averages:
+
+- ~ 68% of estimates are within $\pm$ 1 std. error from "true" value
+- ~ 95% of estimates are within $\pm$ 2 std. errors 
+- more than 99% of estimates are within $\pm$ 3 std. errors 
+
+]
+
+
+
+.right-plot[
+```{r std-normal, echo = FALSE, out.width = "100%", fig.width = 6, fig.height = 4, fig.show = 'asis'}
+tibble(x = seq(-4, 4, .001),
+       d = dnorm(x, 0, 1)) %>%
+  ggplot(aes(x = x, y = d)) +
+    geom_line() +
+    scale_x_continuous(breaks = -4:4) +
+    labs(y = "Probability of a draw",
+         x = "Standard Errors from from the true mean")
+```
+]
+
+
+
+
+
+---
+
+class: inverse, center, middle
+
+# Statistics is about dealing with *uncertainty* in real data
+
+### Here is how most people do statistics
+
+Every sample is an *imperfect* representation of the underlying population
+
+Calculate a sample estimate (such as a mean) and its standard error
+
+Most of the time, your estimate is within $\pm$ 2 standard errors from the  "true value"
+
+
+
+
+
+
+???
+
+Lots of statistics depend on assumptions about the "distribution" of our data
+
+- a lot of these assumptions are like, assuming that our estimate of the mean is normally distributed
+- or assuming that our data are normally distributed
+
+It often feels like this is a tenuous assumption, that could easily be broken
+
+- it is actually hard to break, because it isn't fragile
+- The normal distribution is just what happens when you add lots of fluctuations together
+- and lots of things are influenced by lots of small fluctuations
+
+<!-- 
+Lessons
+
+- data have randomness, you don't know how accurate you've been
+- clumping happens
+- randomness looks uneven when you zoom in
+- randomness looks even when you zoom (way) out
+- simulate normal (CLT)
+- simulate means, they're normal
+- Where to introduce concepts:
+  - std deviation: how much noise in my data
+  - std error: how (in)accurate is my estimate (in expectation)?
+ -->
