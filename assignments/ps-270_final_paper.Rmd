@@ -1,0 +1,73 @@
+---
+# global document parameters
+title: "Term Paper, Part IV: The Paper Itself"
+author: "PS 270: Understanding Political Numbers"
+date: "Due Monday, May 6, 11:59 p.m."
+# abstract: 
+# bibliography: /Users/michaeldecrescenzo/Dropbox/bib.bib
+# biblio-style: authoryear
+
+# specification of output
+# we use bookdown::pdf_document2 to cross-reference tables and figs
+output: 
+  bookdown::pdf_document2: 
+    toc: false # true default?
+    keep_tex: true
+    includes: 
+      in_header: rmd-preamble.tex
+    number_sections: false
+    highlight: kate
+    fig_caption: true
+    citation_package: natbib
+
+# can control some latex-type things with the YAML front matter
+# it may be less cluttered if you control some of these options 
+#   in a preamble or template file instead
+fontsize: 12pt
+geometry: margin = 1.15in
+indent: false
+linkcolor: red
+urlcolor: blue 
+citecolor: black
+subparagraph: yes
+---
+
+
+Your final assignment for the semester is your research paper. Conduct and discuss an original data analysis using your research question and data from throughout the semester. Use  multiple regression analysis and at least two graphics that help tell your story. Your paper should be about 10–12 pages of double-spaced writing,^[
+  We will grade based on content, not length, but it will be difficult to cover everything in fewer than 10 pages. Padding papers for length tends to lower the quality of the writing. 
+]
+not counting any tables, figures, or references.^[
+  While we do not require a literature review, you should cite any sources of external information that you find useful. If you are concerned about the appropriate citation style, feel free to consult the academic journal articles on the syllabus.
+]
+
+ 
+
+# Outline of the Paper
+
+- **An Abstract:** A one-paragraph summary of the entire project, previewing the research question, hypotheses, data, and results. 
+- **Introduction:** Introduce your research topic. Why is this important to study? What political problems are there surrounding your topic? This should lead into a succinct statement of your *research question*.
+- **Theory and Hypotheses:** What is it about the social world that you think is going on in your research topic? What would explain any relationship that you observe between $X$ and $Y$? Derive a hypothesis from this theoretical discussion. *If* these theoretical ideas are true, *then* you should observe a relationship that looks what way? Be specific about the direction of the relationship.
+- **Data and Methods:** What data do you use to test this hypothesis? Where did you find your data? What variables do you use? How is each variable measured? Justify any measurement choices you made. Review the control variables in your analysis; why are they important to include? Do some initial probing of your data: report summary statistics for your variables, report the number of observations in your data, perhaps include interesting descriptive graphics of your data (histogram, scatterplot...). State the structure of your regression model.^[
+  $\text{\texttt{R} skills} = \alpha + \beta_{1}\mathrm{Practice} + \beta_2\mathrm{Interest} + \beta_{3}\text{Prior Programming Experience} + \varepsilon$  
+]
+Do you need to convert any variables into dummy variables or transform any variables before estimating a linear relationship?^[
+  If you have a variable that looks like it should be logarithmically transformed, you should do that! This could apply either to an $X$ variable or to a $Y$ variable. Not every project needs a transformed variable.
+]
+- **Results:** Report the results of your regression analysis. Export a table of the coefficients from R and put this table into your paper. Interpret the results: which relationships are positive and negative, how strong are these relationships, are they statistically significant? Pay special attention to your primary independent variable, but do not ignore the control variables. If appropriate, create a graphic that shows the model's predictions about how one of your $X$ variables influences $Y$. Is your hypothesis supported by the analysis? Contradicted? Neither?
+- **Conclusion:** Briefly summarize the results. Discuss the limitations of the study (with the sample, inferences about causality, missing data, etc.). Does your project have implications for policymakers or other researchers? Draw a "big picture" conclusion. 
+
+# Additional advice
+
+Divide your paper into sections with appropriate section titles. Write with clear, declarative sentences. Flashy sentence structure and unnecessary vocabulary are more often distracting than helpful. Paragraph structures with topic sentences, supporting sentences, and concluding sentences feel out-of-date but are actually extremely good practice for technical writing. [Click here to learn about reverse outlining.](https://twp.duke.edu/sites/twp.duke.edu/files/file-attachments/reverse-outline.original.pdf). Consult the syllabus for more resources for academic writing.
+
+Number all figures and tables so you can refer to them in the text (e.g.\ Figure&nbsp;2 shows that...). Make your graphics look nice; make sure things are labeled well, and export images using appropriate `height` and `width` arguments when using `ggsave()`.^[
+  If you don't like the gray plot background, [click here](https://ggplot2.tidyverse.org/reference/ggtheme.html) or check out the `ggthemes` package.
+]
+
+Always assume that your reader is *smart* but not familiar with your topic. Don't take my/Michael's knowledge of the assignment guidelines for granted when writing your paper. Describe your work *transparently* and *thoroughly*.
+
+You should upload your paper as a PDF, your R script, and the dataset used to estimate the model.^[
+  If you have missing data, they won't be included in the model. Save the output from `augment()` as a `.csv` file to see how many observations actually get used in the model.
+]
+
+

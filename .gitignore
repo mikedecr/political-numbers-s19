@@ -3,3 +3,26 @@
 .Rproj.user
 .Rhistory
 .RData
+
+# hide textbooks
+text/
+
+# Chris's lectures
+krewson/
+
+# rmd lecture cache
+lectures/cache/
+
+syllabus/syllabus-ps-270-spring-2019\.tex
+
+roster/
+
+readings/
+
+# lectures/public/
+
+lectures/public/lecture-3-raw\.mov
+
+lectures/public/Theorizing and Hypothesizing\.mp4
+
+assignments/figs/

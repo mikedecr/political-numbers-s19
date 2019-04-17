@@ -1,0 +1,45 @@
+---
+# global document parameters
+title: "Term Paper, Part I: Research Question"
+author: "PS 270: Understanding Political Numbers"
+date: "Due Monday, March 11, 2019"
+# abstract: 
+# bibliography: /Users/michaeldecrescenzo/Dropbox/bib.bib
+# biblio-style: authoryear
+
+# specification of output
+# we use bookdown::pdf_document2 to cross-reference tables and figs
+output: 
+  bookdown::pdf_document2: 
+    toc: false # true default?
+    keep_tex: true
+    includes: 
+      in_header: rmd-preamble.tex
+    number_sections: false
+    highlight: kate
+    fig_caption: true
+    citation_package: natbib
+
+# can control some latex-type things with the YAML front matter
+# it may be less cluttered if you control some of these options 
+#   in a preamble or template file instead
+fontsize: 12pt
+geometry: margin = 1.25in
+indent: false
+linkcolor: red
+urlcolor: blue 
+citecolor: black
+subparagraph: yes
+---
+
+In this assignment, you will begin preparations for your term paper. You will lay out your paper topic and where you intend to collect data. Write about two pages, double-spaced, and upload to Canvas as a PDF by 11 a.m. on March 11. Your proposal should include the following.
+
+- A brief (one paragraph) introduction to the paper topic. What is the broad issue that you are interested in? Why is it an issue in the social world that people should care about? This will eventually serve as introductory "hook" material for your final paper. 
+- A clear statement of your research question. Does $X$ influence $Y$?
+- A short theoretical discussion of why $X$ might influence $Y$. This will be similar to Essay&nbsp;1. This discussion should end with a *directional* hypothesis---should the relationship be *positive* or *negative*? This is more than just a guess; it should be motivated by the theoretical discussion.
+- What other variables, aside from the $X$ of interest, might also affect $Y$? Would these "confound" the relationship between $X$ and $Y$? Consider at least two additional explanatory variables.
+- How do you propose to measure the concepts in your research question? You must state the proposed **unit of analysis**: what are you collecting data on (individual people, U.S. states, country-years...)? You should aim to have data on at least 50 units, but ideally much more. Then propose how each variable in your above discussion could be **measured**. There should be at least 4 variables in total. Finally, **propose data sources** for obtaining these measures. You do not have to be exactly precise about the details here, but the more specific you can be up front, the easier it will be to implement your data collection task.
+
+All students must meet with either Michael or me to discuss their project ideas and seek feedback. See my email about the meeting sign-up sheet.
+
+Some additional scope conditions: You are not just *comparing* things, nor are you merely making an argument about a political issue. You are studying the relationships between social variables and trying to explain why those relationships exist. You are analyzing data about the world the way it *is*, not asking what the world *should* be. Regretfully I must discourage you from looking at trends over long periods of time. The statistical techniques required to do that are just too complicated to cover in this course.

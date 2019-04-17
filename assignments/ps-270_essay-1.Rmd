@@ -1,0 +1,58 @@
+---
+# global document parameters
+title: "Short Essay 1: Brainstorming a Study"
+author: "PS 270: Understanding Political Numbers"
+date: "Due Wednesday, February 13, 2019"
+# abstract: 
+# bibliography: /Users/michaeldecrescenzo/Dropbox/bib.bib
+# biblio-style: authoryear
+
+# specification of output
+# we use bookdown::pdf_document2 to cross-reference tables and figs
+output: 
+  bookdown::pdf_document2: 
+    toc: false # true default?
+    keep_tex: true
+    includes: 
+      in_header: rmd-preamble.tex
+    number_sections: false
+    highlight: kate
+    fig_caption: true
+    citation_package: natbib
+
+# can control some latex-type things with the YAML front matter
+# it may be less cluttered if you control some of these options 
+#   in a preamble or template file instead
+fontsize: 12pt
+geometry: margin = 1.25in
+indent: false
+linkcolor: red
+urlcolor: blue 
+citecolor: black
+subparagraph: yes
+---
+
+In this assignment, we will practice approaching a data-driven question from its theoretical foundations. Consider these three questions. 
+
+1. **US politics:** Different groups of people tend (on average) to have somewhat different beliefs about political issues. How might an individuals' *socioeconomic status* influence whether they have generally more conservative or liberal views on *social issues* (LGBTQ rights, abortion, discrimination on the basis of race or gender, school prayer).
+    - Independent variable ($X$): socioeconomic status (high or low)
+    - Dependent variable ($Y$): social issue beliefs (high conservatism or low conservatism [a.k.a. liberal])
+
+2. **Politics around the world:** Many countries are democracies, and many are autocracies. How might the economic conditions within a country (the level of wealth in the general public) affect whether a country transitions from autocracy to democracy?
+    - Independent variable ($X$): citizen wealth (higher or lower)
+    - Dependent variable ($Y$): likelihood of transition to democracy (likely or unlikely)
+
+3. **International relations:** War between countries (a.k.a. "states") is one of the most consequential political phenomena in the world. How does the physical distance between states influence the likelihood that they go to war? 
+    - Independent variable ($X$): Distance between states (near or far)
+    - Dependent variable ($Y$): likelihood of war (likely or unlikely)
+
+#### Your task: 
+In *one page* of single-spaced text, pick **only one** of the above topics and use it to answer the following questions. Upload papers to Canvas in `.pdf` format.
+
+1. Theory: lay out a brief theoretical reason why $X$ and $Y$ might be related. Take only a couple sentences to convey the main idea.
+2. Hypothesis: If your theoretical mechanism were true, what would the relationship between $X$ and $Y$ be? Would it be a *positive* relationship (as $X$ increases, $Y$ also increases) or a *negative* relationship (as $X$ increases, $Y$ decreases)?
+3. Measurement: Propose a way to measure both $X$ and $Y$. How might you classify (for example...) individuals as high/low socioeconomic status, counties as democracies/autocracies, countries as warring/not warring, and so on? Try to be as specific as you can be within the page constraint.
+<!-- specific, sources of data -->
+
+<!-- conservatism polarity -->
+<!-- classification of events -->

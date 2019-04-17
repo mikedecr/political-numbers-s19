@@ -1,0 +1,130 @@
+---
+# global document parameters
+title: "Exercise 1: Presidential Polls in 2012"
+author: "PS 270: Understanding Political Numbers"
+date: "Due Wednesday, February 27"
+# abstract: 
+# bibliography: /Users/michaeldecrescenzo/Dropbox/bib.bib
+# biblio-style: authoryear
+
+# specification of output
+# we use bookdown::pdf_document2 to cross-reference tables and figs
+output: 
+  bookdown::pdf_document2: 
+    toc: false # true default?
+    keep_tex: true
+    includes: 
+      in_header: rmd-preamble.tex
+    number_sections: false
+    highlight: tango
+    fig_caption: true
+    citation_package: natbib
+
+# can control some latex-type things with the YAML front matter
+# it may be less cluttered if you control some of these options 
+#   in a preamble or template file instead
+fontsize: 12pt
+geometry: margin = 1.25in
+indent: false
+linkcolor: red 
+urlcolor: blue 
+citecolor: black
+subparagraph: yes
+---
+
+```{r, echo = FALSE}
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(include = TRUE, eval = FALSE, echo = TRUE,
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3
+                      # , dpi = 100
+                      )
+```
+
+<!-- # Introduction -->
+
+In this assignment, we will investigate polling data from three swing states in the 2012 presidential election: Florida, Ohio, and Virginia. Each case is a poll showing the support for Barack Obama (D) and Mitt Romney (R).
+
+This exercise will test some important R skills for interacting with data. We will import data into R, examine and modify the data, and conduct simple analysis with a graphic.
+
+**Before beginning the assignment**, do the following steps to prepare your computer.
+
+1. On your computer, you should have a folder titled `PS-270` (or something similar) that contains all of your work for this class. *Inside* of your class folder, create two more folders (if you haven't already): one called `data` and another called `figures`.
+
+2. Download and save the polling data from Canvas into your new `data` folder.
+
+3. Open RStudio by double-clicking your `.Rproj` file inside your `PS-270` folder.
+
+4. Run the following commands in the console to make sure that everything is set up to begin the assignment.
+    a. If you enter the `getwd()` function, R should print a file pathway that ends with the name of your `PS-270` folder.
+    b. The `list.files()` function prints the names of files and folders in your `PS-270` folder. You should see your `"data"` and `"figures"` folders among the output.
+    c. Typing `list.files("data")` prints the names of files and folders inside the `data` folder. You should find the `.csv` data that you downloaded from Canvas.
+
+
+# Your Tasks
+
+Write and save an R script that implements the following tasks in order.
+
+```{r, echo = FALSE}
+library("tidyverse")
+library("here")
+```
+
+1. Load the `tidyverse` and `here` packages.^[
+  Install any missing packages by typing `install.packages("package_name")` into the console. Don't save any package installation commands in your R script file.
+]
+
+2. Import the polling data file into R. Do this with the `read_csv()` function as follows.
+    ```{r}
+polls <- read_csv(here("data", "FileNameGoesHere.csv")) 
+    ```
+    This code says "import a CSV (spreadsheet) file, which is located in the `data` folder, named `FileNameGoesHere.csv`." You will need to fix the file name so that R grabs the file you downloaded from Canvas.
+
+3. Print the data object to the console to see what's inside.^[
+  Tip: You can type `View(dataset_name)` into the console to see a spreadsheet view of the data.
+]
+Print the variable names.
+
+4. How many polls were taken in each state? Find out by using the `count()` function to tabulate the state variable.
+
+5. Obama's "margin" measures how much more support he had in the poll compared to Romney. It will be a negative number if Romney did better in a given poll. Create a histogram of Obama's vote margin. Plot states as separate panels (using one of the `facet_` functions). Use your judgment and taste to make your graphic look professional: polish up any sloppy axis titles, add a title, and so on. Save the graphic into your `figures` folder.
+    ```{r}
+ggsave(here("figures", "ex-1_histogram.pdf"))
+    ```
+
+6. We often measure U.S. voting using a political party's *share of the two-party vote*: the vote percentage for a party when we set aside Independent and third-party voters. We would calculate the *Democratic share of the two-party vote* using the following equation.
+\begin{align*}
+  \text{Dem.\ share of two-party vote} &= \frac{\text{Dem.\ vote}}{\left(\text{Dem.\ vote} + \text{Rep.\ vote}\right)}
+\end{align*}
+Create this variable using `mutate()` and call it `dem_2party`.^[
+  Tip: don't overwrite the original data object until you are confident that the code is working without any issues!
+]
+
+7. Calculate the mean of Obama's two-party vote share *in each state*. You can do this in one of two ways.
+    - Use `filter()` to split the data into three separate objects, one for each state. Then use `summarize()` to calculate the mean of the two-party vote in each state.
+    - Group the combined data (`polls`) by state, and find the mean in each group. If you `group_by()` the state, calculating the mean with `summarize()` would give you the mean in each group.
+
+When you are finished, upload both your R script and your saved graphic to Canvas as your submission for the "Exercise 1" assignment.
+
+
+<!-- 
+
+We want to get them comfortable using basic commands in R.
+
+- Running commands
+- Saving scripts
+- Simple data frame verbs from the tidyverse
+- accessing a variable within a data frame
+
+
+Outline:
+
+- Print a stock-loaded dataset (like `gapminder`)
+- `select()` a subset of variables 
+- `filter()` a set of rows
+- `arrange()` according to some variable
+- Print a `df$variable` and maybe do some simple operation with it or something -->

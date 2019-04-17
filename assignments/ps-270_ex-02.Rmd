@@ -1,0 +1,153 @@
+---
+# global document parameters
+title: "Exercise 2: Collecting and Organizing Data"
+author: "PS 270: Understanding Political Numbers"
+date: "Due Wednesday, March 13"
+# abstract: 
+# bibliography: /Users/michaeldecrescenzo/Dropbox/bib.bib
+# biblio-style: authoryear
+
+# specification of output
+# we use bookdown::pdf_document2 to cross-reference tables and figs
+output: 
+  bookdown::pdf_document2: 
+    toc: false # true default?
+    keep_tex: true
+    includes: 
+      in_header: rmd-preamble.tex
+    number_sections: false
+    highlight: kate
+    fig_caption: true
+    citation_package: natbib
+
+# can control some latex-type things with the YAML front matter
+# it may be less cluttered if you control some of these options 
+#   in a preamble or template file instead
+fontsize: 12pt
+geometry: margin = 1in
+indent: true
+linkcolor: red 
+urlcolor: blue 
+citecolor: black
+subparagraph: yes
+---
+ 
+In this exercise, we will practice collecting and organizing real data from an online source, organize it in a spreadsheet, and then read it into R for analysis. These are important skills to practice for working with real data, and they will be useful for your final project.
+
+#### Backstory:
+All elections are implemented by humans and human-designed systems. The vote tallies you hear about on election night are rarely the numbers that become certified as official election results. While this is entirely ordinary, sometimes these processes attract attention and controversy. Alabama's 2002 gubernatorial election is one example. The incumbent governor, Donald Siegelman (D), was initially declared the winner on election night by the AP, using uncertified vote totals. Around 10:30 p.m., computer results from Baldwin County showed Siegelman winning roughly 19,000 votes in the county, but later print-outs from ballot counting machines in Baldwin County listed Siegelman with only 13,000 votes. This turn of events, which was attributed to a computer "glitch," flipped the election in favor of challenger Bob Riley (R). This led to a series of legal challenges and allegations of partisan interference in the election. Riley eventually became the governor and was later reelected.
+
+
+```{r setup, echo = FALSE, warning = FALSE, message = FALSE}
+library("tidyverse")
+library("here")
+library("patchwork")
+
+# set default theme
+theme_set(
+  theme_minimal(base_family = "Minion Pro",
+                base_size = 16) + 
+  theme(plot.background = element_blank(),
+        axis.ticks.length = unit(0.25, "lines"))
+) 
+update_geom_defaults("text", list(family = "Minion Pro"))
+
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(
+  eval = TRUE, echo = FALSE, include = FALSE,
+  warning = FALSE, message = FALSE, 
+  cache = TRUE, 
+  fig.path = "figs/", 
+  dev = "cairo_pdf", fig.align = "center", # eval.after = 'fig.cap', 
+  fig.retina = 3 # , dpi = 100 
+)
+```
+
+```{r data}
+al <- read_csv(here("data", "AL-gov-2002.csv")) %>%
+  mutate_at(vars(contains("pct")), funs(. / 100)) %>%
+  rename_at(vars(contains("pct")), funs(str_replace(., "pct", "prop"))) %>%
+  print()
+```
+
+```{r AL-plots, fig.width = 9, fig.height = 4.5, out.width = "100%", include = TRUE, fig.cap = "Election Data from Alabama. Left: comparison of 2002 and 1998. Right: comparison of 2002 results before and after changes in Baldwin County."}
+# Compared to previous election
+crossyear <- ggplot(al, aes(x = govdemprop1998, y = govdemprop2002)) +
+  geom_abline(color = "gray") +
+  scale_x_continuous(breaks = seq(0.3, 0.9, 0.2),
+                     label = scales::percent_format(accuracy = 1)) +
+  scale_y_continuous(breaks = seq(0.3, 0.9, 0.2),
+                     label = scales::percent_format(accuracy = 1)) +
+  coord_cartesian(xlim = c(0.2, 0.9), ylim = c(0.2, 0.9)) +
+  geom_smooth(data = filter(al, county != "Baldwin"), method = "lm",
+              color = "black", fill = "steelblue", size = 0.5) +
+  geom_point(data = filter(al, county != "Baldwin"), 
+             color = "gray") +
+  labs(title = "AL Gubernatorial Election",
+       subtitle = "2002 vs. 1998, Baldwin County highlighted",
+       x = "Democratic Vote, 1998",
+       y = "Democratic Vote, 2002") +
+  geom_linerange(aes(ymin = govdemprop2002, ymax = govdemprop2002b),
+                 linetype = "dashed") +
+  geom_point(data = filter(al, county == "Baldwin"), aes(y = govdemprop2002b),
+             size = 2.5) +
+  geom_text(data = filter(al, county == "Baldwin"), 
+            aes(y = govdemprop2002b, label = "10:30pm"),
+            nudge_x = -0.07) +
+  geom_point(data = filter(al, county == "Baldwin"), aes(y = govdemprop2002),
+             size = 2.5) +
+  geom_text(data = filter(al, county == "Baldwin"), 
+            aes(y = govdemprop2002, label = "Revised"),
+            nudge_x = 0.07)
+
+
+nightof <- ggplot(al, aes(x = govdemprop2002b, y = govdemprop2002)) +
+  geom_abline(color = "gray", linetype = "dashed") +
+  geom_point() +
+  geom_text(data = filter(al, county == "Baldwin"),
+            aes(label = "Baldwin County"), 
+            nudge_x = 0.13) +
+  scale_x_continuous(breaks = seq(0.3, 0.9, 0.2),
+                     labels = scales::percent_format(accuracy = 1),
+                     limits = c(0.2, 0.9)) +
+  scale_y_continuous(breaks = seq(0.3, 0.9, 0.2),
+                     labels = scales::percent_format(accuracy = 1),
+                     limits = c(0.2, 0.9)) +
+  labs(title = "2002 Results",
+       subtitle = "Before & After Correction",
+       x = "Democratic Vote: Initial Tally", 
+       y = "Democratic Vote: Updated") 
+
+
+crossyear + nightof
+```
+
+Figure&nbsp;\@ref(fig:AL-plots) shows the magnitude of the change in Baldwin County. The left panel compares 2002 to 1998; overall the Democratic candidate did worse in 2002 compared to 1998, but the change in Baldwin County was among the larger shifts within a single county. The right panel compares just the 2002 results before and after the Baldwin County revision. The change in Baldwin County led to a 9 percentage point drop in Siegelman's vote share.
+
+#### Your Task:
+A similar event occurred in Wisconsin's Supreme Court election in 2011.^[
+  Read more: <http://archive.jsonline.com/news/statepolitics/119410124.html/>
+]
+Election night results indicated that the race was too close to call, with liberal challenger JoAnne Kloppenburg holding a slight lead. Two days later, an updated vote count from Waukesha County gave conservative incumbent Justice David Prosser a slight lead. Was something amiss? Did the change in Waukesha County have a big impact on the final tally in the election? Your job is to collect data on the 2011 Supreme Court election, comparing election night to the officially certified results by recreating the *right-side* panel of Figure&nbsp;\@ref(fig:AL-plots). 
+
+1. The Milwaukee Journal-Sentinel published a table^[
+  <http://archive.jsonline.com/news/statepolitics/119497684.html/>
+]
+ comparing vote tallies from election night ("AP, April 6") to the certified election results (marked "Updated"). Copy the table and paste it into a spreadsheet program like Excel or something similar.
+2. The table will appear disorganized in Excel, but salvageable. Clean the data so it looks like the data tables we've been using so far: one row for each observation (county), and one column per variable. Make sure that variable names are in the top row of the table, and ONLY the top row. There are also obnoxious rows midway through the table that remind you of the variable names; delete these rows as well as the bottom row ("Totals"). Rows can be deleted by right-clicking and selecting "Delete."
+3. Your objective should be a table with 5 columns: county (1), election night vote counts for Prosser and Kloppenburg (2, 3), and certified results for Prosser and Kloppenburg (4, 5). You can delete the gain/loss columns. When your data look right, save the table into your `data` folder in `.csv` format.^[
+  You can use the Exercise 1 data file as a model for what the data should look like.
+]
+4. Open R, and load the `tidyverse` and `here` packages.
+5. Read the WI data into R using the `read_csv()` function like we did in Exercise 1.^[
+  If the data contain weird columns like `X7` in R, you can delete them using `select(-starts_with("X"))`.
+]
+ Examine the data type for each column. You want the vote tallies to be either `<int>` or `<dbl>` format. If they are `<chr>`, overwrite each variable using the `parse_number()` function (within `mutate()`).
+6. Calculate Republican vote percentages from the raw vote variables, with separate vote percentages for election night and for the final vote. Use the same formula as in Exercise 1. 
+7. Create a scatter plot that compares election night to the final vote. Do something to identify Waukesha County, using aesthetics or labeling. Make it look good, and save it.
+8. At the bottom of your R script, write a comment with your conclusion about how big the change in Waukesha County appears.
+9. Upload your graphic and your R script to Canvas.
+

@@ -1,0 +1,225 @@
+---
+# global document parameters
+title: '"Essay" 2: World Health Data'
+author: "PS 270: Understanding Political Numbers"
+date: "Due Wednesday, April 10, 2019"
+# abstract: 
+# bibliography: /Users/michaeldecrescenzo/Dropbox/bib.bib
+# biblio-style: authoryear
+
+# specification of output
+# we use bookdown::pdf_document2 to cross-reference tables and figs
+output: 
+  bookdown::pdf_document2: 
+    toc: false # true default?
+    keep_tex: true
+    includes: 
+      in_header: rmd-preamble.tex
+
+    number_sections: true
+    highlight: kate
+    fig_caption: true
+    citation_package: natbib
+
+# can control some latex-type things with the YAML front matter
+# it may be less cluttered if you control some of these options 
+#   in a preamble or template file instead
+fontsize: 12pt
+geometry: margin = 1.25in
+indent: false
+linkcolor: red
+urlcolor: blue 
+citecolor: black
+subparagraph: yes
+---
+
+
+This assignment will give you an opportunity to practice analyzing data and, crucially, writing up the results. Analysis tasks will include (1) a linear regression, (2) a non-linear regression, and (3) a multiple regression. It uses data from the World Health Organization (WHO). A `csv` data file and a `pdf` codebook are both available on Canvas.
+
+Your final product will include an `R` script and a written report of your results (uploaded in `pdf` format). The script and the report are complements to each other; the `R` file will contain content that doesn't make it into the report, and the report contains writing that shouldn't be in the `R` script. The instructions below ask for specifics of what to include in the ***writing***, but your script will naturally contain more work than just what makes it into the final report (including data transformation, model checking, and so on). You could also be thinking about things that could be important to include but that I don't explicitly ask for. Writing about data analysis requires you to make judgment calls. Do not over-include every little detail, and do not write me a narrative play-by-play of your thought process.\footnote{
+ Tell me what you did, but don't overshare everything that you are thinking. First-person writing is allowed as long as it is not abused. A good example: "Figure 1 suggests that the variables are logarithmically related, so I estimated the regression where $y$ is a function of $\log(x)$." A bad example: "When I made the plot, I thought, \emph{hmm, that doesn't look like a straight line}, and so I thought I would try transforming the $x$ variable using\ldots"
+}
+
+
+Divide your report into three sections corresponding to the section headings below. The report will probably be about 3 pages, double-spaced (not counting graphics and tables).^[
+  You can create regression summary tables using `stargazer(model_name, type = "text")` and paste the results into your word processing program.
+]
+Don't worry about weaving seamless transitions between sections, but your writing within each section should be clear and easy to understand. Your writing is "showing your work" about the data analysis process. It should be clear what you are asking of the data, what you are doing (graphically, statistically) to answer that question, and what criteria you use to form your conclusions about the data.
+<!-- Not everything you create in R will appear in the essay -->
+
+#### Getting started
+Once you have downloaded the data and codebook, open a fresh session of `R`. Load the `tidyverse`, `here`, `broom`, and `stargazer` packages. 
+  <!-- stargazer? -->
+After you import the data into R, rename the variables in the codebook so they are easier to work with. Trim extraneous variables out of the dataset; keep only your renamed variables, plus `country` and `regionname`.
+
+
+
+
+
+<!-- Logan's project: healthcare spending/costs ~ GDP per capita
+
+- also health system -->
+
+```{r setup, echo = FALSE, warning = FALSE, message = FALSE}
+library("tidyverse")
+library("here")
+library("broom")
+
+# set default theme
+theme_set(
+  theme_minimal(base_family = "Minion Pro",
+                base_size = 16) + 
+  theme(plot.background = element_blank(),
+        axis.ticks.length = unit(0.25, "lines"))
+) 
+update_geom_defaults("text", list(family = "Minion Pro"))
+
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(
+  eval = TRUE, echo = FALSE, include = FALSE,
+  warning = FALSE, message = FALSE, 
+  cache = TRUE, 
+  fig.path = "figs/", 
+  dev = "cairo_pdf", fig.align = "center", # eval.after = 'fig.cap', 
+  fig.retina = 3 # , dpi = 100 
+)
+```
+
+
+
+
+
+
+
+```{r}
+who <- read_csv(here("data", "who2009.csv")) %>%
+  select(country, regionname, 
+         life_exp = v9,
+         inf_mort = v22,
+         hc_work = v159,
+         hosp_beds = v168,
+         hc_gdp = v174,
+         pocket_private = v186,
+         hc_pc = v192,
+         fertility = v249,
+         gni_pc = v259) %>%
+  print()
+```
+
+
+
+# Linear relationships
+
+We sometimes hear about periods in history or places around the world where life expectancy is something like 40 years of age. These figures don't come from people not living past 40; they are usually dragged down by high infant mortality (but also wars).^[
+  For example, John Adams died at 90.
+]
+
+Evaluate the relationship between life expectancy ($y$) and infant mortality ($x$). Create a scatterplot, estimate a linear regression, and interpret both in the writing. Report the estimated equation, and interpret what the intercept and slope tell you about $\hat{y}$. Is infant mortality's relationship to life expectancy statistically significant? How do you know?
+
+```{r}
+ggplot(who, aes(x = inf_mort, y = life_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+
+```{r}
+lm(life_exp ~ inf_mort, data = who) %>%
+  tidy()
+```
+
+
+# Nonlinear relationship
+
+Plot the relationship between life expectancy ($y$) and GNI per capita ($x$). The relationship should appear logarithmic. Why does it make sense that the relationship is logarithmic? 
+
+Estimate a regression *using the appropriate transformation of GNI per capita*, interpret the estimated regression equation. Create a plot that contains both the raw data and the model's predicted values (from the `augment()` function). As long as $x$ is on the log scale, it's hard to interpret, so don't plot $x$ on the log scale. This means you probably need to create a new variable after `augment()` that transforms logged GNI back to its original scale for plotting.
+
+```{r}
+ggplot(who, aes(x = gni_pc, y = life_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ log(x))
+```
+
+
+```{r}
+who <- who %>%
+  mutate(log_gni_pc = log(gni_pc))
+```
+
+```{r}
+ggplot(who, aes(x = log_gni_pc, y = life_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+log_mod <- lm(life_exp ~ log_gni_pc, data = who)
+
+
+log_mod %>% summary()
+```
+
+
+```{r}
+log_preds <- augment(log_mod) %>%
+  mutate(gni_pc = exp(log_gni_pc)) %>%
+  print()
+
+ggplot(log_preds, aes(x = gni_pc, y = .fitted)) +
+  geom_point(aes(y = life_exp)) +
+  geom_line(color = "red")
+```
+
+
+# Multiple regression
+
+Plot life expectancy ($y$) against health expenditures as a percentage of GDP ($x$). You would think this relationship would be positive and fairly strong. What might be happening instead? 
+
+Estimate a model where life expectancy is a function of health expenditures as a percentage of GDP, adding GNI per capita (using the appropriate transformation) and infant mortality as control variables. Interpret each coefficient and whether these partial relationships are statistically significant. For your final plot, show the model's predicted values of life expectancy as a function of the health care percentage of GDP, holding all other variables at their means.^[
+  If you want to challenge yourself: plot the confidence interval for $\hat{y}$ as well by creating a MOE using the `augment()` output. Lecture and section code both contain examples of this.
+]
+
+
+```{r}
+ggplot(who, aes(x = hc_gdp, y = life_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm(life_exp ~ hc_gdp, data = who) %>% summary()
+
+```
+
+
+```{r}
+multireg <- lm(life_exp ~ log_gni_pc + hc_gdp + inf_mort, data = who)
+
+tidy(multireg)
+glance(multireg)
+augment(multireg)
+
+stargazer::stargazer(multireg, type = "text")
+```
+
+
+
+```{r}
+
+who %>%
+  mutate(log_gni_pc = mean(log_gni_pc, na.rm = TRUE),
+         inf_mort = mean(inf_mort), na.rm = TRUE) %>%
+  augment(x = multireg, newdata = .) %>%
+  mutate(MOE = .se.fit * 1.96,
+         conf.low = .fitted - MOE,
+         conf.high = .fitted + MOE) %>%
+  ggplot(aes(x = hc_gdp,  y = .fitted)) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high),
+                alpha = 0.3) +
+    geom_line() +
+    geom_point(aes(y = life_exp))
+
+
+```
