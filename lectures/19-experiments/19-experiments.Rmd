@@ -1,0 +1,570 @@
+---
+title: "Experiments"
+subtitle: "Causality and Ethics"
+author: "Understanding Political Numbers"
+date: "April 3, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "19-experiments", "19-experiments.Rmd"))
+# knitr::purl(here::here("lectures", "19-experiments", "19-experiments.Rmd"), output = here::here("R", "lecture_experiments.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "19_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/19-experiments/img"
+```
+
+
+
+# In-class presentations
+
+
+---
+
+class: middle, center
+
+
+Sign-up sheet is **INCOMING** (pick week 1 or week 2)
+
+--
+
+Five-minute slideshow presentation on your project
+
+--
+
+
+What's the question, theory/hypotheses, data, variables
+
+--
+
+Any results? (if you're ready)
+
+--
+
+Email slides to Michael before section
+
+--
+
+Vote to advance best presentation to the "finals"
+
+--
+
+Don't get EC if you don't show up
+
+
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Using data to learn about "cause and effect"
+
+---
+
+class: center, middle
+
+\begin{align}
+  y = \alpha + \beta_{1}x + \beta_{2}z + \epsilon
+\end{align}
+
+**Under what conditions can we learn the effect of x ( $\beta_{1}$ ) if we *don't* control for $z$?**
+
+--
+
+.pull-left[
+If $x$ and $z$ are *independent*...
+
+.left[
+```{r}
+# not shown
+random_noise <- function(n = 500) {
+  rnorm(n)
+}
+```
+
+
+```{r, echo = TRUE}
+# fake data
+obs_data <- tibble(
+  z = random_noise(),
+  x = random_noise(),
+  y = (2*x) + (-4*z) + random_noise()
+)
+
+# estimate regression
+lm(y ~ x, data = obs_data)
+```
+]
+]
+
+--
+
+.pull-right[
+If $x$ and $z$ are **not** independent...
+
+.left[
+```{r, echo = TRUE}
+# x is now f(z)
+obs_data <- tibble(
+  z = random_noise(),
+  x = (-1*z) + random_noise(),
+  y = (2*x) + (-4*z) + random_noise()
+)
+
+# x effect will be biased
+lm(y ~ x, data = obs_data)
+```
+]
+]
+
+
+
+
+---
+
+class: center
+
+## Selection bias and confounding
+
+
+```{r usep-data, include = FALSE}
+usep <- read_csv(here("data", "us-turnout.csv")) %>%
+  print()
+
+usep <- usep %>%
+  filter(year == max(year)) %>%
+  rename(id_ever = strict_id) %>%
+  select(-year, -midterm, -turnout) %>%
+  right_join(usep) %>%
+  mutate(id_ever = ifelse(is.na(id_ever), 0, id_ever))
+```
+
+```{r id-selection, fig.width = 6, fig.height = 3, out.width = "70%"}
+usep %>%
+  filter(year <= 2004) %>%
+  group_by(year, id_ever, midterm) %>%
+  summarize(turnout = mean(turnout, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(id_ever = ifelse(id_ever == 1, "ID States", "Non-ID States") %>%
+                   as.factor() %>%
+                   fct_rev(),
+         midterm = ifelse(midterm, "Midterm", "Presidential") %>%
+                   as.factor() %>% 
+                   fct_rev()) %>%
+  ggplot(aes(x = year, y = turnout, color = as.factor(id_ever),
+             linetype = as.factor(id_ever))) +
+    facet_wrap(~ midterm) +
+    geom_line() +
+    theme(legend.position = c(0.75, 0.75),
+          legend.background = element_blank(),
+          axis.text.x = element_text(angle = 45, vjust = 0.8)) +
+    scale_color_manual(values = c("darkcyan", "mediumpurple")) +
+    labs(x = NULL, linetype = NULL, color = NULL,
+         y = "Turnout (%)") +
+    scale_x_continuous(breaks = seq(1980, 2004, 4)) +
+    NULL
+```
+
+--
+
+
+** How to fix? Control for everything that influences *both* $X$ and $Y$ **
+
+(which is really hard to do)
+
+
+---
+
+## Endogenous vs. Exogenous causes
+
+Independent variable comes from within the system (endogenous)
+
+--
+
+- Includes "reverse causality," $y$ causes $x$
+
+--
+
+Value of the independent variable is influenced by external forces (exogenous)
+
+- Sudden shocks (rain $\rightarrow$ lower turnout)
+- Unanticipated events (surprise terror attacks)
+
+--
+
+#### It's always easier if $X$ is an **exogenous** shock
+
+
+
+
+
+
+
+---
+
+class: middle
+
+
+.pull-left[
+### Experiments
+
+- Controlled setting
+
+- Independent variable is *randomly assigned*, no selection biases
+
+- Confounding variables either *controlled* or *evenly balanced* between "treatment" and "control" groups (thanks to randomization)
+]
+
+--
+
+.pull-right[
+### Observational data
+
+- Uncontrolled setting
+
+- Independent variable affected by various social forces, not all of them observed
+
+- Confounding variables are everywhere, up to the researcher to measure and control
+]
+
+
+
+---
+
+class: middle, center, inverse
+
+# Anatomy of an experiment
+
+
+---
+
+What's the effect of **watching MSNBC** on **Trump approval**?
+
+--
+
+1. Recruit participants into the study
+
+--
+
+2. ***RANDOMLY*** divide them into two (or more) groups
+
+--
+
+3. Groups get specially designed *treatments* (or *control*)
+
+--
+
+4. Measure the dependent variable
+
+--
+
+5. Did *treatment assignment* (IV) affect the DV?
+
+--
+
+<br>
+
+#### Practical and ethical concerns
+
+--
+
+1. Imagine replacing "watching MSNBC" with "gender"
+
+--
+
+2. Imagine replacing "watching MSNBC" with "unemployment"
+
+
+
+
+
+---
+
+class: middle, center, inverse
+
+## Why randomization?
+
+
+---
+
+class: center
+
+## What is causality?
+
+Causality can be a statement about *potential outcomes*.
+
+--
+
+\begin{align}
+  y_{i} = \left\{ \begin{array}{ll} 
+                  y_{i}\left(\mathrm{Treatment}\right) & \text{if treatment} \\
+                  y_{i}\left(\mathrm{Control}\right) & \text{if control} \\
+                  \end{array}
+          \right.
+\end{align}
+
+--
+
+<br>
+
+Does the treatment influence $y_{i}$?
+
+\begin{align}
+  \text{Treatment effect}_{i} &= y_{i}\left(\mathrm{Treatment}\right) - y_{i}\left(\mathrm{Control}\right)
+\end{align}
+
+
+<br>
+
+--
+
+**Fundamental problem of causal inference:** can never observe $y_{i}\left(\mathrm{Treatment}\right)$ and $y_{i}\left(\mathrm{Control}\right)$ simultaneously
+
+--
+
+<br>
+
+Randomly assign treatments, measure *average* $y_{i}\left(\mathrm{Treatment}\right)$ and *average* $y_{i}\left(\mathrm{Control}\right)$
+
+
+
+---
+
+class: middle, center, inverse
+
+# Examples
+
+---
+
+## Lab experiments
+
+```{r, out.width = "80%"}
+include_graphics(here(img, "lab.png"))
+```
+
+Exposure, emotion, communication
+
+Sample quality
+
+Financial cost
+
+---
+
+.left-code[
+
+## Survey experiments
+
+Public opinion, willingness to act
+
+Financial cost
+
+
+]
+
+
+.right-plot[
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "survey.png"))
+```
+
+]
+---
+
+.left-code[
+
+## Field experiments
+
+Stimulate turnout, economic activity, government responsiveness
+
+More realistic
+
+Practically difficult
+
+Even more ethically dicey
+
+
+]
+
+.right-plot[
+
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "report-card.jpg"))
+```
+]
+
+---
+
+.pull-left[
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "MT.jpg"))
+```
+]
+
+--
+
+.pull-right[
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "field.png "))
+```
+]
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Everything's got issues
+
+---
+
+class: middle, center
+
+Internal vs. external validity
+
+--
+
+Institutional Review Boards (IRB)
+
+--
+
+Informed consent, confidentiality, sensitive issues
+
+--
+
+Deception (and debriefing)
+
+--
+
+Balancing risks and rewards
+
+
+
+---
+
+## Audit studies
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "tyrone.png"))
+```
+
+--
+
+**Don't always need informed consent (public purpose, typical interaction)**
+
+**Government services, resume callbacks...**
+
+
+
+
+---
+
+class: middle, center, inverse
+
+## Natural experiments, Quasi experiments, "As-if-random" assignment
+
+---
+
+
+```{r out.width = "80%"}
+include_graphics(here(img, "ex-2.png"))
+```
+
+
+---
+
+```{r out.width = "60%"}
+include_graphics(here(img, "ex-1.png"))
+```
+
+
+---
+
+```{r out.width = "60%"}
+include_graphics(here(img, "ex-4.png"))
+```
+
+
+---
+
+class: middle, center, inverse
+
+## Looking ahead
+
+---
+
+class: middle, center
+
+In section: regression practice
+
+On Monday: Big data (listen to podcast)
+
+On Wednesday: Elections and campaigns (do reading)
+

@@ -1,0 +1,426 @@
+---
+title: "Data meets Law"
+# subtitle: ""
+author: "Understanding Political Numbers"
+date: "April 17, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "23-law", "23-law.Rmd"))
+# knitr::purl(here::here("lectures", "23-law", "23-law.Rmd"), output = here::here("R", "lecture_elections.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "23_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/23-law/img"
+```
+
+
+# But first, some review and tips
+
+
+---
+
+class: center, middle
+
+
+<center>
+  <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I would say a good 60% of statistical programming time for data processing scripts is just emotionally metabolizing the existential grief about how dumb everything is</p>&mdash; Rachael Meager (@economeager) <a href="https://twitter.com/economeager/status/1117982008704036864?ref_src=twsrc%5Etfw">April 16, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
+---
+
+## Review: unit of analysis
+
+A dataset has ONE unit of analysis for *all variables*
+
+Variables describe the units
+
+
+---
+
+## Dummy variables from multiple categories
+
+```{r, fig.width = 5, fig.height = 3.5, out.width = "60%"}
+ggplot(mtcars, aes(x = as.factor(gear), y = mpg)) +
+  geom_boxplot(aes(group = gear)) +
+  labs(x = "Number of Gears",
+       y = "Fuel Efficiency (mpg)")
+```
+
+---
+
+## Dummy variables from multiple categories
+
+Slow but careful: make individual dummies
+
+```{r, echo = TRUE}
+new_cars <- mtcars %>%
+  mutate(three_gears = case_when(gear == 3 ~ 1,
+                                 TRUE ~ 0),
+         five_gears = case_when(gear == 5 ~ 1,
+                                TRUE ~ 0))
+
+# four gears are excluded category
+dummy_mod <- lm(mpg ~ three_gears + five_gears, 
+                data = new_cars)
+
+# yhat = a + b1(three_gears) + b2(five_gears)
+tidy(dummy_mod)
+```
+
+---
+
+## Dummy variables from multiple categories
+
+Fast and scary: use factor variables
+
+```{r, echo = TRUE}
+fct_model <- lm(mpg ~ as.factor(gear), data = mtcars)
+
+tidy(fct_model)
+```
+
+--
+
+R decides which category to exclude alphanumerically. To control which category is dropped, create (`as.factor()`) and reorder the factor (`fct_relevel()`) beforehand
+
+
+
+---
+
+## Dummy variables from multiple categories
+
+
+Augmenting works but makes me nervous
+.pull-left[
+```{r, echo = TRUE}
+pre_augment_data <- 
+  tibble(gear = c(3, 4, 5)) %>%
+  print()
+```
+]
+
+--
+
+
+.pull-right[
+
+```{r, echo = TRUE}
+# augment knows that 'gear' should be 
+#   interpreted as a series of dummies
+augment(fct_model, newdata = pre_augment_data)
+```
+
+]
+
+
+
+---
+
+
+class: middle, center, inverse
+
+# Evidence (Law) and Evidence (Science)
+
+
+---
+
+## Outline of legal inquiry
+
+What's the question?
+
+--
+
+What facts bear on that question?
+
+--
+
+What evidence is there in favor of/against those facts?
+
+--
+
+Other issues of procedure:
+
+- demonstration of harm/standing to sue
+- is the question "justiciable"
+
+--
+
+How different from science?
+
+
+---
+
+class: center, middle
+
+```{r, out.width = "80%"}
+include_graphics(here(img, "ken-title.png"))
+```
+
+---
+
+class: center, middle
+
+## What's the question?
+
+When the legal question isn't the same as the *interesting* question
+
+When the legally justifiable view isn't the same as the *best* view
+
+---
+
+## Equal population counts for Congressional districts
+
+> During one of my first experiences as an expert a decade ago, I gave a fluent and informed disquisition on how the flaws in census data mean that there should be more latitude permitted in drawing districts with equal population. The known biases in the data and the passage of time between the collection of data in April and the drawing of the districts two years later meant that it was simply misleading to insist on equal population: there were errors in the original data, people had moved in the years since the census data were recorded, and they would continue to do so between then and the subsequent election.
+
+--
+
+> It was, therefore, unnecessary to minimize population differences among districts, and we should be willing to live with larger population deviations as a tradeoff for other key redistricting criteria (compactness and respect for existing political boundaries, for example). All of which would have been a terrific lecture, about the nature of representation, the problems of relying on artificial bright-lines, and the tension among the many goals of redistricting. Yet when I had finished, the attorneys looked at me as if I had been talking about the merits of the designated hitter rule in Major League Baseball. Even though what I said was true, my argument and conclusion were unrelated to the question at hand, and the issue did not come up again.
+
+
+---
+
+## Equal population counts for Congressional districts
+
+> [...] In an academic setting, by contrast, there is an ongoing debate over the accuracy of the census data and the implications of different types of errors and counting rules. The bias and errors in the census process have been well known for years, although for apportionment purposes, the Bureau itself is prevented from correcting the data using statistical techniques such as sampling. The Census Bureau estimates that the 1990 census had an undercount of between 4.0 and 5.3 million. The error in the 2000 census was estimated at between an undercount of 3.3 million and an overcount of 1.8 million.
+
+--
+
+**Courts deal with narrow questions, not always *best* questions**
+
+**Methods evolve to address the narrow questions**
+
+
+---
+
+## "Majority-Minority" Congressional Districts
+
+> A second example is the generally accepted judicial rule for establishing the existence of racial-bloc voting, or the degree to which members of minority communities vote as a bloc for candidates of the same racial or ethnic background. Racial bloc voting is one necessary condition for a finding that minorities must have opportunities to elect candidates of their choice, and that some legislative districts must therefore be drawn to provide such opportunities (usually by drawing districts so that they contain a threshold number of minority voters, historical between 55 and 60%). But most techniques for identifying racial bloc voting are cumbersome and error-prone, because while we have aggregate outcomes, we lack any information about the voting behavior of individual voters. This is the classic “ecological inference” problem: how do we infer the behavior of individuals when all we have is aggregate data?
+
+--
+
+> In a landmark voting rights case, *Thornburg v. Gingles* 478 U.S. 30 (1986), the Supreme Court specifically endorsed a technique—usually called "double regression" or "bivariate ecological regression"—to show the existence of racially polarized voting. But the Court’s preferred method has well-known shortcomings: it relies on some very specific assumptions which often do not hold, and in those instances can produce absurd results. 
+
+---
+
+## "Majority-Minority" Congressional Districts
+
+> The debate over the proper method of approaching the ecological inference problem is robust and healthy, and has already led to better methods. But that debate is only a hindrance to a judge, who needs the answer now and will have little patience with arguments over which method is superior. The Supreme Court says double regression is the right method, and double regression it therefore is (although a good expert witness will confirm those results with other methods, or attempt to show that the assumptions are wrong and that other methods will produce better results)
+
+Legal standards & precedent more *more slowly* than research
+
+
+
+---
+
+## Standards of evidence
+
+.pull-left[
+**The data world**
+
+- What is probably true?
+
+- Diverse methods for reaching conclusions
+
+- "If we knew what we were doing, it wouldn't be called 'research'"
+]
+
+--
+
+.pull-right[
+**The legal world**
+
+- What is there *hard evidence* for?
+
+- Probabilities aren't *positive* evidence
+
+- Innocent until *proven guilty*, not "did they probably do it?"
+
+]
+
+---
+
+## Honesty and (vs?) Advocacy
+
+> While a Ph.D. is taught to subject his or her favored hypothesis to every conceivable test and data source, seeking out all possible evidence against his or her theory, an attorney is taught to amass all of the evidence for his or her hypothesis and distract attention from anything that might be seen as contradictory information. An attorney who treats a client like a hypothesis would be disbarred; a Ph.D. who advocates a hypothesis like a client would be ignored ([Epstein and King](https://uwmadison.box.com/s/qsjal833v99uxk9czc9yq6y80yrn6fio) 2002)
+
+
+---
+
+## Honesty and (vs?) Advocacy
+
+Averages (systematic data) vs. Anecdotes ("key cases", witnesses)
+
+--
+
+Selection biases in the data-generating process
+
+
+--
+
+Problem of Induction, verification vs. falsification
+
+
+--
+
+Causality, *post hoc ergo propter hoc*
+
+
+
+
+
+---
+
+class: center
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "people-v-collins.png"))
+```
+
+[(source)](https://uwmadison.box.com/s/4ho7scd9o9vgd3htingc85xji76xmokm)
+
+---
+
+.pull-left[
+
+The facts: 
+
+- Elderly woman robbed in an LA alleyway
+- Suspect: woman with blond ponytail
+- Suspect flees scene in yellow car
+- Driven by black man with a mustache
+
+]
+
+--
+
+.pull-right[
+
+Couple arrested
+
+- Black man, white woman
+- Woman: white w/ blond ponytail. 
+- Man: black w/ beard
+- Yellow car
+
+]
+
+
+--
+
+Mathematician's testimony: the particular combination of features is 1 in 12 million
+
+
+--
+
+> [...] the testimony and the manner in which the prosecution used it distracted the jury from its proper and requisite function of weighing the evidence on the issue of guilt, encouraged the jurors to rely upon an engaging but logically irrelevant expert demonstration
+
+
+--
+
+**Probability is not the same as positive evidence**
+
+
+---
+
+## Problems with probability
+
+A suspect says something fishy, $x$
+
+--
+
+\begin{align}
+  p\left(x \mid \mathrm{Guilty} \right) > p\left(x \mid \mathrm{\text{Not Guilty}}\right)
+\end{align}
+
+--
+
+**What are we actually trying to calculate?**
+
+\begin{align}
+  p\left( \mathrm{Guilty} \mid x \right) > p\left( \mathrm{\text{Not Guilty}} \mid x \right)
+\end{align}
+
+
+--
+
+<br>
+
+What's the probability that they are guilty, *given that* they share features with the suspects?
+
+\begin{align}
+  p\left( \mathrm{Guilty} \mid \mathrm{Description} \right) &= \frac{p\left(\mathrm{Description} \mid \mathrm{Guilty}\right)p\left(\mathrm{Guilty}\right)}{p\left(\mathrm{Description}\right)}
+\end{align}
+
+--
+
+Is "probability of guilt" even the right question?
+
+--
+
+Julia Galef: [Visual Demonstration of Bayesian Updating](https://www.youtube.com/watch?v=BrK7X_XlGB8)
+
+---
+
+class: center, middle, inverse
+
+# G'bye

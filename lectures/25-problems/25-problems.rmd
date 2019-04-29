@@ -1,0 +1,381 @@
+---
+title: "Issues with Scientific Evidence"
+# subtitle: "Statistically but also Ethically"
+author: "Understanding Political Numbers"
+date: "April 24, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "25-problems", "25-problems.Rmd"))
+# knitr::purl(here::here("lectures", "25-problems", "25-problems.Rmd"), output = here::here("R", "lecture_elections.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+#WTF
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "25_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/25-problems/img"
+```
+
+# Science is human
+
+### ...all too human
+
+--
+
+The *way science is done* is affected by the professional context in which researchers operate
+
+---
+
+## Professional context
+
+.pull-left[
+#### Academic Research
+
+- "Publish or perish"
+
+- What gets rewarded? Inquiry vs. accomplishment
+
+- Statistical vs. domain expertise
+
+- Prestige and overwork
+
+]
+
+--
+
+.pull-right[
+#### Campaigns, advocacy, industry
+
+- Organizations need **information** to make **decisions**
+
+- Quest for "good enough"
+
+- Honesty vs. advocacy
+
+- Machine learning: performance vs interpretation
+]
+
+
+
+---
+
+## Science (ideally)
+
+--
+
+.pull-left[
+
+#### Conducting Research
+
+- Researchers identify interesting puzzles 
+
+- Use reliable body of *scientific literature* to develop theoretical explanations 
+
+- Devise studies to test theories 
+
+- Collect and analyze data, evaluate evidence w/r/t theories
+]
+
+--
+
+.pull-right[
+#### Disseminating Research
+
+
+- Researchers write a study
+
+- Peer review: study is evaluated by other experts
+
+- Reliable studies are accepted into scientific literature
+
+- Knowledge accumulates over time
+
+]
+
+
+
+
+---
+
+## Science ("reality bites" version)
+
+--
+
+.pull-left[
+
+#### Research is high-stakes career output
+
+- Other researchers judging your work "interesting" is major factor in career survival
+
+- Citations to existing science is very political (peer review)
+
+- Studies are "low power" tests of theory
+
+- Data analysis is biased toward favorable findings
+
+]
+
+--
+
+.pull-right[
+#### Disseminating Research
+
+- Non-scientific (peri-scientific?) considerations
+
+- Peer reviewers have idiosyncratic and inconsistent opinions (low $n$)
+
+- Flashy results vs. Careful methodology
+
+- Published record is a biased
+
+]
+
+
+
+
+
+---
+
+class: center, middle, inverse
+
+# Statistical significance
+
+---
+
+## $p$-values are useful but abused
+
+.pull-left[
+
+$p$-value: probability of a "more extreme" effect (if no true relationship)
+
+[Dichotomania](https://statmodeling.stat.columbia.edu/2011/09/10/the-statistical-significance-filter/): splits the world into "zero" and "non-zero" effects
+
+$p$-hacking
+
+Data analysis is a "[garden of forking paths](http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf)"
+
+[The difference between "significant" and "not significant" is not itself statistically significant](http://www.stat.columbia.edu/~gelman/research/published/signif4.pdf)
+
+]
+
+
+
+.pull-right[
+
+```{r, out.width = "100%", fig.width = 4, fig.height = 3}
+n_sims <- 1000000
+
+tibble(x = rnorm(n_sims)) %>%
+  mutate(p = pnorm(x),
+         sig = p > .975 | p < .025) %>%
+  ggplot(aes(x)) +
+    geom_histogram(binwidth = .01,
+                   aes(fill = sig),
+                   boundary = 0,
+                   show.legend = FALSE) +
+    labs(x = "Estimated Effect (Standardized)", y = NULL,
+         title = "Simulated Estimates",
+         subtitle = '"True" effect is ZERO') +
+    scale_fill_manual(values = c("FALSE" = "gray", "TRUE" = "maroon")) +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank())
+```
+
+]
+
+---
+
+class: center
+
+## The "statistical significance filter"
+
+<center>
+  <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Got reviewer comments back.<br><br>We report a P-values of 0.051 and 0.062. Reviewer: &quot;If it’s not significant, it’s not significant. Delete.&quot;<br><br>Here&#39;s a response I&#39;ve used in the past, sharing for anyone who might find it useful <a href="https://t.co/dQIxBCdsV8">pic.twitter.com/dQIxBCdsV8</a></p>&mdash; Kevin Kohl (@KevinDKohl) <a href="https://twitter.com/KevinDKohl/status/1090294240385683465?ref_src=twsrc%5Etfw">January 29, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
+
+---
+
+class: center
+
+## Dichotomania
+
+<center>
+  <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Ooooh, what a fine example for teaching!<br><br>d = 0.32, p = .046 —&gt; treatment works<br>d = 0.30, p = .059 —&gt; treatment doesn’t work <a href="https://t.co/w2eIqdnru9">pic.twitter.com/w2eIqdnru9</a></p>&mdash; maria blöchl (@mariabloec) <a href="https://twitter.com/mariabloec/status/1091623617266356224?ref_src=twsrc%5Etfw">February 2, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
+---
+
+class: center
+
+## Statistical "power"
+
+#### True effects rarely zero, but need lots of data to estimate small effects
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "power.png"))
+```
+
+([source](https://statmodeling.stat.columbia.edu/2014/11/17/power-06-looks-like-get-used/))
+
+
+
+
+---
+
+class: center, middle, inverse
+
+# Publication Bias
+
+
+
+---
+
+
+.pull-left[
+## Publication bias
+
+Most published findings are over-estimates or false ([video](https://www.youtube.com/watch?v=42QuXLucH3Q))
+
+File drawer problem
+
+Replication (and failure to replicate)
+
+Do journals care? (or hiring committees, tenure committees...?)
+
+]
+
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "p-d.png"))
+```
+([source](https://journals.sagepub.com/doi/10.1080/17470218.2012.711335))
+]
+
+
+
+#### Very little reward for *improving the conduct* of science
+
+
+
+---
+
+class: center, middle, inverse
+
+# Falsifying hypotheses
+
+---
+
+.pull-left[
+
+## Are we learning from science?
+
+Verification vs. Falsification
+
+Falsification and the *null hypothesis*
+
+Reject serious, competitive hypotheses!
+
+McElreath ["Evolution of Statistical Methods"](https://www.youtube.com/watch?v=Wu0hAjlMqUQ&feature=youtu.be&t=230) talk
+
+]
+
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "black-swan.jpg"))
+```
+]
+
+---
+
+class: middle
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "rethinking-nhst.png"))
+```
+
+---
+
+class: center, middle, inverse
+
+## Teaching Evaluations
+
+
+---
+
+class: center, middle
+
+### [`aefis.wisc.edu`](https://aefis.wisc.edu/)
+
+Specifics are better!
+
+Constructive is better!
+
+
+
+
+
+
+
+
+
+

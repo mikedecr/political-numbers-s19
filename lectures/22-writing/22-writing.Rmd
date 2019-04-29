@@ -1,0 +1,381 @@
+---
+title: "Writing a Research Paper"
+subtitle: "(Grab an assignment sheet)"
+author: "Understanding Political Numbers"
+date: "April 15, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "22-writing", "22-writing.Rmd"))
+# knitr::purl(here::here("lectures", "22-writing", "22-writing.Rmd"), output = here::here("R", "lecture_elections.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "22_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/22-writing/img"
+```
+
+
+# Let's write a paper
+
+
+---
+
+## What to include
+
+**Abstract:** One-paragraph summary on the title page.
+
+**Introduction:** What's the topic and research question?
+
+**Theory and Hypotheses:** What are your expectations and how did you form them?
+
+**Data and methods:** Describe your data and your approach to analyzing them.
+
+**Analysis:** What do the data show?
+
+**Conclusion:** Discuss takeaways, limitations, implications beyond this study.
+
+
+
+---
+
+background-image: url(img/miller.png)
+background-color: #000000
+background-size: contain
+
+
+
+---
+
+background-image: url(img/bb-title.png)
+background-color: #000000
+background-size: contain
+
+---
+
+background-image: url(img/bb-intro.png)
+background-color: #000000
+background-size: contain
+
+---
+
+background-image: url(img/bb-theory.png)
+background-color: #000000
+background-size: contain
+
+
+---
+
+background-image: url(img/bb-data.png)
+background-color: #000000
+background-size: contain
+
+---
+
+background-image: url(img/bb-results.png)
+background-color: #000000
+background-size: contain
+
+---
+
+background-image: url(img/bb-discuss.png)
+background-color: #000000
+background-size: contain
+
+---
+
+class: center, middle
+
+## Introductions
+
+"Get to the point and stay on point"
+
+---
+
+
+
+background-image: url(img/bb-rq.png)
+background-color: #000000
+background-size: contain
+
+
+---
+
+class: center, middle
+
+## Theory and Hypotheses
+
+How do you think the social world is working (theory), and what does that mean for your data (hypothesis)
+
+Theories are **conceptual** and **logically consistent**
+
+Hypotheses are **testable implications** of theory
+
+---
+
+```{r}
+include_graphics(here(img, "bb-theory-1.png"))
+```
+
+
+---
+
+```{r}
+include_graphics(here(img, "bb-theory-2.png"))
+```
+
+---
+
+class: center, middle
+
+```{r}
+include_graphics(here(img, "bb-hypo.png"))
+```
+
+Hypothesis connects **theory** to the **data**
+
+
+---
+
+class: center, middle
+
+
+## Data and Methods
+
+Where did the data **come from**?
+
+How are variables **measured**?
+
+How is data **used** to test hypothesis?
+
+
+---
+
+```{r}
+include_graphics(here(img, "bb-dv.png"))
+```
+
+
+
+---
+
+```{r}
+include_graphics(here(img, "bb-iv.png"))
+```
+
+
+---
+
+```{r}
+include_graphics(here(img, "bb-reg.png"))
+```
+
+
+---
+
+class: center, middle
+
+## Analysis
+
+Regression **results**, **interpretation**, and **graphics**
+
+
+
+
+---
+
+```{r}
+include_graphics(here(img, "bb-reg-tab.png"))
+```
+
+
+
+---
+
+```{r, out.width = "65%"}
+include_graphics(here(img, "bb-fig.png"))
+```
+
+
+
+---
+
+```{r}
+include_graphics(here(img, "bb-interp.png"))
+```
+
+---
+
+class: middle, inverse, center
+
+# Other tips
+
+
+---
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "summaries.jpg"))
+```
+
+
+---
+
+## Summary statistics
+
+```{r, echo = TRUE}
+# install if you'd like
+library("skimr")
+
+mtcars %>%
+  select(mpg, wt, cyl) %>%
+  skim()
+```
+
+
+---
+
+## Tables for data analysis
+
+
+.pull-left[
+
+Mean of $y$, across levels of $x$
+
+```{r tab, echo = TRUE}
+# for manual vs. automatic cars 
+# - Mean gas mileage?
+# - Num. of obs in each group?
+mtcars %>%
+  group_by(am) %>%
+  summarize(`Mean MPG` = mean(mpg),
+            `Std. Dev` = sd(mpg),
+            n = n()) 
+```
+
+]
+
+--
+
+.pull-right[
+
+
+Steps to writing a technical report:
+
+- doing the analysis (with code)
+- transcribing results into the document
+
+**The more you can automate about the transcription process, the better!**
+
+]
+
+
+---
+
+class: center
+
+Edit and proofread
+
+--
+
+Simple, declarative statements
+
+--
+
+Outlining and reverse outlining
+
+--
+
+Don't include bad content for the sake of length
+
+--
+
+Edit and proofread
+
+--
+
+Make it look sharp
+
+--
+
+Edit and proofread
+
+--
+
+**Enjoy the ride**
+
+
+
+---
+
+## Looking ahead
+
+On Wednesday: Data in law and courts
+
+- Probabilistic reasoning vs. legal standards of evidence
+- Ethics of advocacy in research (read Mayer)
+
+In section: begin presentations!
+
+Next week:
+
+- Monday: Election forecasting (more fun with probability)
+- Wednesday: killing science (so we can save it later)
+

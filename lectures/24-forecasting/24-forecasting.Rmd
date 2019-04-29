@@ -1,0 +1,504 @@
+---
+title: "Understanding Election Forecasts"
+subtitle: "Statistically but also Ethically"
+author: "Understanding Political Numbers"
+date: "April 22, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "24-forecasting", "24-forecasting.Rmd"))
+# knitr::purl(here::here("lectures", "24-forecasting", "24-forecasting.Rmd"), output = here::here("R", "lecture_elections.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+#WTF
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "24_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/24-forecasting/img"
+```
+
+# Let's talk about the 2016 election (forecasts)
+
+---
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "oops-avg.png"))
+```
+
+---
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "oops-538.png"))
+```
+
+---
+
+class: center, middle
+
+# Agenda
+
+(1) Probability and forecasting
+
+(2) How election forecasting works
+
+(3) Is forecasting a bad idea?
+
+
+---
+
+## Probability $\neq$ Vote Percentage
+
+--
+
+Popular vote $\neq$ Electoral college vote
+
+--
+
+National vote $\neq$ state vote
+
+--
+
+Not a "point prediction"—forecasts incorporate *uncertainty*
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "prob-problem.png"))
+```
+
+
+---
+
+class:middle
+
+```{r, out.width = "90%"}
+include_graphics(here(img, "forecast-pop.png"))
+```
+
+
+
+---
+
+class:middle
+
+```{r, out.width = "90%"}
+include_graphics(here(img, "forecast-ec.png"))
+```
+
+
+
+---
+
+class:middle
+
+```{r, out.width = "90%"}
+include_graphics(here(img, "forecast-win.png"))
+```
+
+
+
+---
+
+class: center, middle
+
+## 70-30 isn't certain
+
+[See for yourself](https://flowingdata.com/2016/07/28/what-that-election-probability-means/)
+
+
+
+---
+
+### How can there be a probability? Either Clinton will win (100%), or she won't (0%)
+
+--
+
+Out of all the possible scenarios that are consistent with our data, how often is Clinton the winner?
+
+--
+
+Out of all the possible scenarios...
+
+--
+
+- In each state, either Trump or Clinton will win
+- How many ways can you configure the electoral college map?
+
+--
+
+...that are consistent with our data...
+
+--
+
+- Not all scenarios are equally likely
+- We learn about the plausibility of scenarios from history and polls
+
+--
+
+How often is Clinton the winner?
+
+--
+
+- A poll has Clinton 1 pt. below Trump
+- What could Clinton's "true vote" be?
+- How many of those "true votes" are greater than Trump's?
+
+---
+
+class: center, middle
+
+.pull-left[
+How do we "learn" from polls? [Bayes' Theorem](https://www.youtube.com/watch?v=R13BD8qKeTg)
+
+<br>
+
+In how many scenarios does Clinton win?
+
+\begin{align}
+  p(\text{Clinton wins}) &= ?
+\end{align}
+
+<br>
+
+In how many scenarios *that are consistent with these polls* does Clinton win?
+
+<br>
+
+\begin{align}
+  p(\text{Clinton wins}\mid \text{polls}) &= \frac{p(\text{Clinton wins AND polls})}{p(\text{polls})} 
+\end{align}
+
+]
+
+.pull-right[
+```{r, out.width = "60%"}
+include_graphics(here(img, "bayes.jpeg"))
+```
+]
+
+
+---
+
+## Bayesian updating, in context
+
+.pull-left[
+
+You have the disease :: Clinton wins
+
+Imperfect diagnostic test :: polls
+
+Taking more tests :: conducting more polls
+]
+
+
+--
+
+.pull-right[
+
+Location of ball #1 :: Clinton's EC vote share
+
+Relative location of other balls :: polls
+
+Throwing more balls :: conducting more polls
+
+]
+
+
+---
+
+class: center, middle, inverse
+
+# How the forecasts work
+
+
+---
+
+.pull-left[
+## Main idea
+
+In regression, we use data to estimate *unknown parameters*
+
+\begin{align}
+  y &= f(x, \alpha, \beta)  
+\end{align}
+
+
+In forecasting, we use polls to estimate *unknown true support*
+
+\begin{align}
+  \text{State poll today} &= f\left( \text{True state vote today}, \text{Other} \right)
+\end{align}
+
+**Polls are samples from an underlying average, but...**
+
+]
+
+
+.pull-right[
+
+```{r, include = FALSE}
+polls <- read_csv(here("data", "polls-2016.csv"), guess_max = 50000) %>%
+  filter(end.date <= "2016-11-08") %>%
+  filter(population %in% c("Likely Voters", "Registered Voters", "Adults")) %>%
+  mutate(clinton_2p = clinton / (clinton + trump),
+         state = ifelse(state == "--", "USA", state)) %>%
+  rename(start = start.date, end = end.date,
+         n = number.of.observations) %>%
+  filter((trump + clinton) != 100) %>%
+  print()
+
+polls %>% count(state) %>%
+  arrange(desc(n))
+```
+
+```{r, include = TRUE, out.width = "100%", fig.height = 5, fig.width = 4.5}
+polls %>%
+  filter(state %in% c("WI", "MI", "PA", "FL", "VA", "OH")) %>%
+  ggplot(aes(x = end, y = clinton)) +
+    facet_wrap(~ state, ncol = 2) +
+    geom_jitter(shape = 1, size = 0.5, height = 1.5) +
+    geom_smooth(fill = "maroon", color = "black",
+                size = 0.5) +
+    labs(x = "Date", y = "Clinton Estimate (%)") +
+    theme(axis.text.x = element_blank())
+```
+
+]
+
+
+
+---
+
+## Uncertainty from *time*. (Answer: "the fundamentals")
+
+--
+
+.pull-left[
+
+Predicting an election > 6 months out:
+
+- Presidential approval
+- Incumbency
+- Economic Indicators
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "aa.png"))
+```
+]
+
+
+--
+
+.pull-right[
+
+FiveThirtyEight uses fundamentals (and historical data) to build "prior expectations" for Election Day
+
+1. *Anchors each state* as the model projects to Election Day 
+2. How each state differs from the average 
+3. When state predictions are wrong, *which states are "wrong together"*?
+
+New polls "update our prior expectations" about Election Day
+
+]
+
+---
+
+class: center, middle
+
+### Projecting Forward ("Updating our Priors")
+
+```{r out.width = "90%"}
+include_graphics(here(img, "random-walk.png"))
+```
+
+(Source: [Linzer 2013](https://uwmadison.box.com/s/dj4hfddn40ii0fnq6y9wx6ubwuwq9ebh))
+
+---
+
+class: center, middle
+
+### Polls are $f(\mathrm{truth} + \mathrm{Other})$
+
+```{r out.width = "70%"}
+include_graphics(here(img, "538-errors.png"))
+```
+
+(source: [FiveThirtyEight](https://fivethirtyeight.com/features/a-users-guide-to-fivethirtyeights-2016-general-election-forecast/))
+
+
+---
+
+class: middle, center
+
+## What scenarios are compatible with the data?
+
+What scenarios give us data that look like this?
+
+
+---
+
+```{r, out.width = "80%"}
+include_graphics(here(img, "ec-scenarios.png"))
+```
+
+
+---
+
+```{r, out.width = "55%"}
+include_graphics(here(img, "as-f-popvote.png"))
+```
+
+
+
+---
+
+```{r, out.width = "75%"}
+include_graphics(here(img, "scenarios.png"))
+```
+
+
+
+
+
+---
+
+class: middle, center, inverse
+
+# Forecasts...are they bad?
+
+
+---
+
+## Forecasts are confusing
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "uncertainty.png"))
+```
+]
+
+> "The public has difficulty reasoning about the probability of a candidate's victory. [...] When one candidate is ahead, win-probabilities convey substantially more confidence that she will win compared to vote share estimates."
+
+> [...] Small differences in the election metric most familiar to the public—vote share estimates—generally correspond to very large differences in the probability of a candidate's chance of victory, and a high degree of statistical sophistication is required to map between the two.
+
+
+---
+
+## Forecasts are confusing
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "uncertainty.png"))
+```
+]
+
+> People tend to think in qualitative terms about the likelihood of events[...]; if candidate A has an 85% chance of victory, they see victory the likely outcome (this may help explain why after the 2016 election, so many criticized forecasters for "getting it wrong"[...]).
+
+> [...] one-off event probabilities—candidate A has an 85% chance of winning—are often misunderstood [...] compared to statements such as "if the election was repeated 1,000 times, candidate A would win 850 times[...]"
+
+
+
+
+---
+
+## Forecasts distract us from what really matters 
+
+.pull-left[
+(The issues)
+
+Can the press "mediate a campaign?"
+]
+
+
+.pull-right[
+```{r, out.width = "80%"}
+include_graphics(here(img, "ooo.jpg"))
+```
+]
+
+
+---
+
+
+class: center, middle
+
+## Is forecasting undemocratic?
+
+**Lowering turnout, feeding back into the system**
+
+\begin{align}
+  \mathrm{Forecasts} \rightarrow \text{Over-confidence in Outcome} \rightarrow \text{Election Outcomes}
+\end{align}
+
+
+
+---
+
+class: center, middle
+
+## Or...Are forecasts *necessary*
+
+
+---
+
+class: center, middle, inverse
+
+# Coming up next...
+
+### Two final lectures about *science in practice*
+
+

@@ -1,0 +1,582 @@
+---
+title: "Elections, Polls, Campaigns"
+subtitle: |
+  (or, "Being a better consumer of election news, or a producer of election news, depending on your career goals and whether you have enjoyed working with data so far")
+author: "Understanding Political Numbers"
+date: "April 10, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "21-elections", "21-elections.Rmd"))
+# knitr::purl(here::here("lectures", "21-elections", "21-elections.Rmd"), output = here::here("R", "lecture_elections.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+# They're good DAGs, Brent
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "21_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/21-elections/img"
+```
+
+
+
+# Understanding election data
+
+
+---
+
+
+```{r data-2016, include = FALSE}
+polls <- read_csv(here("data", "polls-2016.csv"), guess_max = 50000) %>%
+  filter(end.date <= "2016-11-08") %>%
+  filter(population %in% c("Likely Voters", "Registered Voters", "Adults")) %>%
+  mutate(clinton_2p = clinton / (clinton + trump),
+         state = ifelse(state == "--", "USA", state)) %>%
+  rename(start = start.date, end = end.date,
+         n = number.of.observations) %>%
+  filter((trump + clinton) != 100) %>%
+  print()
+
+polls %>% count(state) %>%
+  arrange(desc(n))
+
+names(polls)
+```
+
+```{r sim-us, include = FALSE}
+popvote <- 
+  tibble(Trump = 62984828, 
+         Clinton = 65853514,
+         Other = 136669276 - (Trump + Clinton)) %>%
+  gather(key = candidate, value = votes) %>%
+  mutate(candidate = fct_relevel(candidate, "Trump", "Clinton", "Other"),
+         p = votes / sum(votes),
+         cn = as.numeric(candidate)) %>%
+  print()
+```
+
+
+
+
+```{r, include = TRUE, fig.height = 4, fig.width = 5, out.width = "60%"}
+ggplot(popvote, aes(x = candidate, y = votes)) +
+  geom_col(aes(fill = candidate), show.legend = FALSE) +
+  geom_text(aes(label = p %>% percent()),
+            nudge_y = 3e6) +
+  scale_fill_brewer(palette = "Set1") +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Votes for President", x = NULL, y = NULL)
+```
+
+
+
+---
+
+
+### Vote choices are *categorical* data
+
+Individual data for votes 
+
+```{r}
+vote_choice <- c(rep("Trump", 461), 
+                 rep("Clinton", 482),
+                 rep("Other", 57)) 
+
+set.seed(1)
+vote_choice <- vote_choice[sample(1:length(vote_choice), length(vote_choice), 
+                                  replace = FALSE)]
+head(vote_choice)
+```
+
+--
+
+What proportion voted for Trump?
+
+--
+
+```{r, echo = TRUE}
+# logical, returns TRUE or FALSE
+# head returns first few elements
+head(vote_choice == "Trump")
+```
+
+--
+
+```{r, echo = TRUE}
+# add up Trump votes, divided by total
+sum(vote_choice == "Trump") / length(vote_choice)
+```
+
+--
+
+
+```{r, echo = TRUE}
+# Or, proportions are means of a dummy variable
+mean(vote_choice == "Trump")
+```
+
+
+---
+
+## If $x$ affects votes ( $y$ )...
+
+```{r, fig.width = 5, fig.height = 4, out.width = "50%"}
+tibble(x = seq(1, 10, 1),
+       y = -0.6 + 0.2*x) %>%
+  ggplot(aes(x = x, y = y)) +
+    geom_line() +
+    scale_y_continuous(labels = percent) +
+    labs(y = "Vote Share") +
+    geom_hline(yintercept = c(0, 1), color = "maroon",
+               linetype = 2)
+```
+
+
+---
+
+## Boundedness -> Nonlinearity
+
+We have *linear* models but a *bounded* outcome...how?
+
+--
+
+Unbounded representation of probability... "odds ratio"
+
+\begin{align}
+  \mathrm{Odds} = \frac{p}{(1 - p)}
+\end{align}
+
+--
+
+"Two-to-one chance" that the Patriots win
+
+--
+
+\begin{align}
+  2 = \frac{ \left(\frac{2}{3} \right)}{\left(\frac{1}{3}\right)}
+\end{align}
+
+
+
+---
+
+## Odds and probability
+
+```{r, fig.width = 5, fig.height = 4, out.width = "50%"}
+tibble(probability = seq(0, 1, .001),
+       odds = probability / (1 - probability)) %>%
+ggplot(aes(y = probability, x = odds)) +
+  geom_line() +
+  coord_cartesian(xlim = c(0, 4)) +
+  geom_hline(yintercept = 0.5, linetype = 3) +
+  geom_vline(xintercept = 1, linetype = 3)
+```
+
+
+
+
+---
+
+## Odds and probability
+
+```{r, fig.width = 5, fig.height = 4, out.width = "50%"}
+tibble(probability = seq(0, 1, .001),
+       log_odds = log(probability / (1 - probability))) %>%
+ggplot(aes(y = probability, x = log_odds)) +
+  geom_line() +
+  coord_cartesian(ylim = c(0, 1)) +
+  geom_hline(yintercept = 0.5, linetype = 3) +
+  geom_vline(xintercept = 0, linetype = 3)
+```
+
+
+---
+
+## Regressions for proportions
+
+Logistic model:
+
+\begin{align}
+  \log\left( \frac{p}{1-p} \right) &= \alpha + \beta x + \epsilon
+\end{align}
+
+--
+
+Transform back to probability:
+
+\begin{align}
+  p &= \frac{1}{1 + e^{- \left(\alpha + \beta x + \epsilon\right)}}
+\end{align}
+
+--
+
+"Logit transformation" undone by the "inverse logit"
+
+```{r, echo = TRUE}
+(x <- qlogis(0.75))
+
+plogis(x)
+```
+
+---
+
+## Regressions for binary outcomes
+
+\begin{align}
+  \text{Voted for Trump}_{i} &\sim \mathrm{Bernoulli}(p_{i})
+\end{align}
+
+--
+
+\begin{align}
+  \mathrm{logit}\left(p_{i}\right) &= \alpha + \beta x_{i}
+\end{align}
+
+--
+
+Hypothetical R example
+
+```{r, eval = FALSE, echo = TRUE}
+glm(trump_vote ~ partisanship + education + income + race,
+    data = vote_data,
+    family = binomial(link = "logit"))
+```
+
+--
+
+GLM for "Generalized linear model": relationship between $x$ and $y$ isn't linear, but a transformation of $x$ and $y$ is linear
+
+--
+
+**A whole world of GLMs out there!**
+
+Not requiring you to use them, but if you're interested, let's talk
+
+```{r, eval = FALSE}
+polls %>%
+  filter(state == "USA",
+         n == 974,
+         clinton == 42) 
+```
+
+
+
+---
+
+class: center, middle, inverse
+
+# Let's talk about the polls
+
+
+---
+
+```{r, out.width = "80%"}
+include_graphics(here(img, "polls-3.png"))
+```
+
+.pull-left[
+```{r, out.width = "90%"}
+include_graphics(here(img, "polls-1.png"))
+```
+```{r, out.width = "90%"}
+include_graphics(here(img, "polls-2.png"))
+```
+]
+
+.pull-right[
+```{r, out.width = "90%"}
+include_graphics(here(img, "polls-4.png"))
+```
+```{r, out.width = "90%"}
+include_graphics(here(img, "polls-5.png"))
+```
+]
+
+
+--
+
+## Polls aren't perfect (duh) but we're smart enough to understand why
+
+
+
+
+---
+
+### Any poll has *sampling error*
+
+```{r out.width = "70%"}
+include_graphics(here(img, "approval.png"))
+```
+
+---
+
+
+```{r, fig.width = 5, fig.height = 4, out.width = "60%"}
+polls %>%
+  filter(state == "USA") %>%
+  ggplot(aes(x = clinton)) +
+    geom_histogram(binwidth = 1,
+                   fill = "gray") +
+    geom_vline(xintercept = 48.2, color = "maroon") +
+    labs(x = "Clinton Vote",
+         y = "Count of Polls",
+         title = "Histogram of 2016 national polls",
+         subtitle = "3.5pt error on average")
+```
+
+
+---
+
+## Sources of polling error
+
+Random sampling error: estimate is randomly different from the population being sampled
+
+--
+
+Nonrandom biases: is the population being sampled the *population that matters?*
+
+--
+
+Pollsters try to minimize bias, but there are issues
+
+- Target population: voters
+- Sampling frame: who we can contact
+- Response rate: who takes the poll if contacted?
+- Weighting: making the sample *representative*
+
+--
+
+**"Total Survey Error"** sampling error *plus everything else*
+
+
+---
+
+
+```{r, out.width = "80%", fig.height = 6, fig.width = 9}
+uspolls <- polls %>%
+  filter(state == "USA")
+
+# uspolls %>% count(pollster) %>%
+# arrange(desc(n))
+
+gray <- ggplot(uspolls, aes(x = end, y = clinton)) +
+  geom_point(color = "white") +
+  geom_smooth(color = "gray40", size = 0.5) 
+
+
+national <- gray +
+  geom_point(color = "gray") +
+  geom_smooth(color = "gray40", size = 0.5) +
+  labs(subtitle = "All polls",
+       x = "End Date", y = "Clinton Vote")
+
+
+mc <- gray +
+  geom_point(data = filter(uspolls, pollster == "Morning Consult"),
+             color = "maroon") +
+  geom_smooth(data = filter(uspolls, pollster == "Morning Consult"),
+              color = "maroon") +
+  labs(subtitle = "Morning Consult")
+
+ir <- gray +
+  geom_point(data = filter(uspolls, pollster == "Ipsos/Reuters"),
+             color = "maroon") +
+  geom_smooth(data = filter(uspolls, pollster == "Ipsos/Reuters"),
+              color = "maroon") +
+  labs(subtitle = "Ipsos/Reuters")
+
+nbcsm <- gray +
+  geom_point(data = filter(uspolls, pollster == "NBC/SurveyMonkey"),
+             color = "maroon") +
+  geom_smooth(data = filter(uspolls, pollster == "NBC/SurveyMonkey"),
+              color = "maroon") +
+  labs(subtitle = "NBC/SurveyMonkey")
+
+
+
+ras <- gray +
+  geom_point(data = filter(uspolls, pollster == "Rasmussen"),
+             color = "maroon") +
+  geom_smooth(data = filter(uspolls, pollster == "Rasmussen"),
+              color = "maroon") +
+  labs(subtitle = "Rasmussen")
+
+
+
+yg <- gray +
+  geom_point(data = filter(uspolls, pollster == "YouGov/Economist"),
+             color = "maroon") +
+  geom_smooth(data = filter(uspolls, pollster == "YouGov/Economist"),
+              color = "maroon") +
+  labs(subtitle = "YouGov/Economist")
+
+
+(national + mc + ir) / (nbcsm + ras + yg)
+
+```
+
+---
+
+### Grading the polls [(click here)](https://fivethirtyeight.com/features/the-polls-are-all-right/)
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "errors.png"))
+```
+
+
+---
+
+### More grading [(click here)](http://researchdmr.com/ProbabilityTotalError.pdf)
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "gelman.png"))
+```
+
+
+---
+
+### Total Survey Error [(click here)](https://www.nytimes.com/2016/10/06/upshot/when-you-hear-the-margin-of-error-is-plus-or-minus-3-percent-think-7-instead.html)
+
+```{r, out.width = "60%"}
+include_graphics(here(img, "nyt.png"))
+```
+
+
+
+---
+
+class: inverse, middle, center
+
+## Campaigns using data
+
+
+---
+
+## Campaign tactics [(click here)](https://www.technologyreview.com/s/509026/how-obamas-team-used-big-data-to-rally-voters/)
+
+```{r out.width = "60%"}
+include_graphics(here(img, "issenberg.png"))
+```
+
+
+---
+
+## Mobilization and Persuasion
+
+
+```{r, out.width = "50%", fig.height = 4, fig.width = 5}
+tibble(pdem = seq(0, 1, .1),
+       pvote = seq(0, 1, .1)) %>%
+  ggplot(aes(x = pdem, y = pvote)) +
+  labs(x = "Probability of Republican Preference",
+       y = "Probability of voting") +
+  geom_blank() +
+  geom_hline(yintercept = 0.5, linetype = 2) +
+  geom_vline(xintercept = 0.5, linetype = 2)
+```
+
+
+---
+
+## How?
+
+Data
+
+- voter file, credit reports, web/ad data
+
+Modeling questions
+
+- what is your party ID?
+- Race?
+- Ideology?
+
+Gathering data
+
+- Surveys, experiments
+
+Interventions:
+
+- TV, mail, web traffic, issue agenda
+
+
+
+
+
+---
+
+## Looking ahead
+
+Check the syllabus for cool readings and podcasts and stuff
+
+Next week: judiciary and paper guidelines
+
+In section: regression practice (this week) and then presentations
+
+
+```{r, eval = FALSE}
+ggplot(polls, aes(x = clinton / (clinton + trump))) +
+  geom_histogram() +
+  facet_wrap(~ state)
+```
+
+
+```{r, eval = FALSE}
+ggplot(polls, aes(x = start.date, y = clinton / (clinton + trump))) +
+  geom_point()
+```
