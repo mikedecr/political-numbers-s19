@@ -1,0 +1,243 @@
+---
+title: "Fixing Big Problems in Science"
+subtitle: "(as a process)"
+author: "Understanding Political Numbers"
+date: "April 29, 2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    # mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_SVG"
+    css: xaringan-themer.css
+    nature:
+      ratio: "16:9"
+      highlightStyle: default
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "https://platform.twitter.com/widgets.js"
+seal: false
+---
+
+
+class: middle, center, inverse
+
+
+```{r setup-rmd, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+
+# rmarkdown::render(here::here("lectures", "26-future", "26-future.Rmd"))
+# knitr::purl(here::here("lectures", "26-future", "26-future.Rmd"), output = here::here("R", "lecture_elections.R"))
+
+source(here::here("R", "setup-lectures.R"))
+
+#WTF
+library("dagitty")
+library("ggdag")
+
+library("broom")
+
+library("patchwork")
+library("gapminder")
+
+
+dblue <- "#259FDD"
+rred <- "#FC5E47"
+
+# box
+# library("boxr"); box_auth()
+
+# library("viridis")
+# library(png)
+# library(grid)
+# library(gridExtra)
+
+# options(scipen = 99999)
+
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+
+# chunks:
+# hide code and messages
+# cache everything
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, 
+                      warning = FALSE, message = FALSE,
+                      cache = TRUE, 
+                      cache.path = here::here("lectures", "cache", "26_"),
+                      fig.align = "center", # eval.after = 'fig.cap',
+                      fig.retina = 3 # , dpi = 100
+                      )
+
+img <- "lectures/26-future/img"
+```
+
+# Review
+
+---
+
+## Humans doing science
+
+.left-code[
+
+Academia: biases toward novelty & significance for publication
+
+Politics, policy, advocacy, industry: quest for "good enough" can sacrifice rigor or [interpretability](https://twitter.com/dvIpr/status/1092780446843162625?ref_src=twsrc%5Etfw)
+
+Peer review isn't fool-proof
+
+[Publication bias](https://xkcd.com/882/
+) (many findings are false or over-estimated)
+
+$p$-hacking, "Dichotomania," Garden of Forking Paths, HARKing
+
+Null hypothesis testing and the [philosophy of science](https://xkcd.com/2078/)
+
+]
+
+.right-plot[
+```{r, out.width = "100%"}
+include_graphics(here(img, "crisis.png"))
+```
+
+]
+
+
+
+---
+
+## How to improve?
+
+.pull-left[
+
+**Values**
+
+- Rigorous methods
+
+- Replicability and reproducibility
+
+- Transparency and honesty
+]
+
+--
+
+.pull-right[
+
+**Tactics**
+
+- Technology
+
+<!-- statcheck, R, rmarkdown, make, open-source/git, 
+- transcription error
+  - statcheck, R, Rmd
+- Transparency
+  - open-source and git
+- Technology isn't going to solve everything 
+  - https://pbs.twimg.com/media/DqXyYH1XgAAA8nt.jpg
+ -->
+
+- Institutions
+
+<!-- OSF/pre-registration, JOSS 
+- Collective action problem
+  - https://twitter.com/thosjleeper/status/1120959026953687040
+  - https://twitter.com/thosjleeper/status/1121110240815136768
+- Organized rewards for people who want to improve
+  - pre-acceptance
+- Commitment mechanisms
+  - pre-reg / OSF
+- Career incentives
+  - OS journals, tenure review
+-->
+
+- Culture
+<!-- How do we get people to care? 
+It's not the incentives
+-->
+
+]
+
+
+
+
+
+
+
+---
+
+class: middle, center, inverse
+
+## Technology
+
+
+---
+
+## Transcription/Reporting Errors
+
+```{r, out.width = "90%"}
+include_graphics(here(img, "reporting.png"))
+```
+
+> "This study documents reporting errors in a sample of over 250,000 p-values reported in eight major psychology journals from 1985 until 2013, using the new R package `statcheck`. `statcheck` retrieved null-hypothesis significance testing (NHST) results from over half of the articles from this period. In line with earlier research, we found that half of all published psychology papers that use NHST contained at least one p-value that was inconsistent with its test statistic and degrees of freedom."
+
+---
+
+.pull-left[
+
+### Rmarkdown
+
+Integrates code & writing; output matches analysis
+
+Content control (similar to $\mathrm{\LaTeX}$)
+
+([Get started](https://bookdown.org/yihui/rmarkdown/) or take a [deep dive](https://bookdown.org/yihui/rmarkdown/))
+
+(Or, turn all your work [into code](https://kieranhealy.org/files/papers/plain-person-text.pdf))
+]
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "rmd-source.png"))
+```
+]
+
+--
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "rmd-pdf.png"))
+```
+
+
+---
+
+.pull-left[
+## Git
+
+Version control (like "track changes" but for code)
+
+Edit code incrementally, "commit" changes
+
+Rewind project history, branch off, merge branches
+
+*VERY* important for data science (collaboration, complex projects)
+
+This text got deleted
+
+]
+
+.pull-right[
+```{r, out.width = "80%"}
+include_graphics(here(img, "clippy.jpg"))
+```
+]
+
+
+
+
+
+
+
+
+
+
