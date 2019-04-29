@@ -163,7 +163,6 @@ It's not the incentives
 
 
 
-
 ---
 
 class: middle, center, inverse
@@ -185,7 +184,7 @@ include_graphics(here(img, "reporting.png"))
 
 .pull-left[
 
-### Rmarkdown
+### "Dynamic" Reporting (e.g. Rmarkdown)
 
 Integrates code & writing; output matches analysis
 
@@ -222,8 +221,6 @@ Rewind project history, branch off, merge branches
 
 *VERY* important for data science (collaboration, complex projects)
 
-This text got deleted
-
 ]
 
 .pull-right[
@@ -232,10 +229,233 @@ include_graphics(here(img, "clippy.jpg"))
 ```
 ]
 
+--
+
+**Looking at a file's history**
+
+```{r, out.width = "70%"}
+include_graphics(here(img, "diff.png"))
+```
+
+---
+
+### Github: online Git repositories
+
+.left-code[
+Collaboration and distribution of open-source projects
+
+More Git resources:
+
+- [Excuse me, do you have a moment to talk about version control?](https://peerj.com/preprints/3159.pdf)
+
+- [Happy Git and GitHub for the useR](https://happygitwithr.com/)
+
+]
+
+.right-plot[
+
+[Github repository](https://github.com/mikedecr/political-numbers-s19) for ps-270
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "github.png"))
+```
+]
+
+---
+
+.pull-left[
+## Technology, not a magic bullet
+
+It can't make you *want* to do good science
+
+]
+
+.pull-right[
+
+![](https://pbs.twimg.com/media/DqXyYH1XgAAA8nt.jpg)
+]
 
 
 
 
+---
+
+.pull-left[
+
+## Statistical(?) Technology
+
+Larger samples (statistical power)
+
+Causal inference with potential outcomes
+
+- Minimal requisite assumptions to identify "treatment effect"
+
+- Unit $i$ receives treatment ($z = 1$) or control ($z = 0$)
+
+- $y(z)$: outcome value given $z$
+
+- Treatment effect is $y(z = 1)_{i} - y(z = 0)_{i}$
+
+Bayesian statistical analysis
+
+Big $ in your future
+
+]
+
+
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "bayes.png"))
+```
+]
+
+
+---
+
+class: center, inverse, middle
+
+# Institutional Reform
+
+
+---
+
+class: middle
+
+
+.pull-left[
+## What are institutions?
+
+Formal and informal structures for behaviors, customs, rules, processes
+
+What is a **collective action problem**?
+
+Scientific work is like a *market*. How do you change market behavior?
+]
+
+.pull-right[
+```{r, out.width = "100%"}
+include_graphics(here(img, "collective.jpg"))
+```
+]
+
+
+
+---
+
+.pull-left[
+
+## "Open Science"
+
+Pre-analysis planning (hypotheses and analysis)
+
+Results-blind peer review (Pre-acceptance)
+
+]
+
+.pull-right[
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "osf.png"))
+```
+]
+
+## Journal reforms
+
+Open Access
+
+Short papers
+
+Replication data and code (["Data Access and Research Transparency" Initiative](https://www.dartstatement.org/))
+
+But...exploratory vs confirmatory research?
+
+---
+
+class: middle
+
+<center>
+  <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Figure of the Day: results of clinical trials before and after preregistration of study design became a requirement.<br><br>Source: <a href="https://t.co/bxJjEwAdn7">https://t.co/bxJjEwAdn7</a> <a href="https://t.co/08KSnVIzTd">pic.twitter.com/08KSnVIzTd</a></p>&mdash; John B. Holbein (@JohnHolbein1) <a href="https://twitter.com/JohnHolbein1/status/1060546334397067264?ref_src=twsrc%5Etfw">November 8, 2018</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
+
+---
+
+## Tenure reform
+
+.pull-left[
+Address the *career incentives*: academic freedom and job security
+
+What "output" counts toward tenure?
+
+Journal publications vs software/data contributions, public scholarship, disciplinary service
+
+<center>
+  <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I&#39;m increasingly convinced one of the most important things social scientists could work on currently is how to design institutions and incentives to manage, scale, &amp; sustain informal, voluntary collaborations (like open source, activist groups, &amp; wiki-style knowledge sharing).</p>&mdash; Thomas J. Leeper (@thosjleeper) <a href="https://twitter.com/thosjleeper/status/1120959026953687040?ref_src=twsrc%5Etfw">April 24, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+</center>
+]
+
+
+.pull-right[
+<center>
+  <blockquote class="twitter-tweet" data-conversation="none"><p lang="en" dir="ltr">If we want to understand the impact of the R&amp;D outside academia, while the journal articles are critical to the process; it’s the packages, documentation, blogs and the vignettes created as part of the process that are being utilised in industry/government.</p>&mdash; Steph de Silva-Stammel (@StephStammel) <a href="https://twitter.com/StephStammel/status/1119736441548881920?ref_src=twsrc%5Etfw">April 20, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+]
+
+
+
+---
+
+class: inverse, middle, center
+
+# Cultural Change
+
+
+---
+
+
+.left-code[
+## Can't just ask nicely
+
+Replication, still largely a thankless task
+
+Give people means to change (technology)
+
+Give people motivation to change (institutions)
+
+#### It's on you to do the right thing
+
+]
+
+
+.right-plot[
+
+```{r, out.width = "100%"}
+include_graphics(here(img, "incentives.png"))
+```
+
+[Yarkoni, "It's not the Incentives'](https://www.talyarkoni.org/blog/2018/10/02/no-its-not-the-incentives-its-you/)"
+
+]
+
+
+---
+
+class: middle, center, inverse
+
+# In conclusion, data analysis is hard
+
+--
+
+### Science, math, statistics, ethics
+
+--
+
+### Not to mention...subject-matter expertise
+
+--
+
+### Luckily, it's fun to learn & challenge yourself
 
 
 
